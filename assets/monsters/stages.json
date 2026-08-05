@@ -1,0 +1,22 @@
+[
+  {"level":1,"id":"egg","image":"stage-01-egg.webp","ready":false},
+  {"level":2,"id":"cracked-egg","image":"stage-02-cracked-egg.webp","ready":false},
+  {"level":3,"id":"hatchling","image":"stage-03-hatchling.webp","ready":false},
+  {"level":4,"id":"fluffy-ears","image":"stage-04-fluffy-ears.webp","ready":false},
+  {"level":5,"id":"pink-cheeks","image":"stage-05-pink-cheeks.webp","ready":false},
+  {"level":6,"id":"bright-tail","image":"stage-06-bright-tail.webp","ready":false},
+  {"level":7,"id":"tiny-wings","image":"stage-07-tiny-wings.webp","ready":false},
+  {"level":8,"id":"scarf","image":"stage-08-scarf.webp","ready":false},
+  {"level":9,"id":"backpack","image":"stage-09-backpack.webp","ready":false},
+  {"level":10,"id":"goggles","image":"stage-10-goggles.webp","ready":false},
+  {"level":11,"id":"pencil-wand","image":"stage-11-pencil-wand.webp","ready":false},
+  {"level":12,"id":"hovering","image":"stage-12-hovering.webp","ready":false},
+  {"level":13,"id":"magic-marks","image":"stage-13-magic-marks.webp","ready":false},
+  {"level":14,"id":"flower-crown","image":"stage-14-flower-crown.webp","ready":false},
+  {"level":15,"id":"explorer","image":"stage-15-explorer.webp","ready":false},
+  {"level":16,"id":"star-cape","image":"stage-16-star-cape.webp","ready":false},
+  {"level":17,"id":"larger-wings","image":"stage-17-larger-wings.webp","ready":false},
+  {"level":18,"id":"apprentice-guardian","image":"stage-18-apprentice-guardian.webp","ready":false},
+  {"level":19,"id":"young-guardian","image":"stage-19-young-guardian.webp","ready":false},
+  {"level":20,"id":"royal-guardian","image":"stage-20-royal-guardian.webp","ready":false}
+]
