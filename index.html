@@ -157,7 +157,7 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
 .monster-heart{transform-origin:center;animation:heartglow 2.4s ease-in-out infinite}
 .monster-wrap{position:relative;display:grid;place-items:center}
 .monster-wrap.sleepy{filter:saturate(.72)}
-.monster-asset{display:grid;place-items:center;position:relative;max-width:100%;max-height:100%}.monster-asset>img{display:block;max-width:100%;max-height:100%;object-fit:contain;filter:drop-shadow(0 8px 8px rgba(27,58,140,.18))}.monster-fallback{display:grid;place-items:center;width:100%;height:100%}
+.monster-asset{display:grid;place-items:center;position:relative;max-width:100%;max-height:100%}.monster-asset>img{display:block;max-width:100%;max-height:100%;object-fit:contain;filter:drop-shadow(0 8px 8px rgba(27,58,140,.18))}.monster-asset.asset-image>img{animation:monsterGlow 3.8s ease-in-out infinite}.monster-asset.asset-image.bob>img{animation:bob 3.2s ease-in-out infinite,monsterGlow 3.8s ease-in-out infinite}.monster-fallback{display:grid;place-items:center;width:100%;height:100%}.monster-fallback[hidden]{display:none}
 .mood-excited{animation:evolve .55s ease-out}.mood-proud{filter:drop-shadow(0 0 8px rgba(242,185,59,.5))}.mood-thinking{transform:rotate(-2deg)}.mood-surprised{animation:sh .3s}.mood-sleepy{filter:saturate(.72)}.mood-love{filter:drop-shadow(0 0 9px rgba(255,108,168,.55))}
 .play-monster{width:48px;height:48px;display:grid;place-items:center;margin-left:auto}
 .play-monster svg{width:48px;height:48px;filter:drop-shadow(0 3px 3px rgba(27,58,140,.16))}
@@ -170,6 +170,7 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
 @keyframes wingflap{0%,100%{transform:rotate(0)}50%{transform:rotate(-12deg)}}
 @keyframes wingflap2{0%,100%{transform:rotate(0)}50%{transform:rotate(12deg)}}
 @keyframes heartpop{0%,70%,100%{opacity:0;transform:translateY(2px) scale(.5)}80%{opacity:1;transform:translateY(-4px) scale(1)}}
+@keyframes monsterGlow{0%,100%{filter:drop-shadow(0 8px 8px rgba(27,58,140,.16)) drop-shadow(0 0 4px rgba(255,207,83,.16))}50%{filter:drop-shadow(0 10px 10px rgba(27,58,140,.2)) drop-shadow(0 0 12px rgba(255,207,83,.34))}}
 
 /* opening story + maths journey */
 .story-card,.journey-hero{background:#fff url('assets/ui/magic-glow.png') center/cover;border:2px solid var(--ink);border-radius:20px;padding:12px;box-shadow:3px 3px 0 rgba(27,58,140,.16)}
@@ -463,8 +464,8 @@ const MONSTER_PALETTES=[
 const MONSTER_SLUGS=['egg','cracked-egg','hatchling','fluffy-ears','pink-cheeks','bright-tail','tiny-wings','scarf','backpack','goggles','pencil-wand','hovering','magic-marks','flower-crown','explorer','star-cape','larger-wings','apprentice-guardian','young-guardian','royal-guardian'];
 const MONSTER_STAGES=MONSTER_SLUGS.map((slug,i)=>({
   id:'stage-'+String(i+1).padStart(2,'0'),minLevel:i+1,maxLevel:i+1,name:PET_NAMES[i],
-  group:i<2?'Egg & hatchling':i<6?'Toddler':i<12?'Explorer':i<18?'Companion':'Guardian',image:'assets/monsters/stage-'+String(i+1).padStart(2,'0')+'-'+slug+'.webp',
-  palette:MONSTER_PALETTES[i],fallback:i===0?'egg':'momo',assetReady:false
+  group:i<2?'Egg & hatchling':i<6?'Toddler':i<12?'Explorer':i<18?'Companion':'Guardian',image:'assets/monsters/stage-'+String(i+1).padStart(2,'0')+'-'+slug+(i<5?'.png':'.webp'),
+  palette:MONSTER_PALETTES[i],fallback:i===0?'egg':'momo',assetReady:i<5
 }));
 const MONSTER_EXPRESSIONS={idle:'happy',beforeQuestion:'curious',correct:'excited',streak:'proud',hint:'thinking',wrong:'surprised',inactive:'sleepy',levelUp:'love'};
 const PRAISE=['Correct!','Nice one.',"Yes, that's it.",'Spot on.','Exactly.','Well worked out.'];
@@ -634,8 +635,8 @@ function monsterMarkup(lvl,mood,cls,alt){
   const stage=monsterStage(lvl),state=MONSTER_EXPRESSIONS[mood]||mood||'happy';
   const fallback='<span class="monster-fallback">'+petSVG(artLevelOf(lvl),cls||'')+'</span>';
   if(!stage.assetReady) return '<span class="monster-asset mood-'+state+'" data-stage="'+stage.id+'">'+fallback+'</span>';
-  return '<span class="monster-asset mood-'+state+'" data-stage="'+stage.id+'">'+
-    '<img src="'+stage.image+'" alt="'+esc(alt||'Momo')+'" onerror="this.hidden=true;this.nextElementSibling.hidden=false">'+
+  return '<span class="monster-asset asset-image mood-'+state+(cls?' '+cls:'')+'" data-stage="'+stage.id+'">'+
+    '<img src="'+stage.image+'" alt="'+esc(alt||'Momo')+'" onerror="this.hidden=true;this.parentElement.classList.remove(\'asset-image\',\'bob\',\'evolution-burst\');this.nextElementSibling.hidden=false">'+
     '<span class="monster-fallback" hidden>'+petSVG(artLevelOf(lvl),cls||'')+'</span></span>';
 }
 
