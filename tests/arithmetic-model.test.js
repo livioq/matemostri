@@ -4,6 +4,7 @@ const path = require('node:path');
 const vm = require('node:vm');
 
 const source = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+const plain = value => JSON.parse(JSON.stringify(value));
 
 function functionSource(name) {
   const start = source.indexOf(`function ${name}(`);
@@ -21,15 +22,37 @@ const context = { Math };
 vm.createContext(context);
 vm.runInContext([
   'const rnd=(a,b)=>a+Math.floor(Math.random()*(b-a+1));',
+  "const columnPlace=(wid,col)=>['ones','tens','hundreds','thousands','ten-thousands'][wid-1-col]||'next';",
   functionSource('buildColumn'),
   functionSource('buildLongMultiplication'),
-  functionSource('twoDigitColumnAddition')
+  functionSource('twoDigitColumnAddition'),
+  functionSource('commitColumnStep'),
+  functionSource('commitLongMultiplicationStep'),
+  functionSource('colPrompt'),
+  functionSource('longMulPrompt')
 ].join('\n'), context);
 
 function subtractionAnswer(model) {
   return Number(model.steps.filter(step => step.t === 'res')
     .sort((a, b) => a.col - b.col).map(step => step.want).join(''));
 }
+
+[
+  [61, 63, '12'],
+  [58, 67, '12'],
+  [86, 79, '16'],
+  [487, 658, '11']
+].forEach(([a, b, finalValue]) => {
+  const model = context.buildColumn('add', a, b);
+  const final = model.steps.at(-1);
+  assert.equal(final.t, 'final', `${a} + ${b} ends with one complete final-column action`);
+  assert.equal(final.want, finalValue);
+  assert.equal(model.steps.some(step => step.t === 'carry' && step.col < final.col), false,
+    'no carry is created in an empty leading column');
+  while (model.steps[model.si]) context.commitColumnStep(model);
+  const result = Number(Object.keys(model.ent.res).sort((x, y) => x - y).map(col => model.ent.res[col]).join(''));
+  assert.equal(result, a + b);
+});
 
 [
   [730, 141, 589],
@@ -56,6 +79,54 @@ assert.deepEqual(annotationHistory(context.buildColumn('sub', 1000, 367)), {
 });
 assert.deepEqual(annotationHistory(context.buildColumn('sub', 730, 141))[1], ['2', '12']);
 
+const reborrow = context.buildColumn('sub', 730, 141);
+assert.deepEqual(plain(reborrow.steps.slice(0, 6).map(step => [step.t, step.col])), [
+  ['ann', 1], ['ann', 2], ['res', 2], ['ann', 0], ['ann', 1], ['res', 1]
+]);
+assert.equal(reborrow.ent.annotations[0].length, 0);
+context.commitColumnStep(reborrow);
+context.commitColumnStep(reborrow);
+assert.equal(reborrow.steps[reborrow.si].t, 'res');
+assert.equal(reborrow.ent.annotations[0].length, 0, 'hundreds borrow is not visible during units work');
+context.commitColumnStep(reborrow);
+assert.equal(reborrow.steps[reborrow.si].col, 0, 'hundreds borrow is revealed only after the units result');
+assert.match(context.colPrompt(reborrow), /borrowing/i);
+assert.equal(reborrow.ent.annotations[0].length, 0, 'the newly revealed action has not rewritten its digit early');
+
+const zeroChain = context.buildColumn('sub', 1000, 367);
+assert.deepEqual(plain(zeroChain.steps.slice(0, 9).map(step => [step.t, step.col, step.role || step.place])), [
+  ['seek', 2, 'tens'],
+  ['seek', 1, 'hundreds'],
+  ['ann', 0, 'lend'],
+  ['ann', 1, 'receive'],
+  ['ann', 1, 'pass'],
+  ['ann', 2, 'receive'],
+  ['ann', 2, 'pass'],
+  ['ann', 3, 'receive'],
+  ['res', 3, null]
+]);
+assert.match(context.colPrompt(zeroChain), /tens column has 0/);
+assert.equal(zeroChain.ent.annotations.flat().length, 0);
+context.commitColumnStep(zeroChain);
+assert.match(context.colPrompt(zeroChain), /hundreds column has 0/);
+assert.equal(zeroChain.ent.annotations.flat().length, 0, 'zero-search steps do not rewrite future digits');
+
+[
+  [27, 4, 108],
+  [46, 7, 322]
+].forEach(([a, b, expected]) => {
+  const model = context.buildColumn('mul', a, b);
+  const carry = model.steps.find(step => step.t === 'mulCarry');
+  const final = model.steps.at(-1);
+  assert.equal(carry.placement, 'side');
+  assert.equal(carry.row, 0);
+  assert.equal(final.t, 'mulFinal');
+  assert.equal(model.steps.some(step => step.t === 'carry'), false, 'multiplication does not use addition carry placement');
+  while (model.steps[model.si]) context.commitColumnStep(model);
+  const result = Number(Object.keys(model.ent.res).sort((x, y) => x - y).map(col => model.ent.res[col]).join(''));
+  assert.equal(result, expected);
+});
+
 [
   [12, 13, 156],
   [23, 14, 322],
@@ -68,10 +139,18 @@ assert.deepEqual(annotationHistory(context.buildColumn('sub', 730, 141))[1], ['2
   assert.equal(model.partials[0] + model.partials[1], expected, 'partial rows add to the product');
   assert.ok(model.steps.some(step => step.t === 'placeholder'), 'tens row includes its zero placeholder');
   assert.ok(model.steps.some(step => step.t === 'sum'), 'final column addition is planned');
+  model.steps.filter(step => step.t === 'partialCarry').forEach(step => {
+    assert.equal(step.placement, 'side');
+    assert.ok(step.row === 0 || step.row === 1, 'each multiplication carry owns a partial row');
+  });
+  assert.equal(model.steps.some(step => step.t === 'partialCarry' && step.col === undefined), false);
 });
 
 const example = context.buildLongMultiplication(23, 14);
 assert.deepEqual([...example.partials], [92, 230]);
+const largeExample = context.buildLongMultiplication(99, 99);
+assert.ok(largeExample.steps.some(step => step.t === 'partialFinal' && step.row === 0));
+assert.ok(largeExample.steps.some(step => step.t === 'partialFinal' && step.row === 1));
 
 for (const index of [1, 2, 3]) {
   const question = context.twoDigitColumnAddition(index);
@@ -81,6 +160,76 @@ for (const index of [4, 5, 6]) {
   const question = context.twoDigitColumnAddition(index);
   assert.equal(question.M.steps.filter(step => step.t === 'carry').length, 1, 'middle phase has one carry');
 }
+
+class FakeElement {
+  constructor() { this.children = []; this.style = {}; this.className = ''; this.textContent = ''; }
+  appendChild(child) { this.children.push(child); return child; }
+  set innerHTML(value) { this.children = []; this._innerHTML = value; }
+  get innerHTML() { return this._innerHTML || ''; }
+}
+const uiElements = {};
+const resetUi = () => {
+  ['colGrid', 'colPrompt', 'colHint', 'hintBtn'].forEach(id => { uiElements[id] = new FakeElement(); });
+};
+resetUi();
+const uiContext = {
+  document:{createElement:() => new FakeElement()},
+  $:id => uiElements[id],
+  S:null
+};
+vm.createContext(uiContext);
+vm.runInContext([
+  functionSource('colPrompt'),
+  functionSource('renderCol'),
+  functionSource('longMulPrompt'),
+  functionSource('renderLongMul')
+].join('\n'), uiContext);
+
+const revealUi = context.buildColumn('sub', 730, 141);
+context.commitColumnStep(revealUi);
+context.commitColumnStep(revealUi);
+resetUi(); uiContext.S = {col:revealUi}; uiContext.renderCol();
+assert.equal(uiElements.colGrid.children.some(child => child.textContent === '6'), false,
+  'the future hundreds rewrite is absent while the units answer is active');
+context.commitColumnStep(revealUi);
+resetUi(); uiContext.S = {col:revealUi}; uiContext.renderCol();
+assert.equal(uiElements.colGrid.children.some(child => child.textContent === '6'), false,
+  'revealing the next borrow prompt does not rewrite its digit before the child acts');
+
+const zeroRevealUi = context.buildColumn('sub', 1000, 367);
+resetUi(); uiContext.S = {col:zeroRevealUi}; uiContext.renderCol();
+assert.equal(uiElements.colGrid.children.some(child => child.textContent === '9'), false);
+context.commitColumnStep(zeroRevealUi);
+resetUi(); uiContext.S = {col:zeroRevealUi}; uiContext.renderCol();
+assert.equal(uiElements.colGrid.children.some(child => child.textContent === '9'), false,
+  'no passed-through 9 appears while the zero-borrow path is still being explored');
+
+const singleUi = context.buildColumn('mul', 27, 4);
+context.commitColumnStep(singleUi);
+context.commitColumnStep(singleUi);
+resetUi(); uiContext.S = {col:singleUi, colB:4}; uiContext.renderCol();
+const singleCarryNote = uiElements.colGrid.children.find(child => child.className.includes('mul-carry-note'));
+assert.ok(singleCarryNote, 'single-digit multiplication renders a side carry annotation');
+assert.equal(singleCarryNote.style.gridRow, 2);
+assert.ok(Number(singleCarryNote.style.gridColumn) > singleUi.wid + 1, 'carry is to the right of the calculation grid');
+assert.equal(uiElements.colGrid.children.some(child => child.style.gridRow === 1 && /carry/.test(child.textContent)), false,
+  'multiplication carry is never rendered above the multiplicand');
+
+const longUi = context.buildLongMultiplication(99, 99);
+while (!(longUi.steps[longUi.si].row === 1)) context.commitLongMultiplicationStep(longUi);
+resetUi(); uiContext.S = {longMul:longUi}; uiContext.renderLongMul();
+let carryNotes = uiElements.colGrid.children.filter(child => child.className.includes('mul-carry-note'));
+assert.equal(carryNotes.length, 1);
+assert.equal(carryNotes[0].style.gridRow, 5, 'first carry belongs to the first partial-product row');
+assert.match(carryNotes[0].className, /retired/, 'first-row carry retires before the second row begins');
+while (!(longUi.steps[longUi.si].t === 'partialCarry' && longUi.steps[longUi.si].row === 1)) context.commitLongMultiplicationStep(longUi);
+context.commitLongMultiplicationStep(longUi);
+resetUi(); uiContext.S = {longMul:longUi}; uiContext.renderLongMul();
+carryNotes = uiElements.colGrid.children.filter(child => child.className.includes('mul-carry-note'));
+assert.equal(carryNotes.length, 2);
+assert.equal(carryNotes.find(note => note.style.gridRow === 5).className.includes('retired'), true);
+assert.equal(carryNotes.find(note => note.style.gridRow === 6).className.includes('retired'), false,
+  'second-row carry remains active only beside its own row');
 
 const migrationContext = {};
 vm.createContext(migrationContext);

@@ -103,6 +103,8 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
 .dc.annotations span{display:inline-flex;min-width:calc(var(--cell)*.38);height:calc(var(--cell)*.48);align-items:center;justify-content:center;color:var(--pen);font-size:calc(var(--cell)*.34);position:relative}
 .dc.annotations .ann-struck{color:var(--ink-soft);text-decoration:line-through;text-decoration-color:var(--pen);text-decoration-thickness:2px}
 .dc.annotations .ann-input{border:2px solid var(--gold);border-radius:5px;background:#fff7d9}
+.dc.mul-carry-note{width:auto;min-width:46px;height:auto;align-self:center;padding:3px 5px;border:1.5px solid var(--gold);border-radius:999px;background:#fff7d9;color:#9a6400;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;font-size:10px;font-weight:900;line-height:1.1}
+.dc.mul-carry-note.retired{opacity:.45;border-style:dashed}
 .dc.slot{border:2px dashed rgba(214,48,58,.5);border-radius:6px;color:var(--pen)}
 .dc.slot.act{border-style:solid;background:rgba(242,185,59,.22);animation:pulse 1.1s ease-in-out infinite}
 .dc.typed{color:var(--pen)}
@@ -760,6 +762,7 @@ const sLvl =()=>{[523,659,784,1046].forEach((f,i)=>setTimeout(()=>beep(f,.16),i*
 
 /* ---------------- column working model ---------------- */
 const rnd=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+const columnPlace=(wid,col)=>['ones','tens','hundreds','thousands','ten-thousands'][wid-1-col]||'next';
 function buildColumn(op,a,b){
   const A=String(a),B=String(b);
   const wid=op==='mul'?A.length+B.length:Math.max(A.length,B.length)+(op==='sub'?0:1);
@@ -769,21 +772,30 @@ function buildColumn(op,a,b){
   const steps=[];
   if(op==='add'){
     let carry=0;
+    const leftmost=Math.min(ad.findIndex(v=>v!==null),bd.findIndex(v=>v!==null));
     for(let i=wid-1;i>=0;i--){
       if(ad[i]===null&&bd[i]===null&&carry===0) break;
       const tot=(ad[i]||0)+(bd[i]||0)+carry;
+      if(i===leftmost&&tot>=10){
+        steps.push({t:'final',col:i,want:String(tot),x:ad[i],y:bd[i],carry:carry,cols:[i-1,i]});
+        break;
+      }
       steps.push({t:'res',col:i,want:String(tot%10),x:ad[i],y:bd[i],carry:carry});
       carry=Math.floor(tot/10);
       if(carry>0&&i>0) steps.push({t:'carry',col:i-1,want:String(carry)});
     }
   }else if(op==='mul'){
-    const m=Number(b); let carry=0;
+    const m=Number(b); let carry=0,leftmost=ad.findIndex(v=>v!==null);
     for(let i=wid-1;i>=0;i--){
       if(ad[i]===null&&carry===0) break;
       const tot=(ad[i]||0)*m+carry;
+      if(i===leftmost&&tot>=10){
+        steps.push({t:'mulFinal',col:i,want:String(tot),x:ad[i],m:m,carry:carry,cols:[i-1,i]});
+        break;
+      }
       steps.push({t:'res',col:i,want:String(tot%10),x:ad[i],m:m,carry:carry});
       carry=Math.floor(tot/10);
-      if(carry>0&&i>0) steps.push({t:'carry',col:i-1,want:String(carry)});
+      if(carry>0&&i>leftmost) steps.push({t:'mulCarry',row:0,col:i-1,anchorCol:i,want:String(carry),placement:'side'});
     }
   }else{
     const top=ad.slice();
@@ -792,27 +804,30 @@ function buildColumn(op,a,b){
       const y=bd[i]||0; let x=top[i]===null?0:top[i];
       if(x<y){
         let lender=i-1;
-        while(lender>=0&&(top[lender]===null||top[lender]===0)) lender--;
+        while(lender>=0&&(top[lender]===null||top[lender]===0)){
+          steps.push({t:'seek',col:lender,want:'0',place:columnPlace(wid,lender)});
+          lender--;
+        }
         if(lender<0) throw new Error('Subtraction model cannot borrow');
         const lentFrom=top[lender];
         top[lender]=lentFrom-1;
-        steps.push({t:'ann',role:'lend',col:lender,from:lentFrom,want:String(top[lender]),hx:x,hy:y});
+        steps.push({t:'ann',role:'lend',col:lender,from:lentFrom,want:String(top[lender]),hx:x,hy:y,place:columnPlace(wid,lender)});
         for(let k=lender+1;k<i;k++){
           const received=(top[k]||0)+10;
-          steps.push({t:'ann',role:'receive',col:k,from:top[k]||0,want:String(received)});
+          steps.push({t:'ann',role:'receive',col:k,from:top[k]||0,want:String(received),place:columnPlace(wid,k)});
           top[k]=received;
-          steps.push({t:'ann',role:'pass',col:k,from:top[k],want:String(top[k]-1)});
+          steps.push({t:'ann',role:'pass',col:k,from:top[k],want:String(top[k]-1),place:columnPlace(wid,k)});
           top[k]-=1;
         }
         const received=x+10;
-        steps.push({t:'ann',role:'receive',col:i,from:x,want:String(received)});
+        steps.push({t:'ann',role:'receive',col:i,from:x,want:String(received),place:columnPlace(wid,i)});
         x=received; top[i]=x;
       }
       steps.push({t:'res',col:i,want:String(x-y),x:x,y:y});
     }
   }
   return {op:op,wid:wid,ad:ad,bd:bd,steps:steps,
-          ent:{carry:{},annotations:Array.from({length:wid},()=>[]),res:{}},si:0,buf:'',tries:0,err:0,hint:false};
+          ent:{carry:{},mulCarries:{},annotations:Array.from({length:wid},()=>[]),res:{}},si:0,buf:'',tries:0,err:0,hint:false};
 }
 const colValid=M=>M.steps.every(s=>/^\d+$/.test(s.want));
 
@@ -826,10 +841,13 @@ function buildLongMultiplication(a,b){
     const digits=upper.split('').reverse().map(Number);
     digits.forEach((digit,k)=>{
       const total=digit*multiplier+carry,col=width-1-offset-k;
+      if(k===digits.length-1&&total>=10){
+        steps.push({t:'partialFinal',row:row,col:col,want:String(total),cols:[col-1,col],digit:digit,multiplier:multiplier,carry:carry});
+        carry=0; return;
+      }
       steps.push({t:'partial',row:row,col:col,want:String(total%10),digit:digit,multiplier:multiplier,carry:carry});
       carry=Math.floor(total/10);
-      if(carry&&k<digits.length-1) steps.push({t:'partialCarry',row:row,col:col-1,want:String(carry)});
-      if(k===digits.length-1&&carry) steps.push({t:'partial',row:row,col:col-1,want:String(carry),leading:true,carry:carry});
+      if(carry&&k<digits.length-1) steps.push({t:'partialCarry',row:row,col:col-1,anchorCol:col,want:String(carry),placement:'side'});
     });
     partials.push(a*multiplier*Math.pow(10,offset));
   });
@@ -842,7 +860,7 @@ function buildLongMultiplication(a,b){
     if(carry&&col>0) steps.push({t:'sumCarry',col:col-1,want:String(carry)});
   }
   return {a:a,b:b,width:width,partials:partials,total:a*b,steps:steps,si:0,buf:'',tries:0,err:0,hint:false,
-    ent:{partials:[{},{}],partialCarries:[{},{}],sum:{},sumCarry:{}}};
+    ent:{partials:[{},{}],partialCarries:[null,null],sum:{},sumCarry:{}}};
 }
 
 function twoDigitColumnAddition(questionIndex){
@@ -850,7 +868,7 @@ function twoDigitColumnAddition(questionIndex){
   for(let guard=0;guard<300;guard++){
     const a=rnd(10,89),b=rnd(10,89),ones=a%10+b%10,tens=Math.floor(a/10)+Math.floor(b/10)+(ones>=10?1:0);
     const carries=(ones>=10?1:0)+(tens>=10?1:0);
-    if((phase==='no-carry'&&carries===0)||(phase==='one-carry'&&carries===1)||phase==='mixed')
+    if((phase==='no-carry'&&carries===0)||(phase==='one-carry'&&ones>=10&&tens<10)||phase==='mixed')
       return {kind:'col',a:a,b:b,M:buildColumn('add',a,b),phase:phase};
   }
   return {kind:'col',a:phase==='no-carry'?23:phase==='one-carry'?27:58,b:phase==='no-carry'?14:phase==='one-carry'?15:34,M:buildColumn('add',phase==='no-carry'?23:phase==='one-carry'?27:58,phase==='no-carry'?14:phase==='one-carry'?15:34),phase:phase};
@@ -1230,15 +1248,18 @@ function colPrompt(M){
   if(!st) return '';
   if(M.op==='add'){
     if(st.t==='carry') return 'Carry the '+st.want+' into the next column.';
+    if(st.t==='final') return (st.x||0)+' + '+(st.y||0)+(st.carry?' + '+st.carry:'')+'. This is the final column, so write the complete '+st.want+'.';
     const parts=[]; if(st.x!==null)parts.push(st.x); if(st.y!==null)parts.push(st.y); if(st.carry)parts.push(st.carry);
     if(parts.length===1) return 'Only '+parts[0]+' here. Write it down.';
     return parts.join(' + ')+'. Write the ones digit here.';
   }
   if(M.op==='mul'){
-    if(st.t==='carry') return 'Carry the '+st.want+' into the next column.';
+    if(st.t==='mulCarry') return 'Keep the carried '+st.want+' beside this multiplication step.';
+    if(st.t==='mulFinal') return st.x+' × '+st.m+(st.carry?' + '+st.carry:'')+'. This is the final digit, so write the complete '+st.want+'.';
     if(st.x===null) return 'Nothing left to multiply. Write the carried '+st.carry+'.';
     return st.x+' \u00D7 '+st.m+(st.carry?' + '+st.carry:'')+'. Write the ones digit here.';
   }
+  if(st.t==='seek') return 'The '+st.place+' column has 0, so it has nothing to lend. Enter 0, then follow the borrow one column left.';
   if(st.t==='ann'&&st.role==='lend') return st.hx+' \u2212 '+st.hy+' needs borrowing. Cross out the '+st.from+' and write '+st.want+'.';
   if(st.t==='ann'&&st.role==='pass') return 'This '+st.from+' lends one onward. Cross it out and write '+st.want+'.';
   if(st.t==='ann') return 'The '+st.from+' receives a ten and becomes '+st.want+'. Write '+st.want+' above it.';
@@ -1246,7 +1267,7 @@ function colPrompt(M){
 }
 function renderCol(){
   const M=S.col, g=$('colGrid'), cols=M.wid+1, st=M.steps[M.si];
-  g.style.gridTemplateColumns='repeat('+cols+', var(--cell))';
+  g.style.gridTemplateColumns='repeat('+cols+', var(--cell))'+(M.op==='mul'?' 50px':'');
   g.style.gridTemplateRows='calc(var(--cell) * 1.35) repeat(3, var(--cell))';
   g.innerHTML='';
   const cell=(r,c,txt,cls)=>{
@@ -1267,19 +1288,26 @@ function renderCol(){
       if(M.ent.carry[i]!==undefined) cell(1,gc,M.ent.carry[i],'small');
       else if(st&&st.t==='carry'&&st.col===i) cell(1,gc,M.buf,'small slot act');
     }
-    if(M.ad[i]!==null) cell(2,gc,M.ad[i],M.op==='sub'&&M.ent.annotations[i].length?'struck':'');
+    if(M.ad[i]!==null) cell(2,gc,M.ad[i],(M.op==='sub'&&M.ent.annotations[i].length?'struck ':'')+(st&&st.t==='seek'&&st.col===i?'focus':''));
     if(M.bd[i]!==null) cell(3,gc,M.bd[i],'');
   }
   cell(3,1,sign,'op');
   const rule=document.createElement('div');
-  rule.className='rule'; rule.style.gridRow=4; rule.style.gridColumn='1 / -1';
+  rule.className='rule'; rule.style.gridRow=4; rule.style.gridColumn='1 / span '+cols;
   g.appendChild(rule);
-  M.steps.filter(s=>s.t==='res').forEach(s=>{
-    const gc=s.col+2;
-    if(M.ent.res[s.col]!==undefined) cell(4,gc,M.ent.res[s.col],'typed');
-    else if(st&&st.t==='res'&&st.col===s.col) cell(4,gc,M.buf,'slot act');
-    else if(M.ad[s.col]!==null||M.bd[s.col]!==null) cell(4,gc,'','slot');
+  const resultCols=new Set();
+  M.steps.forEach(s=>{ if(s.t==='res') resultCols.add(s.col); else if(s.t==='final'||s.t==='mulFinal') s.cols.forEach(c=>resultCols.add(c)); });
+  resultCols.forEach(col=>{
+    const gc=col+2,active=st&&(st.t==='res'&&st.col===col||(st.t==='final'||st.t==='mulFinal')&&st.cols.includes(col));
+    let typed='';
+    if(M.ent.res[col]!==undefined) typed=M.ent.res[col];
+    else if(active) typed=(st.t==='res'?M.buf:M.buf[st.cols.indexOf(col)])||'';
+    cell(4,gc,typed,(M.ent.res[col]!==undefined?'typed ':'slot ')+(active?'act':''));
   });
+  if(M.op==='mul'){
+    const carry=M.ent.mulCarries[0],activeCarry=st&&st.t==='mulCarry';
+    if(carry||activeCarry) cell(2,cols+1,'carry '+(activeCarry?M.buf:carry.value),'mul-carry-note'+(!st?' retired':''));
+  }
   $('colPrompt').textContent=colPrompt(M);
   if(M.hint&&M.op==='mul'){
     const strip=$('colHint'); strip.style.display='grid'; strip.innerHTML='';
@@ -1287,6 +1315,15 @@ function renderCol(){
     for(let i=1;i<=9;i++){ const e=document.createElement('span'); e.textContent=m+'\u00D7'+i+'='+(m*i); strip.appendChild(e); }
     $('hintBtn').style.display='none';
   }
+}
+function commitColumnStep(M){
+  const st=M.steps[M.si]; if(!st) return null;
+  if(st.t==='res') M.ent.res[st.col]=st.want;
+  else if(st.t==='final'||st.t==='mulFinal') st.cols.forEach((col,i)=>M.ent.res[col]=st.want[i]);
+  else if(st.t==='carry') M.ent.carry[st.col]=st.want;
+  else if(st.t==='mulCarry') M.ent.mulCarries[st.row]={value:st.want,anchorCol:st.anchorCol};
+  else if(st.t==='ann') M.ent.annotations[st.col].push({value:st.want,role:st.role});
+  M.buf=''; M.si++; return st;
 }
 function pressCol(k){
   const M=S.col, st=M.steps[M.si];
@@ -1298,10 +1335,7 @@ function pressCol(k){
   if(M.buf.length<st.want.length){ renderCol(); return; }
   if(M.buf===st.want){
     sStep(); M.tries=0;
-    if(st.t==='res') M.ent.res[st.col]=st.want;
-    else if(st.t==='carry') M.ent.carry[st.col]=st.want;
-    else if(st.t==='ann') M.ent.annotations[st.col].push({value:st.want,role:st.role});
-    M.buf=''; M.si++;
+    commitColumnStep(M);
     if(M.si>=M.steps.length){ renderCol(); finishCol(); return; }
     renderCol(); return;
   }
@@ -1318,8 +1352,7 @@ function finishCol(){
   const clean=M.err===0&&!M.hint;
   if(clean){ ease(S.q.vid,0.2); award(true); }
   else { if(M.err>0) ease(S.q.vid,-0.6); softXP(); }
-  const digits={}; M.steps.forEach(s=>{ if(s.t==='res') digits[s.col]=s.want; });
-  let total=''; for(let i=0;i<M.wid;i++) if(digits[i]!==undefined) total+=digits[i];
+  let total=''; for(let i=0;i<M.wid;i++) if(M.ent.res[i]!==undefined) total+=M.ent.res[i];
   $('fb').innerHTML='<span class="ok">'+(clean?praise():'Worked all the way through.')+' '+Number(total)+'</span>'+(clean?bonusStamp():'')+crackMessage();
   setPlayMood(S.streak>=3?'streak':'correct');
   save(); setTimeout(nextQuestion,1600);
@@ -1329,7 +1362,8 @@ function finishCol(){
 function longMulPrompt(L){
   const st=L.steps[L.si]; if(!st) return '';
   if(st.t==='placeholder') return 'The tens row is worth tens. Put a 0 in the ones place.';
-  if(st.t==='partialCarry') return 'Carry the '+st.want+' above the next digit.';
+  if(st.t==='partialCarry') return 'Keep the carried '+st.want+' beside this partial-product step.';
+  if(st.t==='partialFinal') return st.digit+' × '+st.multiplier+(st.carry?' + '+st.carry:'')+'. This is the final digit, so write the complete '+st.want+'.';
   if(st.t==='partial'){
     if(st.leading) return 'Write the final carried '+st.want+' at the start of this row.';
     return st.digit+' × '+st.multiplier+(st.carry?' + '+st.carry:'')+'. Write the ones digit in this partial row.';
@@ -1339,20 +1373,25 @@ function longMulPrompt(L){
 }
 function renderLongMul(){
   const L=S.longMul,st=L.steps[L.si],grid=$('colGrid'),cols=L.width+1;
-  grid.style.gridTemplateColumns='repeat('+cols+', var(--cell))';
+  grid.style.gridTemplateColumns='repeat('+cols+', var(--cell)) 50px';
   grid.style.gridTemplateRows='repeat(9, var(--cell))'; grid.innerHTML='';
   const cell=(r,c,txt,cls)=>{ const d=document.createElement('div'); d.className='dc '+(cls||''); d.textContent=txt; d.style.gridRow=r; d.style.gridColumn=c; grid.appendChild(d); return d; };
-  const rule=(row)=>{ const d=document.createElement('div'); d.className='rule'; d.style.gridRow=row; d.style.gridColumn='1 / -1'; grid.appendChild(d); };
-  const activePartial=st&&(st.t==='partial'||st.t==='partialCarry'||st.t==='placeholder')?st.row:null;
-  if(activePartial!==null) Object.entries(L.ent.partialCarries[activePartial]).forEach(([col,value])=>cell(1,Number(col)+2,value,'small'));
-  if(st&&st.t==='partialCarry') cell(1,st.col+2,L.buf,'small slot act');
+  const rule=(row)=>{ const d=document.createElement('div'); d.className='rule'; d.style.gridRow=row; d.style.gridColumn='1 / span '+cols; grid.appendChild(d); };
   const upper=String(L.a),lower=String(L.b);
   [...upper].forEach((digit,i)=>cell(2,L.width-upper.length+i+2,digit));
   [...lower].forEach((digit,i)=>cell(3,L.width-lower.length+i+2,digit));
   cell(3,1,'×','op'); rule(4);
   [0,1].forEach(row=>{
     Object.entries(L.ent.partials[row]).forEach(([col,value])=>cell(5+row,Number(col)+2,value,'typed'));
-    if(st&&st.row===row&&(st.t==='partial'||st.t==='placeholder')) cell(5+row,st.col+2,L.buf,'slot act');
+    if(st&&st.row===row&&(st.t==='partial'||st.t==='placeholder'||st.t==='partialFinal')){
+      const activeCols=st.t==='partialFinal'?st.cols:[st.col];
+      activeCols.forEach((col,i)=>cell(5+row,col+2,(st.t==='partialFinal'?L.buf[i]:L.buf)||'','slot act'));
+    }
+    const carry=L.ent.partialCarries[row],activeCarry=st&&st.t==='partialCarry'&&st.row===row;
+    if(carry||activeCarry){
+      const activeRow=st&&(st.t==='partial'||st.t==='partialCarry'||st.t==='partialFinal'||st.t==='placeholder')?st.row:null;
+      cell(5+row,cols+1,'carry '+(activeCarry?L.buf:carry.value),'mul-carry-note'+(activeRow!==row?' retired':''));
+    }
   });
   Object.entries(L.ent.sumCarry).forEach(([col,value])=>cell(7,Number(col)+2,value,'small'));
   if(st&&st.t==='sumCarry') cell(7,st.col+2,L.buf,'small slot act');
@@ -1367,6 +1406,15 @@ function renderLongMul(){
     $('hintBtn').style.display='none';
   }
 }
+function commitLongMultiplicationStep(L){
+  const st=L.steps[L.si]; if(!st) return null;
+  if(st.t==='partial'||st.t==='placeholder') L.ent.partials[st.row][st.col]=st.want;
+  else if(st.t==='partialFinal') st.cols.forEach((col,i)=>L.ent.partials[st.row][col]=st.want[i]);
+  else if(st.t==='partialCarry') L.ent.partialCarries[st.row]={value:st.want,anchorCol:st.anchorCol};
+  else if(st.t==='sum') L.ent.sum[st.col]=st.want;
+  else if(st.t==='sumCarry') L.ent.sumCarry[st.col]=st.want;
+  L.buf=''; L.si++; return st;
+}
 function pressLongMul(k){
   const L=S.longMul,st=L.steps[L.si]; if(!st) return;
   if(k==='del'){ L.buf=L.buf.slice(0,-1); renderLongMul(); return; }
@@ -1375,11 +1423,7 @@ function pressLongMul(k){
   if(L.buf.length<st.want.length){ renderLongMul(); return; }
   if(L.buf===st.want){
     sStep(); L.tries=0;
-    if(st.t==='partial'||st.t==='placeholder') L.ent.partials[st.row][st.col]=st.want;
-    else if(st.t==='partialCarry') L.ent.partialCarries[st.row][st.col]=st.want;
-    else if(st.t==='sum') L.ent.sum[st.col]=st.want;
-    else if(st.t==='sumCarry') L.ent.sumCarry[st.col]=st.want;
-    L.buf=''; L.si++;
+    commitLongMultiplicationStep(L);
     if(L.si>=L.steps.length){ renderLongMul(); finishLongMul(); return; }
     renderLongMul(); return;
   }
