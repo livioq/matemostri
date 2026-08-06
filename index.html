@@ -8,8 +8,8 @@
 <title>Matemostri</title>
 <style>
 :root{
-  --ink:#1B3A8C; --ink-soft:#5C7CC4; --pen:#D6303A; --graphite:#4A4E58;
-  --paper:#FCFBF6; --grid:#D7E5F0; --gold:#F2B93B; --grass:#2E9E5B;
+  --ink:#50319A; --ink-soft:#8069B5; --pen:#D94B92; --graphite:#4A4357;
+  --paper:#FFF9FE; --grid:#E9DDF3; --gold:#F2B93B; --grass:#2E9E7A;
   --cell:clamp(26px, 10vw, 40px);
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -17,7 +17,7 @@ html,body{margin:0;height:100%}
 body{
   font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--graphite);
   background-color:var(--paper);
-  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-image:radial-gradient(circle at 12% 8%,rgba(255,203,236,.55),transparent 24%),radial-gradient(circle at 88% 18%,rgba(199,190,255,.55),transparent 28%),linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
   background-size:22px 22px;overscroll-behavior:none;
 }
 #app{max-width:470px;margin:0 auto;min-height:100%;padding:14px 14px 26px 22px;border-left:2px solid rgba(214,48,58,.35);position:relative}
@@ -29,7 +29,7 @@ h1,h2{font-weight:800;letter-spacing:-.02em;color:var(--ink);margin:0}
 @keyframes fade{from{opacity:0}to{opacity:1}}
 .card{background:#fff;border:2px solid var(--ink);border-radius:16px;padding:14px;margin:12px 0;box-shadow:3px 3px 0 rgba(27,58,140,.16)}
 button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
-.btn{display:block;width:100%;padding:14px;border-radius:14px;background:var(--ink);color:#fff;font-weight:800;font-size:17px;box-shadow:0 4px 0 #12275e;transition:transform .06s,box-shadow .06s}
+.btn{display:block;width:100%;padding:14px;border-radius:14px;background:linear-gradient(135deg,#6642B5,#D34A9C);color:#fff;font-weight:800;font-size:17px;box-shadow:0 4px 0 #38206f;transition:transform .06s,box-shadow .06s}
 .btn:active{transform:translateY(3px);box-shadow:0 1px 0 #12275e}
 .btn.ghost{background:#fff;color:var(--ink);border:2px solid var(--ink);box-shadow:0 4px 0 rgba(27,58,140,.25)}
 .btn.small{padding:10px;font-size:15px}
@@ -43,7 +43,7 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
 .mini-pet{width:46px;height:46px;flex:0 0 46px}
 .agebtn{flex:1;min-width:42px;padding:10px 0;border:2px solid var(--ink);border-radius:12px;background:#fff;color:var(--ink);font-weight:800;font-size:16px}
 .agebtn.sel{background:var(--ink);color:#fff}
-/* pet + xp */
+/* magical companion */
 .pet-stage{display:flex;justify-content:center;padding:6px 0 2px}
 .pet-stage svg{width:min(48vw,175px);height:auto}
 .bob{animation:bob 3.2s ease-in-out infinite}
@@ -57,6 +57,11 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
 .lvline{display:flex;justify-content:space-between;align-items:baseline}
 .lvline b{font-size:26px;color:var(--ink)}
 .reward-line{font-size:13px;font-weight:700;color:var(--ink-soft);text-align:center;margin-top:4px}
+.magic-status{text-align:center;padding:9px 8px 3px;color:var(--ink);font-size:18px;font-weight:900;line-height:1.25}
+.magic-whisper{text-align:center;color:var(--ink-soft);font-size:13px;font-weight:750;line-height:1.35;margin-top:5px}
+.collection-shelf{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-top:12px}
+.collectible{background:linear-gradient(145deg,#fff,#fff3c9);border:1.5px solid rgba(122,82,173,.25);border-radius:999px;padding:5px 9px;font-size:12px;font-weight:850;color:#664391;box-shadow:0 2px 6px rgba(80,49,154,.1)}
+.wardrobe{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-top:8px}.wardrobe .accessory-chip{font-size:11px;padding:5px 8px}
 .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center;margin-top:8px}
 .stats div{background:#fff;border:2px solid var(--grid);border-radius:12px;padding:8px 4px}
 .stats b{display:block;font-size:20px;color:var(--ink)}
@@ -191,7 +196,11 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
 .accessory-list{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px}.accessory-chip{font-size:10px;font-weight:800;background:#fff4c9;color:#785800;border-radius:999px;padding:3px 7px}
 .journey-stage .badge{display:inline-block;margin:5px 5px 0 0;padding:3px 7px;border-radius:999px;background:#e6e9ff;color:#493aa1;font-size:10px;font-weight:900}
 .evolution-burst{animation:evolve 1s cubic-bezier(.2,.9,.3,1)}
+.egg-wiggle{animation:eggWiggle .75s ease-in-out 2}.egg-wiggle>img{filter:drop-shadow(0 0 18px rgba(255,193,72,.7))}
 @keyframes evolve{0%{opacity:0;transform:scale(.55) rotate(-8deg)}65%{opacity:1;transform:scale(1.08) rotate(2deg)}100%{transform:scale(1) rotate(0)}}
+@keyframes eggWiggle{0%,100%{transform:rotate(0) scale(1)}25%{transform:rotate(-4deg) scale(1.03)}75%{transform:rotate(4deg) scale(1.03)}}
+
+.dev-grid{display:grid;gap:9px}.dev-grid select{width:100%;padding:11px;border:2px solid var(--ink);border-radius:12px;background:#fff;color:var(--ink);font:inherit;font-weight:800}.dev-note{text-align:center;color:var(--ink-soft);font-size:12px;font-weight:700}
 
 
 .pick.locked{
@@ -247,11 +256,15 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
 <div id="app">
 
   <section id="s-story" class="screen">
-    <div class="eyebrow">Momo's story</div>
+    <div class="eyebrow" id="storyEyebrow">A magical friend's story</div>
     <h1 style="font-size:30px;margin:3px 0 10px">A magical maths friend</h1>
     <div class="story-card">
       <img id="storyImg" src="assets/story/find-egg.png" alt="A child discovers a glowing magical egg" onerror="this.style.display='none'">
       <div class="story-copy"><h2 id="storyTitle">A magical egg!</h2><p id="storyText"></p></div>
+      <div id="friendNameBox" style="padding:0 8px 10px">
+        <label for="friendName" style="display:block;text-align:center;font-weight:850;color:var(--ink);margin-bottom:7px">What would you like to call your new friend?</label>
+        <input type="text" id="friendName" value="Momo" maxlength="12" autocomplete="off" aria-label="Your magical friend's name">
+      </div>
     </div>
     <div class="story-dots" id="storyDots" aria-hidden="true"></div>
     <button class="btn" id="storyNext">Next</button>
@@ -277,24 +290,21 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
 
   <section id="s-home" class="screen">
     <div class="row" style="justify-content:space-between">
-      <div class="eyebrow" id="homeWho">-</div>
+      <button class="eyebrow" id="homeWho" aria-label="player name">-</button>
       <button class="link" id="switchPlayer">change</button>
     </div>
-    <div class="card">
+    <div class="card" id="companionCard">
       <div class="pet-stage" id="petBox"></div>
-      <div class="lvline"><span class="eyebrow">level</span><b class="mono" id="lvNum">1</b></div>
-      <div class="quadretti" id="xpBar"></div>
-      <div class="row" style="justify-content:space-between">
-        <span class="mono" style="font-size:13px;font-weight:700" id="xpText">0/0 XP</span>
-        <span style="font-size:13px;font-weight:700;color:var(--ink-soft)" id="petName">Egg</span>
-      </div>
-      <div class="reward-line" id="nextReward"></div>
+      <div class="magic-status" id="journeyMessage">A magical friendship has begun.</div>
+      <div class="magic-whisper" id="nextReward"></div>
+      <div class="collection-shelf" id="collectionBox"></div>
+      <div class="wardrobe" id="wardrobeBox"></div>
     </div>
     <div class="stats" id="statBox"></div>
     <div style="height:12px"></div>
-    <button class="btn" id="playBtn">Practise</button>
+    <button class="btn" id="playBtn">Continue the adventure</button>
     <div style="height:10px"></div>
-    <button class="btn ghost" id="journeyBtn">Momo's growth</button>
+    <button class="btn ghost" id="journeyBtn">The magical journey</button>
     <div style="height:10px"></div>
     <button class="btn ghost" id="setBtn">Settings</button>
   </section>
@@ -302,18 +312,18 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
   <section id="s-journey" class="screen">
     <div class="row" style="justify-content:space-between">
       <button class="link" id="journeyBack">back</button>
-      <span class="eyebrow">levels 1–20</span>
+      <span class="eyebrow">13 enchanted lessons</span>
     </div>
-    <div class="journey-hero"><h1 style="font-size:25px">Momo's maths journey</h1><p>Keep practising to reveal each magical stage.</p></div>
+    <div class="journey-hero"><h1 style="font-size:25px" id="journeyTitle">A magical maths journey</h1><p>Each lesson lights the path and helps your friend grow.</p></div>
     <div class="journey" id="journeyList"></div>
   </section>
 
   <section id="s-menu" class="screen">
     <div class="row" style="justify-content:space-between">
       <button class="link" id="menuBack">back</button>
-      <span class="eyebrow" id="menuXp"></span>
+      <span class="eyebrow" id="menuProgress"></span>
     </div>
-    <div class="journey-hero"><h1 style="font-size:24px">Your magic maths journey</h1><p>Follow one clear path. Score 8/10 to unlock the next challenge.</p></div>
+    <div class="journey-hero"><h1 style="font-size:24px">Choose a glowing path</h1><p>Complete each enchanted lesson to help your friend grow.</p></div>
     <div class="journey" id="pickList"></div>
   </section>
 
@@ -341,14 +351,14 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
   </section>
 
   <section id="s-end" class="screen">
-    <div class="eyebrow">session finished</div>
+    <div class="eyebrow">the magic settles</div>
     <h1 style="font-size:30px;margin:4px 0" id="endTitle">Well done!</h1>
     <div class="card">
       <div class="pet-stage" id="endPet"></div>
       <div class="stats" id="endStats"></div>
       <div class="reward-line" id="endReward" style="margin-top:12px"></div>
     </div>
-    <button class="btn" id="againBtn">Practise again</button>
+    <button class="btn" id="againBtn">Choose another lesson</button>
     <div style="height:10px"></div>
     <button class="btn ghost" id="endHome">Back to the den</button>
   </section>
@@ -363,20 +373,20 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
       <div class="row wrap" id="setAge" style="margin:6px 0 4px"></div>
     </div>
     <div class="card">
-      <div class="eyebrow" style="margin-bottom:4px">journey progress</div>
+      <div class="eyebrow" style="margin-bottom:4px">glowing path</div>
       <div id="opList"></div>
     </div>
     <div class="card">
       <div class="opt"><span class="lbl">Sound</span><div class="sw" id="swSound"></div></div>
     </div>
-    <button class="btn ghost small" id="replayStory">Replay Momo's story</button>
+    <button class="btn ghost small" id="replayStory">Replay the opening story</button>
     <div style="height:8px"></div>
     <button class="link" id="delPlayer">delete this player</button>
   </section>
 
   <div class="levelup" id="lvUp">
-    <div class="eyebrow" style="color:#9fb8f0">level up</div>
-    <h2 id="luTitle">Level 2</h2>
+    <div class="eyebrow" style="color:#d9ccff">a magical moment</div>
+    <h2 id="luTitle">Your friend has grown!</h2>
     <div id="luPet"></div>
     <div id="luMsg" style="font-weight:700;max-width:280px"></div>
     <div style="height:18px"></div>
@@ -388,11 +398,26 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
       <div class="unlock-icon">✨💜✨</div>
       <div class="eyebrow" style="display:inline-block;background:#7b4bc4;color:#fff;border-radius:999px;padding:6px 12px">New magic unlocked</div>
       <div class="pet-stage" id="unlockPet"></div>
-      <h2 id="unlockTitle">Complex Addition</h2>
-      <p id="unlockText">You can now earn XP faster with harder questions.</p>
-      <button class="btn" id="unlockOk">Try the new challenge</button>
+      <h2 id="unlockTitle">A new path is glowing!</h2>
+      <p id="unlockText">A new maths adventure is ready.</p>
+      <button class="btn" id="unlockOk">Follow the glowing path</button>
     </div>
   </div>
+
+  <section id="s-dev" class="screen">
+    <div class="row" style="justify-content:space-between"><span class="eyebrow">hidden developer magic</span><button class="link" id="devBack">close</button></div>
+    <div class="journey-hero"><h1 style="font-size:24px">Developer spellbook</h1><p>Testing controls for this player only.</p></div>
+    <div class="card dev-grid">
+      <label class="eyebrow" for="devLesson">Jump to a maths level</label><select id="devLesson"></select><button class="btn small" id="devJump">Jump there</button>
+      <button class="btn small ghost" id="devUnlockLessons">Unlock all maths levels</button>
+      <button class="btn small ghost" id="devUnlockCollectibles">Unlock all collectibles</button>
+      <label class="eyebrow" for="devEvolution">Trigger an evolution</label><select id="devEvolution"></select><button class="btn small ghost" id="devEvolve">Transform</button>
+      <button class="btn small ghost" id="devStory">Replay story</button>
+      <button class="btn small ghost" id="devRename">Rename magical friend</button>
+      <button class="link" id="devReset">reset this player's progress</button>
+    </div>
+    <p class="dev-note">Open this spellbook by tapping the player name seven times.</p>
+  </section>
 
 </div>
 <script>
@@ -428,30 +453,52 @@ const GROUPS=[
   {id:'div',sign:'\u00F7',name:'Division',  easy:{id:'div1',xp:40}, hard:{id:'div2',xp:70}}
 ];
 const G=id=>GROUPS.find(g=>g.id===id);
-const VARIANT_LABELS={add1:'Simple Addition',add2:'Complex Addition',sub1:'Simple Subtraction',sub2:'Complex Subtraction',mul1:'Simple Multiplication',mul2:'Complex Multiplication',div1:'Simple Division',div2:'Complex Division'};
-const SIMPLE_TO_COMPLEX={add1:'add2',sub1:'sub2',mul1:'mul2',div1:'div2'};
-const COMPLEX_TO_GROUP={add2:'add',sub2:'sub',mul2:'mul',div2:'div'};
 const MATH_STAGES=[
-  {id:'add_simple',gid:'add',vid:'add1',label:'Simple Addition',xp:5,artLevel:1},
-  {id:'add_complex',gid:'add',vid:'add2',label:'Complex Addition',xp:14,artLevel:2,complex:true},
-  {id:'sub_simple',gid:'sub',vid:'sub1',label:'Simple Subtraction',xp:8,artLevel:3},
-  {id:'sub_complex',gid:'sub',vid:'sub2',label:'Complex Subtraction',xp:20,artLevel:5,complex:true},
-  {id:'mul_simple',gid:'mul',vid:'mul1',label:'Simple Multiplication',xp:20,artLevel:7},
-  {id:'mul_complex',gid:'mul',vid:'mul2',label:'Complex Multiplication',xp:34,artLevel:9,complex:true},
-  {id:'div_simple',gid:'div',vid:'div1',label:'Simple Division',xp:40,artLevel:13},
-  {id:'div_complex',gid:'div',vid:'div2',label:'Complex Division',xp:70,artLevel:19,complex:true}
+  {id:'add_1digit',gid:'add',label:'One-digit addition',mode:'mental',magic:'Firefly Meadow'},
+  {id:'add_2digit',gid:'add',label:'Two-digit addition',mode:'mental',magic:'Moonbeam Bridge'},
+  {id:'add_3column',gid:'add',label:'Three-digit column addition',mode:'column',digits:3,magic:'Carrying Clouds'},
+  {id:'add_4column',gid:'add',label:'Four-digit column addition',mode:'column',digits:4,magic:'Starlight Tower'},
+  {id:'sub_1digit',gid:'sub',label:'One-digit subtraction',mode:'mental',magic:'Whispering Woods'},
+  {id:'sub_2digit',gid:'sub',label:'Two-digit subtraction',mode:'mental',magic:'Silver Stream'},
+  {id:'sub_3column',gid:'sub',label:'Three-digit column subtraction',mode:'column',digits:3,magic:'Borrowing Caves'},
+  {id:'sub_4column',gid:'sub',label:'Four-digit column subtraction',mode:'column',digits:4,magic:'Crystal Mountain'},
+  {id:'mul_1x1',gid:'mul',label:'Single digit × single digit',mode:'mental',magic:'Mushroom Grove'},
+  {id:'mul_1x2',gid:'mul',label:'Single digit × two digits',mode:'column',digits:2,magic:'Featherwind Cliffs'},
+  {id:'mul_2x2',gid:'mul',label:'Two digits × two digits',mode:'column',digits:2,long:true,magic:'Star Cape Skies'},
+  {id:'div_simple',gid:'div',label:'Simple division',mode:'mental',magic:'Shellsong Shore'},
+  {id:'div_long',gid:'div',label:'Long division',mode:'division',magic:'Guardian Castle'}
 ];
-const STAGE_BY_VARIANT=vid=>MATH_STAGES.find(s=>s.vid===vid);
-const PET_STAGES=Array.from({length:20},(_,i)=>i+1);
+const STAGE_BY_ID=id=>MATH_STAGES.find(s=>s.id===id);
 const PET_NAMES=['Heartlight Egg','Hatchling Momo','Fluffy Momo','Twinkle Momo','Trail Momo','Brave Momo','Scout Momo','Wonder Momo','Hover Momo','Cloud Momo','Sky Momo','Starfinder Momo','Companion Momo','Kindheart Momo','Scholar Momo','Magic Momo','Starlight Momo','Royal Momo','Guardian Momo','Guardian of Maths'];
-const EVOLUTION_LEVELS=[1,2,3,5,7,9,11,13,15,17,19,20];
-const EVOLUTION_MESSAGES={2:'Momo hatched!',3:'Momo grew fluffy ears!',5:'Momo grew bright pink cheeks!',7:'Momo grew tiny wings!',9:'Momo found a magic backpack!',11:'Momo learned to hover!',13:'Momo discovered glowing magic marks!',17:'Momo\'s wings grew!',19:'Momo began the Guardian transformation!',20:'Momo became a Guardian of Maths!'};
+const EVOLUTIONS=[
+  {completed:0,art:1,title:'Magical Egg',message:'A warm golden heart glows inside the egg.'},
+  {completed:1,art:2,title:'Cracked Egg',message:'The egg cracked open much further!'},
+  {completed:2,art:3,title:'Hatched Friend',message:'{name} hatched!'},
+  {completed:4,art:4,title:'Growing Friend',message:'{name} grew magnificent fluffy ears!'},
+  {completed:6,art:5,title:'Winged Friend',message:'{name} learned to flutter on tiny wings!'},
+  {completed:8,art:9,title:'Explorer',message:'{name} became a brave magical explorer!'},
+  {completed:11,art:18,title:'Apprentice Guardian',message:'{name} began Guardian training!'},
+  {completed:13,art:20,title:'Guardian of Maths',message:'{name} became a Guardian of Maths!'}
+];
+const EVOLUTION_LEVELS=EVOLUTIONS.map(e=>e.art);
 const ACC=[
   {lvl:8,id:'scarf',name:'scarf'}, {lvl:9,id:'backpack',name:'backpack'},
   {lvl:10,id:'goggles',name:'goggles'}, {lvl:11,id:'pencilWand',name:'pencil wand'},
   {lvl:12,id:'map',name:'map'}, {lvl:14,id:'flowerCrown',name:'flower crown'},
   {lvl:15,id:'headphones',name:'headphones'}, {lvl:15,id:'book',name:'book'},
   {lvl:16,id:'starCape',name:'star cape'}, {lvl:20,id:'magicStaff',name:'magic staff'}
+];
+const COLLECTIBLES=[
+  {id:'stars',emoji:'⭐',name:'Magic Stars'},{id:'flowers',emoji:'🌸',name:'Flowers'},
+  {id:'berries',emoji:'🍓',name:'Magic Berries'},{id:'feathers',emoji:'🪶',name:'Feathers'},
+  {id:'mushrooms',emoji:'🍄',name:'Mushrooms'},{id:'crystals',emoji:'💎',name:'Crystals'},
+  {id:'leaves',emoji:'🍀',name:'Lucky Leaves'},{id:'shells',emoji:'🐚',name:'Forest Shells'}
+];
+const COSMETIC_REWARDS=[
+  {total:3,id:'flowerCrown',name:'Flower Crown',emoji:'🌸'},{total:6,id:'scarf',name:'Scarf',emoji:'🧣'},
+  {total:10,id:'backpack',name:'Backpack',emoji:'🎒'},{total:15,id:'starCape',name:'Star Cape',emoji:'🌟'},
+  {total:22,id:'magicPencil',name:'Magic Pencil',emoji:'✏️'},{total:30,id:'crystalCrown',name:'Crystal Crown',emoji:'💎'},
+  {total:40,id:'guardianStaff',name:'Guardian Staff',emoji:'🪄'}
 ];
 const STAGE_GROUPS=[{from:1,to:2,name:'Egg & hatchling'},{from:3,to:6,name:'Toddler'},{from:7,to:12,name:'Explorer'},{from:13,to:18,name:'Companion'},{from:19,to:20,name:'Guardian'}];
 const MONSTER_PALETTES=[
@@ -470,12 +517,16 @@ const MONSTER_STAGES=MONSTER_SLUGS.map((slug,i)=>({
 const MONSTER_EXPRESSIONS={idle:'happy',beforeQuestion:'curious',correct:'excited',streak:'proud',hint:'thinking',wrong:'surprised',inactive:'sleepy',levelUp:'love'};
 const PRAISE=['Correct!','Nice one.',"Yes, that's it.",'Spot on.','Exactly.','Well worked out.'];
 
-const needXP = lvl => 60 + 30*lvl + 6*lvl*lvl;
 const stageOf = lvl => Math.max(1,Math.min(20,Math.floor(Number(lvl)||1)));
 const artLevelOf = lvl => { let art=1; EVOLUTION_LEVELS.forEach(L=>{ if(stageOf(lvl)>=L) art=L; }); return art; };
 const stageGroup = lvl => STAGE_GROUPS.find(g=>stageOf(lvl)>=g.from&&stageOf(lvl)<=g.to);
 const accsOf  = lvl => { const o={}; ACC.forEach(a=>{ if(stageOf(lvl)>=a.lvl) o[a.id]=true; }); return o; };
 const monsterStage = lvl => MONSTER_STAGES[stageOf(lvl)-1];
+const completedCount=p=>MATH_STAGES.filter(s=>p.stageProgress&&p.stageProgress.completed&&p.stageProgress.completed[s.id]).length;
+function evolutionForCount(count){ let found=EVOLUTIONS[0]; EVOLUTIONS.forEach(e=>{ if(count>=e.completed) found=e; }); return found; }
+const artForCount=count=>evolutionForCount(count).art;
+const petName=()=>P&&P.momoName?P.momoName:'Momo';
+const collectibleTotal=p=>COLLECTIBLES.reduce((n,c)=>n+Number((p.collectibles&&p.collectibles[c.id])||0),0);
 const bandOf  = age => age<=7?0 : age<=9?1 : age<=10?2 : 3;
 function tierFor(vid){ const b=bandOf(P.age||9), e=(P.ease&&P.ease[vid])||0; return Math.max(0,Math.min(3,b+Math.round(e))); }
 function ease(vid,d){ if(!P.ease) P.ease={}; P.ease[vid]=Math.max(-1,Math.min(1,((P.ease[vid]||0)+d))); }
@@ -490,11 +541,16 @@ function blankStageProgress(){
   MATH_STAGES.forEach((s,i)=>{ available[s.id]=i===0; completed[s.id]=false; });
   return {available,completed};
 }
+function progressFromCount(count){
+  const progress=blankStageProgress(),safe=Math.max(0,Math.min(MATH_STAGES.length,Number(count)||0));
+  MATH_STAGES.forEach((s,i)=>{ progress.completed[s.id]=i<safe; progress.available[s.id]=i<=safe; });
+  return progress;
+}
 function normalizeStageProgress(progress){
   const clean=blankStageProgress();
   if(progress&&progress.available) MATH_STAGES.forEach(s=>clean.available[s.id]=!!progress.available[s.id]);
   if(progress&&progress.completed) MATH_STAGES.forEach(s=>clean.completed[s.id]=!!progress.completed[s.id]);
-  clean.available.add_simple=true;
+  clean.available[MATH_STAGES[0].id]=true;
   let furthest=-1;
   MATH_STAGES.forEach((s,i)=>{ if(clean.completed[s.id]) furthest=Math.max(furthest,i); });
   for(let i=0;i<=furthest;i++){ clean.completed[MATH_STAGES[i].id]=true; clean.available[MATH_STAGES[i].id]=true; }
@@ -502,11 +558,18 @@ function normalizeStageProgress(progress){
   MATH_STAGES.forEach((s,i)=>{ if(i>furthest+1&&!clean.completed[s.id]) clean.available[s.id]=false; });
   return clean;
 }
-function migrateOldUnlocks(p){
-  const progress=blankStageProgress(),old=p.unlocked||{};
-  const furthest=old.div2?6:old.mul2?4:old.sub2?2:old.add2?0:-1;
-  for(let i=0;i<=furthest;i++) progress.completed[MATH_STAGES[i].id]=true;
-  return normalizeStageProgress(progress);
+function legacyCompletedCount(p){
+  const oldIds=['add_simple','add_complex','sub_simple','sub_complex','mul_simple','mul_complex','div_simple','div_complex'];
+  const mapped=[1,4,5,8,9,11,12,13];
+  let best=0;
+  if(p.stageProgress&&p.stageProgress.completed) oldIds.forEach((id,i)=>{ if(p.stageProgress.completed[id]) best=Math.max(best,mapped[i]); });
+  const old=p.unlocked||{};
+  if(old.add2||old.add) best=Math.max(best,1);
+  if(old.sub2||old.sub) best=Math.max(best,5);
+  if(old.mul2||old.mul) best=Math.max(best,9);
+  if(old.div2||old.div) best=Math.max(best,12);
+  if(Number(p.level)>1) best=Math.max(best,Math.floor((Math.min(20,Number(p.level))-1)/19*MATH_STAGES.length));
+  return best;
 }
 function stageStatus(p,id){ return p.stageProgress.completed[id]?'completed':p.stageProgress.available[id]?'available':'locked'; }
 function completeMathStage(p,id){
@@ -522,27 +585,45 @@ function newPlayer(name,age){
   return {id:'p'+Date.now(),name:name,age:age,level:1,xp:0,total:0,ease:{},right:0,best:0,
           groups:{add:true,sub:true,mul:true,div:!young},
           unlocked:{add2:false,sub2:false,mul2:false,div2:false},
-          stageProgress:blankStageProgress(),monsterStage:1,accessories:[],storySeen:false};
+          stageProgress:blankStageProgress(),monsterStage:1,momoName:'Momo',collectibles:{},accessories:[],storySeen:false,migrationVersion:3};
 }
 function migrate(p){
+  const wasLegacy=p.migrationVersion!==3;
   if(!p.groups) p.groups={add:true,sub:true,mul:true,div:(p.age||9)>=8};
   if(!p.ease) p.ease={};
   if(!p.unlocked) p.unlocked={add2:false,sub2:false,mul2:false,div2:false};
   if(p.unlocked.add!==undefined){ p.unlocked.add2=!!p.unlocked.add; p.unlocked.sub2=!!p.unlocked.sub; p.unlocked.mul2=!!p.unlocked.mul; p.unlocked.div2=!!p.unlocked.div; }
   ['add2','sub2','mul2','div2'].forEach(k=>{ if(p.unlocked[k]===undefined) p.unlocked[k]=false; });
   if(p.age===undefined) p.age=9;
-  p.stageProgress=normalizeStageProgress(p.stageProgress||migrateOldUnlocks(p));
-  p.monsterStage=stageOf(p.monsterStage||p.level||1);
-  if(!Array.isArray(p.accessories)) p.accessories=ACC.filter(a=>a.lvl<=stageOf(p.level)).map(a=>a.id);
-  ACC.forEach(a=>{ if(a.lvl<=stageOf(p.level)&&!p.accessories.includes(a.id)) p.accessories.push(a.id); });
+  if(wasLegacy){
+    const legacyCount=legacyCompletedCount(p);
+    const hasNewProgress=p.stageProgress&&p.stageProgress.completed&&Object.prototype.hasOwnProperty.call(p.stageProgress.completed,'add_1digit');
+    p.stageProgress=hasNewProgress?normalizeStageProgress(p.stageProgress):progressFromCount(legacyCount);
+  }else p.stageProgress=normalizeStageProgress(p.stageProgress);
+  if(!p.momoName) p.momoName='Momo';
+  if(!p.collectibles||typeof p.collectibles!=='object') p.collectibles={};
+  COLLECTIBLES.forEach(c=>{ p.collectibles[c.id]=Math.max(0,Number(p.collectibles[c.id])||0); });
+  if(!Array.isArray(p.accessories)) p.accessories=[];
+  if(wasLegacy){
+    const aliases={pencilWand:'magicPencil',magicStaff:'guardianStaff'};
+    p.accessories=p.accessories.map(id=>aliases[id]||id);
+    const legacyLevel=Number(p.level)||1;
+    [[5,'flowerCrown'],[8,'scarf'],[9,'backpack'],[11,'magicPencil'],[16,'starCape'],[18,'crystalCrown'],[20,'guardianStaff']].forEach(([level,id])=>{ if(legacyLevel>=level&&!p.accessories.includes(id)) p.accessories.push(id); });
+  }
+  COSMETIC_REWARDS.forEach(a=>{ if(collectibleTotal(p)>=a.total&&!p.accessories.includes(a.id)) p.accessories.push(a.id); });
+  p.monsterStage=p.devMonsterOverride||artForCount(completedCount(p));
   if(p.storySeen===undefined) p.storySeen=true;
+  p.migrationVersion=3;
   return p;
 }
 
 /* ---------------- pet ---------------- */
 
-function petSVG(lvl,cls){
-  const st=stageOf(lvl), a=accsOf(lvl), p=[];
+function petSVG(lvl,cls,accessories){
+  const st=stageOf(lvl),unlocked=Array.isArray(accessories)?accessories:[],a={
+    scarf:unlocked.includes('scarf'),star:unlocked.includes('starCape'),
+    crown:unlocked.includes('flowerCrown')||unlocked.includes('crystalCrown')
+  },p=[];
   const palettes=[
     {body:'#FFF1A8',belly:'#FFF8D8',accent:'#F7B84B',ear:'#FFD9E7'},
     {body:'#FFDDEB',belly:'#FFF4F8',accent:'#FF7FA8',ear:'#FFEAF2'},
@@ -633,11 +714,12 @@ function petSVG(lvl,cls){
 
 function monsterMarkup(lvl,mood,cls,alt){
   const stage=monsterStage(lvl),state=MONSTER_EXPRESSIONS[mood]||mood||'happy';
-  const fallback='<span class="monster-fallback">'+petSVG(artLevelOf(lvl),cls||'')+'</span>';
+  const accessories=P&&Array.isArray(P.accessories)?P.accessories:[];
+  const fallback='<span class="monster-fallback">'+petSVG(artLevelOf(lvl),cls||'',accessories)+'</span>';
   if(!stage.assetReady) return '<span class="monster-asset mood-'+state+'" data-stage="'+stage.id+'">'+fallback+'</span>';
   return '<span class="monster-asset asset-image mood-'+state+(cls?' '+cls:'')+'" data-stage="'+stage.id+'">'+
     '<img src="'+stage.image+'" alt="'+esc(alt||'Momo')+'" onerror="this.hidden=true;this.parentElement.classList.remove(\'asset-image\',\'bob\',\'evolution-burst\');this.nextElementSibling.hidden=false">'+
-    '<span class="monster-fallback" hidden>'+petSVG(artLevelOf(lvl),cls||'')+'</span></span>';
+    '<span class="monster-fallback" hidden>'+petSVG(artLevelOf(lvl),cls||'',accessories)+'</span></span>';
 }
 
 
@@ -664,7 +746,7 @@ const sLvl =()=>{[523,659,784,1046].forEach((f,i)=>setTimeout(()=>beep(f,.16),i*
 const rnd=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
 function buildColumn(op,a,b){
   const A=String(a),B=String(b);
-  const wid=Math.max(A.length,B.length)+(op==='sub'?0:1);
+  const wid=op==='mul'?A.length+B.length:Math.max(A.length,B.length)+(op==='sub'?0:1);
   const ad=new Array(wid).fill(null), bd=new Array(wid).fill(null);
   for(let i=0;i<A.length;i++) ad[wid-A.length+i]=Number(A[i]);
   for(let i=0;i<B.length;i++) bd[wid-B.length+i]=Number(B[i]);
@@ -756,6 +838,42 @@ function genDivision(tr){
   }
   return {div:true,N:'144',d:12,steps:divSteps('144',12),quot:'12',rest:0};
 }
+function generateLessonQuestion(stage){
+  if(stage.id==='add_1digit'){
+    const a=rnd(0,9),b=rnd(0,9); return {kind:'n',txt:a+' + '+b,ans:a+b};
+  }
+  if(stage.id==='add_2digit'){
+    const a=rnd(10,79),b=rnd(10,79); return {kind:'n',txt:a+' + '+b,ans:a+b};
+  }
+  if(stage.id==='sub_1digit'){
+    const a=rnd(2,9),b=rnd(0,a); return {kind:'n',txt:a+' \u2212 '+b,ans:a-b};
+  }
+  if(stage.id==='sub_2digit'){
+    const a=rnd(20,99),b=rnd(10,a); return {kind:'n',txt:a+' \u2212 '+b,ans:a-b};
+  }
+  if(stage.id==='mul_1x1'){
+    const a=rnd(2,12),b=rnd(2,12); return {kind:'n',txt:a+' \u00D7 '+b,ans:a*b};
+  }
+  if(stage.id==='div_simple'){
+    const d=rnd(2,12),q=rnd(2,12); return {kind:'n',txt:(d*q)+' \u00F7 '+d,ans:q};
+  }
+  if(stage.mode==='division') return {kind:'div',made:genDivision(3)};
+  if(stage.gid==='add'){
+    const lo=stage.digits===4?1000:100,hi=stage.digits===4?8999:899;
+    for(let i=0;i<250;i++){ const a=rnd(lo,hi),b=rnd(lo,hi),M=buildColumn('add',a,b); if(M.steps.some(s=>s.t==='carry')&&colValid(M)) return {kind:'col',a,b,M}; }
+  }
+  if(stage.gid==='sub'){
+    const lo=stage.digits===4?1000:100,hi=stage.digits===4?9999:999;
+    for(let i=0;i<350;i++){ const a=rnd(lo,hi),b=rnd(lo,a-1),M=buildColumn('sub',a,b); if(M.steps.some(s=>s.t==='bl')&&colValid(M)) return {kind:'col',a,b,M}; }
+  }
+  if(stage.id==='mul_1x2'){
+    const a=rnd(12,99),b=rnd(2,9); return {kind:'col',a,b,M:buildColumn('mul',a,b)};
+  }
+  if(stage.id==='mul_2x2'){
+    const a=rnd(12,49),b=rnd(12,29); return {kind:'col',a,b,M:buildColumn('mul',a,b)};
+  }
+  return {kind:'n',txt:'1 + 1',ans:2};
+}
 function divSteps(Nstr,d){
   const out=[]; let cur=0,started=false;
   for(let i=0;i<Nstr.length;i++){
@@ -777,27 +895,32 @@ function show(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.r
 
 const STORY_SCENES=[
   {image:'assets/story/find-egg.png',alt:'A child discovers a glowing magical egg in the woods',title:'A magical egg!',text:'While walking through the woods, you find a mysterious egg glowing beneath the leaves.'},
-  {image:'assets/story/take-home.png',alt:'A child makes a warm, cosy nest for a magical egg',title:'A new friend',text:'You take the egg home, make it cosy, and decide to call it Momo.'},
-  {image:'assets/story/magic-maths.png',alt:'Momo glows beside a child solving a maths problem',title:'Magic maths',text:'Momo has magic inside, but to grow, Momo needs you to solve magical maths problems.'}
+  {image:'assets/story/take-home.png',alt:'A child makes a warm, cosy nest for a magical egg',title:'A new friend',text:'You take the egg home and make it warm and cosy. {name} gives a tiny, happy wiggle.'},
+  {image:'assets/story/magic-maths.png',alt:'A magical friend glows beside a child solving a maths problem',title:'Magic maths',text:'{name} has magic inside. Every maths lesson will help your new friend grow.'}
 ];
 let storyStep=0;
+function captureFriendName(){ if(!P) return; const value=$('friendName').value.trim(); P.momoName=value||'Momo'; $('friendName').value=P.momoName; }
 function renderStory(){
   const scene=STORY_SCENES[storyStep],img=$('storyImg');
   img.style.display='block'; img.src=scene.image; img.alt=scene.alt;
-  $('storyTitle').textContent=scene.title; $('storyText').textContent=scene.text;
+  $('storyEyebrow').textContent=storyStep===0?'A magical friend\'s story':petName()+"'s story";
+  $('storyTitle').textContent=scene.title; $('storyText').textContent=scene.text.replaceAll('{name}',petName());
+  $('friendNameBox').style.display=storyStep===0?'block':'none';
   $('storyNext').textContent=storyStep===STORY_SCENES.length-1?'Begin the adventure':'Next';
   $('storyDots').innerHTML=STORY_SCENES.map((_,i)=>'<i class="'+(i===storyStep?'on':'')+'"></i>').join('');
 }
-function openStory(){ storyStep=0; renderStory(); show('s-story'); }
-function finishStory(){ P.storySeen=true; save(); renderHome(); show('s-home'); }
+function openStory(){ storyStep=0; $('friendName').value=petName(); renderStory(); show('s-story'); }
+function finishStory(){ captureFriendName(); P.storySeen=true; save(); renderHome(); show('s-home'); }
 
 function renderGrowthJourney(){
-  const L=$('journeyList'); L.innerHTML='';
-  PET_STAGES.forEach(level=>{
-    const earned=level<=stageOf(P.monsterStage),current=level===stageOf(P.monsterStage),row=document.createElement('div');
-    row.className='journey-stage '+(earned?'completed':'locked')+(current?' current':'');
-    const art=earned?monsterMarkup(level,'idle','','Momo'):'<span class="silhouette" aria-hidden="true"></span>';
-    row.innerHTML='<span class="journey-art">'+art+'</span><span><span class="eyebrow">Level '+level+'</span><h3>'+(earned?esc(monsterStage(level).name):'Hidden form')+'</h3><p>'+(earned?stageGroup(level).name+' stage unlocked':'Reach level '+level+' to reveal this form')+'</p></span>';
+  const L=$('journeyList'),count=completedCount(P); L.innerHTML='';
+  $('journeyTitle').textContent=petName()+"'s enchanted journey";
+  MATH_STAGES.forEach((stage,i)=>{
+    const status=stageStatus(P,stage.id),done=status==='completed',current=status==='available',row=document.createElement('div');
+    row.className='journey-stage '+status+(current?' current':'');
+    const art=done?monsterMarkup(artForCount(i+1),'idle','',petName()):current?monsterMarkup(P.monsterStage,'curious','',petName()):'<span class="silhouette" aria-hidden="true"></span>';
+    const note=done?'The path is glowing':current?'Ready for your next adventure':'Complete the previous lesson to light this path';
+    row.innerHTML='<span class="journey-art">'+art+'</span><span><span class="eyebrow">Lesson '+(i+1)+' · '+stage.magic+'</span><h3>'+stage.label+'</h3><p>'+note+'</p></span>';
     L.appendChild(row);
   });
 }
@@ -805,50 +928,45 @@ function renderGrowthJourney(){
 function renderPlayers(){
   const L=$('playerList'); L.innerHTML='';
   DB.players.forEach(pl=>{
+    migrate(pl);
     const b=document.createElement('button');
     b.className='player-chip';
-    b.innerHTML='<span class="mini-pet">'+monsterMarkup(pl.level,'idle','', 'Momo')+'</span><span><span class="nm">'+esc(pl.name)+
-      '</span><br><span class="lv">level '+pl.level+' \u00B7 '+pl.total+' XP</span></span>';
+    b.innerHTML='<span class="mini-pet">'+monsterMarkup(pl.monsterStage,'idle','',pl.momoName)+'</span><span><span class="nm">'+esc(pl.name)+
+      '</span><br><span class="lv">'+esc(pl.momoName)+' · '+completedCount(pl)+' glowing lessons</span></span>';
     b.onclick=()=>{ DB.current=pl.id; P=migrate(pl); save(); renderHome(); show('s-home'); };
     L.appendChild(b);
   });
 }
 function renderHome(){
   $('homeWho').textContent=P.name;
-  $('petBox').innerHTML=monsterMarkup(P.level,'idle','bob','Momo');
-  $('lvNum').textContent=P.level;
-  $('petName').textContent=monsterStage(P.level).name;
-  const need=needXP(P.level), bar=$('xpBar'); bar.innerHTML='';
-  const filled=Math.round(20*P.xp/need);
-  for(let i=0;i<20;i++){ const s=document.createElement('i'); if(i<filled) s.className='f'; bar.appendChild(s); }
-  $('xpText').textContent=P.xp+'/'+need+' XP';
-  $('nextReward').textContent=nextRewardText(P.level);
+  const count=completedCount(P),evolution=evolutionForCount(count),nextEvolution=EVOLUTIONS.find(e=>e.completed>count);
+  P.monsterStage=P.devMonsterOverride||evolution.art;
+  $('petBox').innerHTML=monsterMarkup(P.monsterStage,'idle','bob',petName());
+  $('journeyMessage').textContent=count===0?petName()+"'s heart glows when you come near.":count===MATH_STAGES.length?petName()+' is a Guardian of Maths!':petName()+' has grown through '+count+' magical '+(count===1?'lesson':'lessons')+'.';
+  if(nextEvolution){ const left=nextEvolution.completed-count; $('nextReward').textContent=left===1?'One more lesson until '+nextEvolution.title+'!':left+' more lessons until '+nextEvolution.title+'.'; }
+  else $('nextReward').textContent='The whole enchanted path is glowing.';
+  $('collectionBox').innerHTML=COLLECTIBLES.filter(c=>P.collectibles[c.id]>0).map(c=>'<span class="collectible">'+c.emoji+' '+c.name+' ×'+P.collectibles[c.id]+'</span>').join('')||'<span class="magic-whisper">Replay a glowing lesson to discover magical treasures.</span>';
+  $('wardrobeBox').innerHTML=COSMETIC_REWARDS.filter(a=>P.accessories.includes(a.id)).map(a=>'<span class="accessory-chip">'+a.emoji+' '+a.name+'</span>').join('');
   $('statBox').innerHTML=
-    '<div><b class="mono">'+P.total+'</b><span>XP</span></div>'+
-    '<div><b class="mono">'+P.right+'</b><span>answers right</span></div>'+
+    '<div><b class="mono">'+count+'</b><span>path lights</span></div>'+
+    '<div><b class="mono">'+P.right+'</b><span>kind answers</span></div>'+
     '<div><b class="mono">'+P.best+'</b><span>best streak</span></div>';
+  $('playBtn').textContent=count===0?'Help the egg awaken':count===MATH_STAGES.length?'Revisit the enchanted lessons':'Continue '+petName()+"'s adventure";
+  $('journeyBtn').textContent=petName()+"'s magical journey";
 }
-function nextRewardText(lvl){
-  let best=null;
-  PET_STAGES.forEach(L=>{ if(L>lvl&&best===null) best=L; });
-  ACC.forEach(a=>{ if(a.lvl>lvl&&(best===null||a.lvl<best)) best=a.lvl; });
-  return best?('Next reward at level '+best):'Your monster is fully grown!';
-}
-
-/* practice menu: the whole point is that the XP rates are visible side by side */
 
 function renderMenu(){
-  const need=needXP(P.level),left=need-P.xp,L=$('pickList');
-  $('menuXp').textContent=left+' XP to level '+(P.level+1); L.innerHTML='';
+  const count=completedCount(P),L=$('pickList');
+  $('menuProgress').textContent=count+' of '+MATH_STAGES.length+' path lights'; L.innerHTML='';
   MATH_STAGES.forEach((stage,i)=>{
     const status=stageStatus(P,stage.id),locked=status==='locked',done=status==='completed';
     const prev=MATH_STAGES[i-1],b=document.createElement('button');
     b.className='journey-stage '+status; b.disabled=locked;
-    const art=done?monsterMarkup(stage.artLevel,'idle','', 'Momo'):'<span class="silhouette" aria-hidden="true"></span>';
-    const requirement=locked?'Complete '+prev.label+' with 8/10 to unlock':done?'Completed · replay any time':'Available now · '+stage.xp+' XP per correct answer';
-    b.innerHTML='<span class="journey-art">'+art+'</span><span><span class="eyebrow">Stage '+(i+1)+' of 8</span><h3>'+stage.label+'</h3><p>'+requirement+'</p>'+
-      (stage.complex&&!locked?'<span class="badge">FASTER XP</span>':'')+(done?'<span class="accessory-chip">✓ Completed</span>':'')+'</span>';
-    if(!locked) b.onclick=()=>startSession(stage.gid,stage.vid);
+    const art=done?monsterMarkup(artForCount(i+1),'idle','',petName()):locked?'<span class="silhouette" aria-hidden="true"></span>':monsterMarkup(P.monsterStage,'curious','',petName());
+    const requirement=locked?'Help '+petName()+' complete '+prev.label+' first':done?'Path glowing · replay to find a collectible':'Ready now · light the path with 8 correct answers';
+    b.innerHTML='<span class="journey-art">'+art+'</span><span><span class="eyebrow">Lesson '+(i+1)+' · '+stage.magic+'</span><h3>'+stage.label+'</h3><p>'+requirement+'</p>'+
+      (done?'<span class="accessory-chip">✨ Path glowing</span>':'')+'</span>';
+    if(!locked) b.onclick=()=>startSession(stage.id);
     L.appendChild(b);
   });
 }
@@ -867,7 +985,7 @@ function renderSettings(){
   const L=$('opList'); L.innerHTML='';
   MATH_STAGES.forEach(stage=>{
     const row=document.createElement('div'),status=stageStatus(P,stage.id); row.className='opt';
-    row.innerHTML='<span><span class="lbl">'+stage.label+'</span><br><span class="xp">'+stage.xp+' XP a question</span></span><span class="accessory-chip">'+(status==='completed'?'✓ completed':status)+'</span>';
+    row.innerHTML='<span><span class="lbl">'+stage.label+'</span><br><span class="xp">'+stage.magic+'</span></span><span class="accessory-chip">'+(status==='completed'?'✨ glowing':status)+'</span>';
     L.appendChild(row);
   });
   $('swSound').className='sw'+(DB.sound?' on':'');
@@ -880,49 +998,47 @@ let pendingUnlockStage=null;
 let sleepyTimer=null;
 function setPlayMood(mood){
   if(!$('playPet')||!P) return;
-  $('playPet').innerHTML=monsterMarkup(P.level,mood,'','');
-  clearTimeout(sleepyTimer); sleepyTimer=setTimeout(()=>{ if(S&&$('s-play').classList.contains('on')) $('playPet').innerHTML=monsterMarkup(P.level,'inactive','',''); },30000);
+  const crack=S&&S.stageId==='add_1digit'&&!S.wasCompleted&&S.mastered>=5,art=crack?1:P.monsterStage;
+  $('playPet').innerHTML=monsterMarkup(art,mood,crack&&S.crackMoment?'egg-wiggle':'',petName());
+  clearTimeout(sleepyTimer); sleepyTimer=setTimeout(()=>{ if(S&&$('s-play').classList.contains('on')) $('playPet').innerHTML=monsterMarkup(art,'inactive','',petName()); },30000);
 }
 
-function startSession(gid,vid){
-  const stage=STAGE_BY_VARIANT(vid);
+function startSession(stageId){
+  const stage=STAGE_BY_ID(stageId);
   if(!stage||stageStatus(P,stage.id)==='locked') return;
-  S={gid:gid,vid:vid,stageId:stage.id,i:0,xp:0,right:0,streak:0,q:null,input:'',col:null,div:null,locked:false,attempt:0,mode:'answer'};
+  S={gid:stage.gid,vid:stage.id,stageId:stage.id,stage:stage,wasCompleted:P.stageProgress.completed[stage.id],i:0,right:0,mastered:0,streak:0,best:0,q:null,input:'',col:null,div:null,locked:false,attempt:0,mode:'answer',crackMoment:false,reward:null};
   show('s-play'); nextQuestion();
 }
 function nextQuestion(){
   if(S.i>=SESSION){ endSession(); return; }
-  S.i++; S.input=''; S.locked=false; S.attempt=0; S.mode='answer'; $('fb').textContent='';
+  S.i++; S.input=''; S.locked=false; S.attempt=0; S.mode='answer'; S.crackMoment=false; $('fb').textContent='';
   setPlayMood('beforeQuestion');
   $('progress').textContent=S.i+'/'+SESSION;
-  const g=G(S.gid);
-  const trHard=tierFor(g.hard.id);
-  const hard=S.vid===g.hard.id;
+  const made=generateLessonQuestion(S.stage);
   $('colHint').style.display='none'; $('hintBtn').style.display='none';
-  if(!hard){
-    const tr=tierFor(g.easy.id), q=genEasy(g.id,tr);
-    S.q={vid:g.easy.id,xp:g.easy.xp,kind:'n',ans:q.ans};
+  if(made.kind==='n'){
+    S.q={vid:S.stage.id,xp:1,kind:'n',ans:made.ans};
     $('normalQ').style.display='block'; $('colQ').style.display='none';
-    $('qText').textContent=q.txt+' =';
+    $('qText').textContent=made.txt+' =';
     S.input=''; paintAns();
-    $('qTag').textContent=g.name+' \u00B7 '+g.easy.xp+' XP';
+    $('qTag').textContent=S.stage.magic+' · help '+petName()+' find the answer';
   }else{
-    const made=genHard(g.id,trHard);
-    if(made.div){
-      S.q={vid:'div2',xp:g.hard.xp,kind:'div'};
-      S.div={g:made,plan:divPlan(made),pi:0,buf:'',done:{},err:0,tries:0,hint:false};
+    if(made.kind==='div'){
+      S.q={vid:S.stage.id,xp:1,kind:'div'};
+      S.div={g:made.made,plan:divPlan(made.made),pi:0,buf:'',done:{},err:0,tries:0,hint:false};
       S.col=null;
       $('normalQ').style.display='none'; $('colQ').style.display='block';
       $('hintBtn').style.display='block'; $('hintBtn').textContent='need a hint?';
       renderDiv();
     }else{
-      S.q={vid:g.hard.id,xp:g.hard.xp,kind:'col'};
+      S.q={vid:S.stage.id,xp:1,kind:'col'};
       S.col=made.M; S.div=null;
+      S.colB=made.b;
       $('normalQ').style.display='none'; $('colQ').style.display='block';
-      if(g.id==='mul'){ $('hintBtn').style.display='block'; $('hintBtn').textContent='need a hint?'; }
+      if(S.stage.gid==='mul'){ $('hintBtn').style.display='block'; $('hintBtn').textContent='open a multiplication spell?'; }
       renderCol();
     }
-    $('qTag').textContent=g.name+' in columns \u00B7 '+g.hard.xp+' XP';
+    $('qTag').textContent=S.stage.magic+' · work the magic one step at a time';
   }
   buildPad();
 }
@@ -954,90 +1070,81 @@ function press(k){
 function checkNormal(){
   const ok=Number(S.input)===S.q.ans;
   if(S.mode==='copy'){
-    if(!ok){ $('fb').innerHTML='<span class="no">Momo is thinking with you. It\u2019s '+S.q.ans+'.</span>'; setPlayMood('wrong'); S.input=''; paintAns(); return; }
-    S.locked=true; softXP(Math.round(S.q.xp*0.35));
+    if(!ok){ $('fb').innerHTML='<span class="no">'+petName()+' is thinking with you. It\u2019s '+S.q.ans+'.</span>'; setPlayMood('wrong'); S.input=''; paintAns(); return; }
+    S.locked=true; softXP();
     $('fb').innerHTML='<span class="ok">There it is.</span>'; sGood(); save();
     setTimeout(nextQuestion,900); return;
   }
   if(ok){
     S.locked=true;
     if(S.attempt===0) ease(S.q.vid,0.2);
-    award(Math.round(S.q.xp*(S.attempt===0?1:0.7)));
-    $('fb').innerHTML='<span class="ok">'+(S.attempt===0?praise():'You fixed that one yourself.')+'</span>'+bonusStamp();
+    award(S.attempt===0);
+    $('fb').innerHTML='<span class="ok">'+(S.attempt===0?praise():'You fixed that one yourself.')+'</span>'+bonusStamp()+crackMessage();
     setPlayMood(S.streak>=3?'streak':'correct');
     sGood(); save(); setTimeout(nextQuestion,950); return;
   }
   if(S.attempt===0){
     S.attempt=1; S.input=''; paintAns();
-    $('fb').innerHTML='<span class="no">Nearly there. Momo believes in you!</span>';
+    $('fb').innerHTML='<span class="no">Nearly there. '+petName()+' believes in you!</span>';
     setPlayMood('wrong');
     shake(); sBad(); return;
   }
   S.streak=0; ease(S.q.vid,-0.6);
   S.mode='copy'; S.input=''; paintAns();
-  $('fb').innerHTML='<span class="no">Every try gives Momo more magic. It\u2019s '+S.q.ans+' \u00B7 type it in</span>';
+  $('fb').innerHTML='<span class="no">Every try gives '+petName()+' more magic. It\u2019s '+S.q.ans+' · type it in</span>';
   setPlayMood('wrong');
   sBad();
 }
 function shake(){ $('qcard').classList.add('shake'); setTimeout(()=>$('qcard').classList.remove('shake'),300); }
-function bonusMult(){ return S.streak>=6?1.5:S.streak>=3?1.2:1; }
-function bonusStamp(){ const m=bonusMult(); return m>1?' <span class="stamp">\u00D7'+m+'</span>':''; }
-function award(base){
+function bonusStamp(){ return S.streak>=3?' <span class="stamp">✨ streak magic</span>':''; }
+function crackMessage(){ return S.crackMoment?'<br><span class="stamp">The egg wiggles… a tiny crack appears!</span>':''; }
+function award(mastered){
   S.streak++; S.right++; P.right++;
+  if(mastered) S.mastered++;
   if(S.streak>P.best) P.best=S.streak;
-  const gained=Math.round(base*bonusMult());
-  S.xp+=gained; P.total+=gained; P.xp+=gained; levelCheck();
+  if(S.streak>S.best) S.best=S.streak;
+  P.total=(Number(P.total)||0)+1;
+  if(S.stageId==='add_1digit'&&!S.wasCompleted&&S.mastered===5) S.crackMoment=true;
 }
-function softXP(n){ S.right++; P.right++; S.xp+=n; P.total+=n; P.xp+=n; levelCheck(); }
-function levelCheck(){
-  const from=P.level; let up=false;
-  while(P.xp>=needXP(P.level)){ P.xp-=needXP(P.level); P.level++; up=true; }
-  if(up){
-    P.monsterStage=stageOf(P.level);
-    ACC.forEach(a=>{ if(a.lvl<=stageOf(P.level)&&!P.accessories.includes(a.id)) P.accessories.push(a.id); });
-    save(); setTimeout(()=>levelUp(from),700);
-  }
-}
-function levelUp(fromLevel){
-  sLvl();
-  $('luTitle').textContent='Level '+P.level;
-  const evolved=artLevelOf(fromLevel)!==artLevelOf(P.level);
-  $('luPet').innerHTML=monsterMarkup(P.level,'levelUp',evolved?'evolution-burst':'bob','Momo celebrating');
-  const gotAcc=ACC.filter(a=>a.lvl>fromLevel&&a.lvl<=P.level).pop();
-  $('luMsg').textContent=evolved?(EVOLUTION_MESSAGES[artLevelOf(P.level)]||'Momo discovered a new form!'):gotAcc?('Momo found a magic '+gotAcc.name+'!'):'Momo is glowing with new maths magic!';
-  $('lvUp').classList.add('on');
+function softXP(){ S.right++; P.right++; S.streak=0; P.total=(Number(P.total)||0)+1; }
+function awardCollectible(){
+  const item=COLLECTIBLES[Math.floor(Math.random()*COLLECTIBLES.length)];
+  P.collectibles[item.id]=(P.collectibles[item.id]||0)+1;
+  const before=P.accessories.slice();
+  COSMETIC_REWARDS.forEach(a=>{ if(collectibleTotal(P)>=a.total&&!P.accessories.includes(a.id)) P.accessories.push(a.id); });
+  return {item,newCosmetics:COSMETIC_REWARDS.filter(a=>P.accessories.includes(a.id)&&!before.includes(a.id))};
 }
 
 function maybeCompleteStage(){
-  if(!S.stageId||S.right<8||P.stageProgress.completed[S.stageId]) return false;
+  if(!S.stageId||S.mastered<8) return false;
+  if(S.wasCompleted){ S.reward=awardCollectible(); save(); return 'collectible'; }
+  const beforeArt=P.monsterStage;
   const next=completeMathStage(P,S.stageId);
-  if(next&&next.complex) P.unlocked[next.vid]=true;
+  const count=completedCount(P),afterEvolution=evolutionForCount(count); P.monsterStage=P.devMonsterOverride||afterEvolution.art;
   save();
-  if(!next) return true;
   pendingUnlockStage=next;
-  $('unlockPet').innerHTML=monsterMarkup(P.level,'levelUp','evolution-burst','Momo celebrating');
-  if(next.complex){
-    $('unlockTitle').textContent=next.label+' unlocked!';
-    $('unlockText').textContent='Momo has learned a new kind of magic. These problems are harder, but every correct answer earns XP much faster.';
-  }else{
-    $('unlockTitle').textContent=G(next.gid).name+' unlocked!';
-    $('unlockText').textContent='Momo\'s magic is growing. You can now begin '+next.label+'.';
-  }
+  const evolved=beforeArt!==P.monsterStage,message=afterEvolution.message.replaceAll('{name}',petName());
+  $('unlockPet').innerHTML=monsterMarkup(P.monsterStage,'levelUp','evolution-burst',petName()+' celebrating');
+  $('unlockTitle').textContent=evolved?message:S.stage.magic+' is glowing!';
+  $('unlockText').textContent=next?petName()+' has grown, and '+next.magic+' has appeared on the path.':'Every enchanted lesson is glowing. '+petName()+' is now a true Guardian of Maths!';
   $('unlockBox').classList.add('on');
-  return true;
+  sLvl(); return 'completed';
 }
 
 function endSession(){
-  save();
-  $('endTitle').textContent=S.right>=8?'Great session!':'Well done!';
-  $('endPet').innerHTML=monsterMarkup(P.level,S.right>=8?'streak':'idle','bob','Momo');
+  const result=maybeCompleteStage(); save();
+  $('endTitle').textContent=S.mastered>=8?(S.wasCompleted?'Treasure discovered!':'The path is glowing!'):'The magic needs another try';
+  $('endPet').innerHTML=monsterMarkup(P.monsterStage,S.mastered>=8?'streak':'idle','bob',petName());
   $('endStats').innerHTML=
-    '<div><b class="mono">+'+S.xp+'</b><span>XP earned</span></div>'+
-    '<div><b class="mono">'+S.right+'</b><span>answers right</span></div>'+
-    '<div><b class="mono">'+P.level+'</b><span>level</span></div>';
-  $('endReward').textContent=nextRewardText(P.level);
+    '<div><b class="mono">'+S.mastered+'</b><span>answers mastered</span></div>'+
+    '<div><b class="mono">'+S.best+'</b><span>brightest streak</span></div>'+
+    '<div><b class="mono">'+completedCount(P)+'</b><span>path lights</span></div>';
+  if(result==='collectible'){
+    const cosmetic=S.reward.newCosmetics[0];
+    $('endReward').textContent=petName()+' found '+S.reward.item.emoji+' '+S.reward.item.name+'!'+(cosmetic?' A new '+cosmetic.name+' appeared in the magic wardrobe!':'');
+  }else if(S.mastered<8) $('endReward').textContent=petName()+' is proud of every try. Master 8 answers to light this path.';
+  else $('endReward').textContent=petName()+' has grown because you learned together.';
   show('s-end');
-  maybeCompleteStage();
 }
 </script>
 <script>
@@ -1119,8 +1226,8 @@ function pressCol(k){
     renderCol(); return;
   }
   sBad(); M.tries++;
-  if(M.tries>=2){ M.err++; S.streak=0; $('fb').innerHTML='<span class="no">Momo is thinking with you. It\u2019s '+st.want+'.</span>'; setPlayMood('wrong'); }
-  else { $('fb').innerHTML='<span class="no">Nearly there. Momo believes in you!</span>'; setPlayMood('wrong'); }
+  if(M.tries>=2){ M.err++; S.streak=0; $('fb').innerHTML='<span class="no">'+petName()+' is thinking with you. It\u2019s '+st.want+'.</span>'; setPlayMood('wrong'); }
+  else { $('fb').innerHTML='<span class="no">Nearly there. '+petName()+' believes in you!</span>'; setPlayMood('wrong'); }
   shake(); S.locked=true;
   const wait=M.tries>=2?1500:1000;
   setTimeout(()=>{ $('fb').textContent=''; M.buf=''; S.locked=false; renderCol(); },wait);
@@ -1129,11 +1236,11 @@ function pressCol(k){
 function finishCol(){
   const M=S.col; S.locked=true;
   const clean=M.err===0&&!M.hint;
-  if(clean){ ease(S.q.vid,0.2); award(S.q.xp); }
-  else { if(M.err>0) ease(S.q.vid,-0.6); softXP(Math.round(S.q.xp*0.7)); }
+  if(clean){ ease(S.q.vid,0.2); award(true); }
+  else { if(M.err>0) ease(S.q.vid,-0.6); softXP(); }
   const digits={}; M.steps.forEach(s=>{ if(s.t==='res') digits[s.col]=s.want; });
   let total=''; for(let i=0;i<M.wid;i++) if(digits[i]!==undefined) total+=digits[i];
-  $('fb').innerHTML='<span class="ok">'+(clean?praise():'Worked all the way through.')+' '+Number(total)+'</span>'+(clean?bonusStamp():'');
+  $('fb').innerHTML='<span class="ok">'+(clean?praise():'Worked all the way through.')+' '+Number(total)+'</span>'+(clean?bonusStamp():'')+crackMessage();
   setPlayMood(S.streak>=3?'streak':'correct');
   save(); setTimeout(nextQuestion,1600);
 }
@@ -1239,8 +1346,8 @@ function pressDiv(k){
     renderDiv(); return;
   }
   sBad(); D.tries++;
-  if(D.tries>=2){ D.err++; S.streak=0; $('fb').innerHTML='<span class="no">Momo is thinking with you. It\u2019s '+st.want+'.</span>'; setPlayMood('wrong'); }
-  else { $('fb').innerHTML='<span class="no">Nearly there. Momo believes in you!</span>'; setPlayMood('wrong'); }
+  if(D.tries>=2){ D.err++; S.streak=0; $('fb').innerHTML='<span class="no">'+petName()+' is thinking with you. It\u2019s '+st.want+'.</span>'; setPlayMood('wrong'); }
+  else { $('fb').innerHTML='<span class="no">Nearly there. '+petName()+' believes in you!</span>'; setPlayMood('wrong'); }
   shake(); S.locked=true;
   setTimeout(()=>{ $('fb').textContent=''; D.buf=''; S.locked=false; renderDiv(); },D.tries>=2?1500:1000);
   renderDiv();
@@ -1248,12 +1355,26 @@ function pressDiv(k){
 function finishDiv(){
   const D=S.div; S.locked=true;
   const clean=D.err===0&&!D.hint;
-  if(clean){ ease('div2',0.2); award(S.q.xp); }
-  else { if(D.err>0) ease('div2',-0.6); softXP(Math.round(S.q.xp*0.7)); }
+  if(clean){ ease(S.q.vid,0.2); award(true); }
+  else { if(D.err>0) ease(S.q.vid,-0.6); softXP(); }
   const rest=D.g.rest>0?' with '+D.g.rest+' left over':'';
   $('fb').innerHTML='<span class="ok">'+D.g.N+' \u00F7 '+D.g.d+' = '+D.g.quot+rest+'</span>'+(clean?bonusStamp():'');
   setPlayMood(S.streak>=3?'streak':'correct');
   save(); setTimeout(nextQuestion,2400);
+}
+
+/* ---------------- hidden developer spellbook ---------------- */
+function renderDeveloper(){
+  $('devLesson').innerHTML=MATH_STAGES.map((s,i)=>'<option value="'+i+'">Lesson '+(i+1)+' · '+s.label+'</option>').join('');
+  $('devLesson').value=String(Math.min(completedCount(P),MATH_STAGES.length-1));
+  $('devEvolution').innerHTML=EVOLUTIONS.map(e=>'<option value="'+e.art+'">'+e.title+'</option>').join('');
+  $('devEvolution').value=String(P.monsterStage);
+}
+function openDeveloper(){ renderDeveloper(); show('s-dev'); }
+function resetPlayerProgress(){
+  P.stageProgress=blankStageProgress(); P.monsterStage=1; delete P.devMonsterOverride;
+  P.collectibles={}; COLLECTIBLES.forEach(c=>P.collectibles[c.id]=0); P.accessories=[];
+  P.right=0; P.best=0; P.total=0; P.xp=0; P.level=1; P.storySeen=false; P.migrationVersion=3; save();
 }
 
 /* ---------------- wiring ---------------- */
@@ -1289,9 +1410,9 @@ $('luOk').onclick=()=>{ $('lvUp').classList.remove('on'); };
 $('unlockOk').onclick=()=>{
   $('unlockBox').classList.remove('on');
   const next=pendingUnlockStage; pendingUnlockStage=null;
-  if(next) startSession(next.gid,next.vid); else { renderMenu(); show('s-menu'); }
+  if(next) startSession(next.id); else { renderMenu(); show('s-menu'); }
 };
-$('storyNext').onclick=()=>{ if(storyStep<STORY_SCENES.length-1){ storyStep++; renderStory(); } else finishStory(); };
+$('storyNext').onclick=()=>{ captureFriendName(); if(storyStep<STORY_SCENES.length-1){ storyStep++; renderStory(); } else finishStory(); };
 $('storySkip').onclick=finishStory;
 $('replayStory').onclick=openStory;
 $('swSound').onclick=()=>{ DB.sound=!DB.sound; $('swSound').classList.toggle('on'); save(); };
@@ -1307,10 +1428,26 @@ $('delPlayer').onclick=()=>{
   DB.players=DB.players.filter(x=>x.id!==P.id); DB.current=null; P=null; save();
   renderPlayers(); show('s-players');
 };
+let devTaps=0,devTapTimer=null;
+$('homeWho').onclick=()=>{ clearTimeout(devTapTimer); devTaps++; if(devTaps>=7){ devTaps=0; openDeveloper(); return; } devTapTimer=setTimeout(()=>devTaps=0,2200); };
+$('devBack').onclick=()=>{ renderHome(); show('s-home'); };
+$('devJump').onclick=()=>{
+  const index=Number($('devLesson').value); P.stageProgress=progressFromCount(index); delete P.devMonsterOverride; P.monsterStage=artForCount(index); save(); renderMenu(); show('s-menu');
+};
+$('devUnlockLessons').onclick=()=>{ P.stageProgress=progressFromCount(MATH_STAGES.length); delete P.devMonsterOverride; P.monsterStage=artForCount(MATH_STAGES.length); save(); renderDeveloper(); sLvl(); };
+$('devUnlockCollectibles').onclick=()=>{ COLLECTIBLES.forEach(c=>P.collectibles[c.id]=5); P.accessories=COSMETIC_REWARDS.map(a=>a.id); save(); renderDeveloper(); sLvl(); };
+$('devEvolve').onclick=()=>{
+  const art=Number($('devEvolution').value); P.devMonsterOverride=art; P.monsterStage=art; save();
+  const evolution=EVOLUTIONS.find(e=>e.art===art); $('luTitle').textContent=evolution?evolution.title:'Magical transformation';
+  $('luPet').innerHTML=monsterMarkup(art,'levelUp','evolution-burst',petName()+' transforming'); $('luMsg').textContent=petName()+' transformed for testing.'; $('lvUp').classList.add('on');
+};
+$('devStory').onclick=openStory;
+$('devRename').onclick=()=>{ const name=prompt('What should your magical friend be called?',petName()); if(name&&name.trim()){ P.momoName=name.trim().slice(0,12); save(); renderDeveloper(); } };
+$('devReset').onclick=()=>{ if(!confirm('Reset this player\'s journey, treasures and story?')) return; resetPlayerProgress(); openStory(); };
 
 (async function(){
   const d=await store.get();
-  if(d&&d.players){ DB=d; if(DB.sound===undefined) DB.sound=true; DB.players.forEach(migrate); }
+  if(d&&d.players){ DB=d; if(DB.sound===undefined) DB.sound=true; DB.players.forEach(migrate); save(); }
   renderPlayers();
   if(DB.current) P=DB.players.find(x=>x.id===DB.current)||null;
   if(P){ if(P.storySeen){ renderHome(); show('s-home'); } else openStory(); } else show('s-players');
