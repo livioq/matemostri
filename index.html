@@ -99,6 +99,10 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
     font-family:ui-monospace,"Roboto Mono","Courier New",monospace;font-size:calc(var(--cell)*.6);font-weight:700;color:var(--ink)}
 .dc.small{font-size:calc(var(--cell)*.4);color:var(--pen);align-items:flex-end;padding-bottom:1px}
 .dc.small.wide{font-size:calc(var(--cell)*.34)}
+.dc.annotations{gap:2px;align-items:flex-end;overflow:visible;white-space:nowrap}
+.dc.annotations span{display:inline-flex;min-width:calc(var(--cell)*.38);height:calc(var(--cell)*.48);align-items:center;justify-content:center;color:var(--pen);font-size:calc(var(--cell)*.34);position:relative}
+.dc.annotations .ann-struck{color:var(--ink-soft);text-decoration:line-through;text-decoration-color:var(--pen);text-decoration-thickness:2px}
+.dc.annotations .ann-input{border:2px solid var(--gold);border-radius:5px;background:#fff7d9}
 .dc.slot{border:2px dashed rgba(214,48,58,.5);border-radius:6px;color:var(--pen)}
 .dc.slot.act{border-style:solid;background:rgba(242,185,59,.22);animation:pulse 1.1s ease-in-out infinite}
 .dc.typed{color:var(--pen)}
@@ -312,7 +316,7 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
   <section id="s-journey" class="screen">
     <div class="row" style="justify-content:space-between">
       <button class="link" id="journeyBack">back</button>
-      <span class="eyebrow">13 enchanted lessons</span>
+      <span class="eyebrow">14 enchanted lessons</span>
     </div>
     <div class="journey-hero"><h1 style="font-size:25px" id="journeyTitle">A magical maths journey</h1><p>Each lesson lights the path and helps your friend grow.</p></div>
     <div class="journey" id="journeyList"></div>
@@ -455,7 +459,8 @@ const GROUPS=[
 const G=id=>GROUPS.find(g=>g.id===id);
 const MATH_STAGES=[
   {id:'add_1digit',gid:'add',label:'One-digit addition',mode:'mental',magic:'Firefly Meadow'},
-  {id:'add_2digit',gid:'add',label:'Two-digit addition',mode:'mental',magic:'Moonbeam Bridge'},
+  {id:'add_2column',gid:'add',label:'Two-digit column addition',mode:'column',digits:2,magic:'Carrying Lanterns'},
+  {id:'add_2mental',gid:'add',label:'Two-digit mental addition',mode:'mental',magic:'Moonbeam Bridge'},
   {id:'add_3column',gid:'add',label:'Three-digit column addition',mode:'column',digits:3,magic:'Carrying Clouds'},
   {id:'add_4column',gid:'add',label:'Four-digit column addition',mode:'column',digits:4,magic:'Starlight Tower'},
   {id:'sub_1digit',gid:'sub',label:'One-digit subtraction',mode:'mental',magic:'Whispering Woods'},
@@ -478,7 +483,7 @@ const EVOLUTIONS=[
   {completed:6,art:5,title:'Winged Friend',message:'{name} learned to flutter on tiny wings!'},
   {completed:8,art:9,title:'Explorer',message:'{name} became a brave magical explorer!'},
   {completed:11,art:18,title:'Apprentice Guardian',message:'{name} began Guardian training!'},
-  {completed:13,art:20,title:'Guardian of Maths',message:'{name} became a Guardian of Maths!'}
+  {completed:14,art:20,title:'Guardian of Maths',message:'{name} became a Guardian of Maths!'}
 ];
 const EVOLUTION_LEVELS=EVOLUTIONS.map(e=>e.art);
 const ACC=[
@@ -560,16 +565,26 @@ function normalizeStageProgress(progress){
 }
 function legacyCompletedCount(p){
   const oldIds=['add_simple','add_complex','sub_simple','sub_complex','mul_simple','mul_complex','div_simple','div_complex'];
-  const mapped=[1,4,5,8,9,11,12,13];
+  const mapped=[1,5,6,9,10,12,13,14];
   let best=0;
   if(p.stageProgress&&p.stageProgress.completed) oldIds.forEach((id,i)=>{ if(p.stageProgress.completed[id]) best=Math.max(best,mapped[i]); });
   const old=p.unlocked||{};
   if(old.add2||old.add) best=Math.max(best,1);
-  if(old.sub2||old.sub) best=Math.max(best,5);
-  if(old.mul2||old.mul) best=Math.max(best,9);
-  if(old.div2||old.div) best=Math.max(best,12);
+  if(old.sub2||old.sub) best=Math.max(best,6);
+  if(old.mul2||old.mul) best=Math.max(best,10);
+  if(old.div2||old.div) best=Math.max(best,13);
   if(Number(p.level)>1) best=Math.max(best,Math.floor((Math.min(20,Number(p.level))-1)/19*MATH_STAGES.length));
   return best;
+}
+function migrateV3StageProgress(progress){
+  const oldIds=['add_1digit','add_2digit','add_3column','add_4column','sub_1digit','sub_2digit','sub_3column','sub_4column','mul_1x1','mul_1x2','mul_2x2','div_simple','div_long'];
+  const completed=progress&&progress.completed?progress.completed:{};
+  let oldCount=0;
+  oldIds.forEach((id,i)=>{ if(completed[id]) oldCount=Math.max(oldCount,i+1); });
+  // A learner who had finished the former mental-addition lesson keeps that
+  // achievement and receives credit for the newly inserted column lesson too.
+  const newCount=oldCount<2?oldCount:oldCount+1;
+  return progressFromCount(newCount);
 }
 function stageStatus(p,id){ return p.stageProgress.completed[id]?'completed':p.stageProgress.available[id]?'available':'locked'; }
 function completeMathStage(p,id){
@@ -585,10 +600,10 @@ function newPlayer(name,age){
   return {id:'p'+Date.now(),name:name,age:age,level:1,xp:0,total:0,ease:{},right:0,best:0,
           groups:{add:true,sub:true,mul:true,div:!young},
           unlocked:{add2:false,sub2:false,mul2:false,div2:false},
-          stageProgress:blankStageProgress(),monsterStage:1,momoName:'Momo',collectibles:{},accessories:[],storySeen:false,migrationVersion:3};
+          stageProgress:blankStageProgress(),monsterStage:1,momoName:'Momo',collectibles:{},accessories:[],storySeen:false,migrationVersion:4};
 }
 function migrate(p){
-  const wasLegacy=p.migrationVersion!==3;
+  const version=Number(p.migrationVersion)||0,wasLegacy=version<3;
   if(!p.groups) p.groups={add:true,sub:true,mul:true,div:(p.age||9)>=8};
   if(!p.ease) p.ease={};
   if(!p.unlocked) p.unlocked={add2:false,sub2:false,mul2:false,div2:false};
@@ -599,7 +614,8 @@ function migrate(p){
     const legacyCount=legacyCompletedCount(p);
     const hasNewProgress=p.stageProgress&&p.stageProgress.completed&&Object.prototype.hasOwnProperty.call(p.stageProgress.completed,'add_1digit');
     p.stageProgress=hasNewProgress?normalizeStageProgress(p.stageProgress):progressFromCount(legacyCount);
-  }else p.stageProgress=normalizeStageProgress(p.stageProgress);
+  }else if(version===3) p.stageProgress=migrateV3StageProgress(p.stageProgress);
+  else p.stageProgress=normalizeStageProgress(p.stageProgress);
   if(!p.momoName) p.momoName='Momo';
   if(!p.collectibles||typeof p.collectibles!=='object') p.collectibles={};
   COLLECTIBLES.forEach(c=>{ p.collectibles[c.id]=Math.max(0,Number(p.collectibles[c.id])||0); });
@@ -613,7 +629,7 @@ function migrate(p){
   COSMETIC_REWARDS.forEach(a=>{ if(collectibleTotal(p)>=a.total&&!p.accessories.includes(a.id)) p.accessories.push(a.id); });
   p.monsterStage=p.devMonsterOverride||artForCount(completedCount(p));
   if(p.storySeen===undefined) p.storySeen=true;
-  p.migrationVersion=3;
+  p.migrationVersion=4;
   return p;
 }
 
@@ -775,18 +791,70 @@ function buildColumn(op,a,b){
       if(top[i]===null&&bd[i]===null) break;
       const y=bd[i]||0; let x=top[i]===null?0:top[i];
       if(x<y){
-        const L=top[i-1];
-        steps.push({t:'bl',col:i-1,want:String(L-1),from:L,hx:x,hy:y});
-        steps.push({t:'bh',col:i,want:String(x+10),x:x,y:y});
-        top[i-1]=L-1; x=x+10; top[i]=x;
+        let lender=i-1;
+        while(lender>=0&&(top[lender]===null||top[lender]===0)) lender--;
+        if(lender<0) throw new Error('Subtraction model cannot borrow');
+        const lentFrom=top[lender];
+        top[lender]=lentFrom-1;
+        steps.push({t:'ann',role:'lend',col:lender,from:lentFrom,want:String(top[lender]),hx:x,hy:y});
+        for(let k=lender+1;k<i;k++){
+          const received=(top[k]||0)+10;
+          steps.push({t:'ann',role:'receive',col:k,from:top[k]||0,want:String(received)});
+          top[k]=received;
+          steps.push({t:'ann',role:'pass',col:k,from:top[k],want:String(top[k]-1)});
+          top[k]-=1;
+        }
+        const received=x+10;
+        steps.push({t:'ann',role:'receive',col:i,from:x,want:String(received)});
+        x=received; top[i]=x;
       }
       steps.push({t:'res',col:i,want:String(x-y),x:x,y:y});
     }
   }
   return {op:op,wid:wid,ad:ad,bd:bd,steps:steps,
-          ent:{carry:{},reg:{},res:{},struck:{}},si:0,buf:'',tries:0,err:0,hint:false};
+          ent:{carry:{},annotations:Array.from({length:wid},()=>[]),res:{}},si:0,buf:'',tries:0,err:0,hint:false};
 }
 const colValid=M=>M.steps.every(s=>/^\d+$/.test(s.want));
+
+function buildLongMultiplication(a,b){
+  const width=String(a*b).length,upper=String(a),lower=String(b),steps=[],partials=[];
+  const lowerDigits=lower.split('').reverse().map(Number);
+  lowerDigits.forEach((multiplier,row)=>{
+    const offset=row;
+    if(offset) steps.push({t:'placeholder',row:row,col:width-1,want:'0'});
+    let carry=0;
+    const digits=upper.split('').reverse().map(Number);
+    digits.forEach((digit,k)=>{
+      const total=digit*multiplier+carry,col=width-1-offset-k;
+      steps.push({t:'partial',row:row,col:col,want:String(total%10),digit:digit,multiplier:multiplier,carry:carry});
+      carry=Math.floor(total/10);
+      if(carry&&k<digits.length-1) steps.push({t:'partialCarry',row:row,col:col-1,want:String(carry)});
+      if(k===digits.length-1&&carry) steps.push({t:'partial',row:row,col:col-1,want:String(carry),leading:true,carry:carry});
+    });
+    partials.push(a*multiplier*Math.pow(10,offset));
+  });
+  let carry=0;
+  for(let col=width-1;col>=0;col--){
+    const place=Math.pow(10,width-1-col);
+    const x=Math.floor(partials[0]/place)%10,y=Math.floor(partials[1]/place)%10,total=x+y+carry;
+    steps.push({t:'sum',col:col,want:String(total%10),x:x,y:y,carry:carry});
+    carry=Math.floor(total/10);
+    if(carry&&col>0) steps.push({t:'sumCarry',col:col-1,want:String(carry)});
+  }
+  return {a:a,b:b,width:width,partials:partials,total:a*b,steps:steps,si:0,buf:'',tries:0,err:0,hint:false,
+    ent:{partials:[{},{}],partialCarries:[{},{}],sum:{},sumCarry:{}}};
+}
+
+function twoDigitColumnAddition(questionIndex){
+  const phase=questionIndex<=3?'no-carry':questionIndex<=6?'one-carry':'mixed';
+  for(let guard=0;guard<300;guard++){
+    const a=rnd(10,89),b=rnd(10,89),ones=a%10+b%10,tens=Math.floor(a/10)+Math.floor(b/10)+(ones>=10?1:0);
+    const carries=(ones>=10?1:0)+(tens>=10?1:0);
+    if((phase==='no-carry'&&carries===0)||(phase==='one-carry'&&carries===1)||phase==='mixed')
+      return {kind:'col',a:a,b:b,M:buildColumn('add',a,b),phase:phase};
+  }
+  return {kind:'col',a:phase==='no-carry'?23:phase==='one-carry'?27:58,b:phase==='no-carry'?14:phase==='one-carry'?15:34,M:buildColumn('add',phase==='no-carry'?23:phase==='one-carry'?27:58,phase==='no-carry'?14:phase==='one-carry'?15:34),phase:phase};
+}
 
 /* ---------------- question generation ---------------- */
 function genEasy(gid,tr){
@@ -812,7 +880,7 @@ function genHard(gid,tr){
       const b=[rnd(11,a-1),rnd(11,a-1),rnd(11,99),rnd(111,a-1)][tr];
       if(b>=a) continue;
       const M=buildColumn('sub',a,b);
-      if(M.steps.some(s=>s.t==='bl')&&colValid(M)) return {a:a,b:b,M:M};
+      if(M.steps.some(s=>s.t==='ann')&&colValid(M)) return {a:a,b:b,M:M};
     }
     return {a:84,b:16,M:buildColumn('sub',84,16)};
   }
@@ -838,12 +906,13 @@ function genDivision(tr){
   }
   return {div:true,N:'144',d:12,steps:divSteps('144',12),quot:'12',rest:0};
 }
-function generateLessonQuestion(stage){
+function generateLessonQuestion(stage,questionIndex){
   if(stage.id==='add_1digit'){
     const a=rnd(0,9),b=rnd(0,9); return {kind:'n',txt:a+' + '+b,ans:a+b};
   }
-  if(stage.id==='add_2digit'){
-    const a=rnd(10,79),b=rnd(10,79); return {kind:'n',txt:a+' + '+b,ans:a+b};
+  if(stage.id==='add_2column') return twoDigitColumnAddition(questionIndex||1);
+  if(stage.id==='add_2mental'){
+    const a=rnd(12,58),b=rnd(11,39); return {kind:'n',txt:a+' + '+b,ans:a+b};
   }
   if(stage.id==='sub_1digit'){
     const a=rnd(2,9),b=rnd(0,a); return {kind:'n',txt:a+' \u2212 '+b,ans:a-b};
@@ -864,13 +933,13 @@ function generateLessonQuestion(stage){
   }
   if(stage.gid==='sub'){
     const lo=stage.digits===4?1000:100,hi=stage.digits===4?9999:999;
-    for(let i=0;i<350;i++){ const a=rnd(lo,hi),b=rnd(lo,a-1),M=buildColumn('sub',a,b); if(M.steps.some(s=>s.t==='bl')&&colValid(M)) return {kind:'col',a,b,M}; }
+    for(let i=0;i<350;i++){ const a=rnd(lo,hi),b=rnd(lo,a-1),M=buildColumn('sub',a,b); if(M.steps.some(s=>s.t==='ann')&&colValid(M)) return {kind:'col',a,b,M}; }
   }
   if(stage.id==='mul_1x2'){
     const a=rnd(12,99),b=rnd(2,9); return {kind:'col',a,b,M:buildColumn('mul',a,b)};
   }
   if(stage.id==='mul_2x2'){
-    const a=rnd(12,49),b=rnd(12,29); return {kind:'col',a,b,M:buildColumn('mul',a,b)};
+    const a=rnd(12,99),b=rnd(12,99); return {kind:'longmul',a:a,b:b,L:buildLongMultiplication(a,b)};
   }
   return {kind:'n',txt:'1 + 1',ans:2};
 }
@@ -1006,7 +1075,7 @@ function setPlayMood(mood){
 function startSession(stageId){
   const stage=STAGE_BY_ID(stageId);
   if(!stage||stageStatus(P,stage.id)==='locked') return;
-  S={gid:stage.gid,vid:stage.id,stageId:stage.id,stage:stage,wasCompleted:P.stageProgress.completed[stage.id],i:0,right:0,mastered:0,streak:0,best:0,q:null,input:'',col:null,div:null,locked:false,attempt:0,mode:'answer',crackMoment:false,reward:null};
+  S={gid:stage.gid,vid:stage.id,stageId:stage.id,stage:stage,wasCompleted:P.stageProgress.completed[stage.id],i:0,right:0,mastered:0,streak:0,best:0,q:null,input:'',col:null,longMul:null,div:null,locked:false,attempt:0,mode:'answer',crackMoment:false,reward:null};
   show('s-play'); nextQuestion();
 }
 function nextQuestion(){
@@ -1014,7 +1083,7 @@ function nextQuestion(){
   S.i++; S.input=''; S.locked=false; S.attempt=0; S.mode='answer'; S.crackMoment=false; $('fb').textContent='';
   setPlayMood('beforeQuestion');
   $('progress').textContent=S.i+'/'+SESSION;
-  const made=generateLessonQuestion(S.stage);
+  const made=generateLessonQuestion(S.stage,S.i);
   $('colHint').style.display='none'; $('hintBtn').style.display='none';
   if(made.kind==='n'){
     S.q={vid:S.stage.id,xp:1,kind:'n',ans:made.ans};
@@ -1030,9 +1099,15 @@ function nextQuestion(){
       $('normalQ').style.display='none'; $('colQ').style.display='block';
       $('hintBtn').style.display='block'; $('hintBtn').textContent='need a hint?';
       renderDiv();
+    }else if(made.kind==='longmul'){
+      S.q={vid:S.stage.id,xp:1,kind:'longmul'};
+      S.longMul=made.L; S.col=null; S.div=null; S.colB=made.b;
+      $('normalQ').style.display='none'; $('colQ').style.display='block';
+      $('hintBtn').style.display='block'; $('hintBtn').textContent='open a multiplication spell?';
+      renderLongMul();
     }else{
       S.q={vid:S.stage.id,xp:1,kind:'col'};
-      S.col=made.M; S.div=null;
+      S.col=made.M; S.longMul=null; S.div=null;
       S.colB=made.b;
       $('normalQ').style.display='none'; $('colQ').style.display='block';
       if(S.stage.gid==='mul'){ $('hintBtn').style.display='block'; $('hintBtn').textContent='open a multiplication spell?'; }
@@ -1061,6 +1136,7 @@ function press(k){
   if(S.locked) return;
   sTap();
   if(S.q.kind==='col') return pressCol(k);
+  if(S.q.kind==='longmul') return pressLongMul(k);
   if(S.q.kind==='div') return pressDiv(k);
   if(k==='del') S.input=S.input.slice(0,-1);
   else if(k==='go'){ if(S.input!=='') checkNormal(); return; }
@@ -1163,14 +1239,15 @@ function colPrompt(M){
     if(st.x===null) return 'Nothing left to multiply. Write the carried '+st.carry+'.';
     return st.x+' \u00D7 '+st.m+(st.carry?' + '+st.carry:'')+'. Write the ones digit here.';
   }
-  if(st.t==='bl') return st.hx+' \u2212 '+st.hy+' won\u2019t work. Take a ten from the '+st.from+': cross it out and write '+st.want+'.';
-  if(st.t==='bh') return 'Now the '+st.x+' becomes '+st.want+'. Write it above.';
+  if(st.t==='ann'&&st.role==='lend') return st.hx+' \u2212 '+st.hy+' needs borrowing. Cross out the '+st.from+' and write '+st.want+'.';
+  if(st.t==='ann'&&st.role==='pass') return 'This '+st.from+' lends one onward. Cross it out and write '+st.want+'.';
+  if(st.t==='ann') return 'The '+st.from+' receives a ten and becomes '+st.want+'. Write '+st.want+' above it.';
   return st.x+' \u2212 '+st.y+'. Write the answer.';
 }
 function renderCol(){
   const M=S.col, g=$('colGrid'), cols=M.wid+1, st=M.steps[M.si];
   g.style.gridTemplateColumns='repeat('+cols+', var(--cell))';
-  g.style.gridTemplateRows='repeat(4, var(--cell))';
+  g.style.gridTemplateRows='calc(var(--cell) * 1.35) repeat(3, var(--cell))';
   g.innerHTML='';
   const cell=(r,c,txt,cls)=>{
     const d=document.createElement('div'); d.className='dc '+(cls||''); d.textContent=txt;
@@ -1180,13 +1257,17 @@ function renderCol(){
   for(let i=0;i<M.wid;i++){
     const gc=i+2;
     if(M.op==='sub'){
-      if(M.ent.reg[i]!==undefined) cell(1,gc,M.ent.reg[i],'small'+(String(M.ent.reg[i]).length>1?' wide':''));
-      else if(st&&(st.t==='bl'||st.t==='bh')&&st.col===i) cell(1,gc,M.buf,'small slot act'+(st.want.length>1?' wide':''));
+      const history=M.ent.annotations[i];
+      if(history.length||(st&&st.t==='ann'&&st.col===i)){
+        const d=cell(1,gc,'','small annotations');
+        history.forEach((entry,index)=>{ const span=document.createElement('span'); span.textContent=entry.value; if(index<history.length-1) span.className='ann-struck'; d.appendChild(span); });
+        if(st&&st.t==='ann'&&st.col===i){ const span=document.createElement('span'); span.textContent=M.buf; span.className='ann-input slot act'+(st.want.length>1?' wide':''); d.appendChild(span); }
+      }
     }else{
       if(M.ent.carry[i]!==undefined) cell(1,gc,M.ent.carry[i],'small');
       else if(st&&st.t==='carry'&&st.col===i) cell(1,gc,M.buf,'small slot act');
     }
-    if(M.ad[i]!==null) cell(2,gc,M.ad[i],M.ent.struck[i]?'struck':'');
+    if(M.ad[i]!==null) cell(2,gc,M.ad[i],M.op==='sub'&&M.ent.annotations[i].length?'struck':'');
     if(M.bd[i]!==null) cell(3,gc,M.bd[i],'');
   }
   cell(3,1,sign,'op');
@@ -1219,8 +1300,7 @@ function pressCol(k){
     sStep(); M.tries=0;
     if(st.t==='res') M.ent.res[st.col]=st.want;
     else if(st.t==='carry') M.ent.carry[st.col]=st.want;
-    else if(st.t==='bl'){ M.ent.reg[st.col]=st.want; M.ent.struck[st.col]=true; }
-    else if(st.t==='bh'){ M.ent.reg[st.col]=st.want; M.ent.struck[st.col]=true; }
+    else if(st.t==='ann') M.ent.annotations[st.col].push({value:st.want,role:st.role});
     M.buf=''; M.si++;
     if(M.si>=M.steps.length){ renderCol(); finishCol(); return; }
     renderCol(); return;
@@ -1243,6 +1323,78 @@ function finishCol(){
   $('fb').innerHTML='<span class="ok">'+(clean?praise():'Worked all the way through.')+' '+Number(total)+'</span>'+(clean?bonusStamp():'')+crackMessage();
   setPlayMood(S.streak>=3?'streak':'correct');
   save(); setTimeout(nextQuestion,1600);
+}
+
+/* ---------------- two-digit long multiplication ---------------- */
+function longMulPrompt(L){
+  const st=L.steps[L.si]; if(!st) return '';
+  if(st.t==='placeholder') return 'The tens row is worth tens. Put a 0 in the ones place.';
+  if(st.t==='partialCarry') return 'Carry the '+st.want+' above the next digit.';
+  if(st.t==='partial'){
+    if(st.leading) return 'Write the final carried '+st.want+' at the start of this row.';
+    return st.digit+' × '+st.multiplier+(st.carry?' + '+st.carry:'')+'. Write the ones digit in this partial row.';
+  }
+  if(st.t==='sumCarry') return 'Carry the '+st.want+' while adding the partial rows.';
+  return st.x+' + '+st.y+(st.carry?' + '+st.carry:'')+'. Add the partial rows in this column.';
+}
+function renderLongMul(){
+  const L=S.longMul,st=L.steps[L.si],grid=$('colGrid'),cols=L.width+1;
+  grid.style.gridTemplateColumns='repeat('+cols+', var(--cell))';
+  grid.style.gridTemplateRows='repeat(9, var(--cell))'; grid.innerHTML='';
+  const cell=(r,c,txt,cls)=>{ const d=document.createElement('div'); d.className='dc '+(cls||''); d.textContent=txt; d.style.gridRow=r; d.style.gridColumn=c; grid.appendChild(d); return d; };
+  const rule=(row)=>{ const d=document.createElement('div'); d.className='rule'; d.style.gridRow=row; d.style.gridColumn='1 / -1'; grid.appendChild(d); };
+  const activePartial=st&&(st.t==='partial'||st.t==='partialCarry'||st.t==='placeholder')?st.row:null;
+  if(activePartial!==null) Object.entries(L.ent.partialCarries[activePartial]).forEach(([col,value])=>cell(1,Number(col)+2,value,'small'));
+  if(st&&st.t==='partialCarry') cell(1,st.col+2,L.buf,'small slot act');
+  const upper=String(L.a),lower=String(L.b);
+  [...upper].forEach((digit,i)=>cell(2,L.width-upper.length+i+2,digit));
+  [...lower].forEach((digit,i)=>cell(3,L.width-lower.length+i+2,digit));
+  cell(3,1,'×','op'); rule(4);
+  [0,1].forEach(row=>{
+    Object.entries(L.ent.partials[row]).forEach(([col,value])=>cell(5+row,Number(col)+2,value,'typed'));
+    if(st&&st.row===row&&(st.t==='partial'||st.t==='placeholder')) cell(5+row,st.col+2,L.buf,'slot act');
+  });
+  Object.entries(L.ent.sumCarry).forEach(([col,value])=>cell(7,Number(col)+2,value,'small'));
+  if(st&&st.t==='sumCarry') cell(7,st.col+2,L.buf,'small slot act');
+  rule(8);
+  Object.entries(L.ent.sum).forEach(([col,value])=>cell(9,Number(col)+2,value,'typed'));
+  if(st&&st.t==='sum') cell(9,st.col+2,L.buf,'slot act');
+  $('colPrompt').textContent=longMulPrompt(L);
+  if(L.hint){
+    const strip=$('colHint'); strip.style.display='grid'; strip.innerHTML='';
+    const digits=[...new Set(String(L.b).split(''))].map(Number);
+    digits.forEach(m=>{ for(let i=1;i<=9;i++){ const e=document.createElement('span'); e.textContent=m+'×'+i+'='+(m*i); strip.appendChild(e); } });
+    $('hintBtn').style.display='none';
+  }
+}
+function pressLongMul(k){
+  const L=S.longMul,st=L.steps[L.si]; if(!st) return;
+  if(k==='del'){ L.buf=L.buf.slice(0,-1); renderLongMul(); return; }
+  if(k==='go'||L.buf.length>=st.want.length) return;
+  L.buf+=k;
+  if(L.buf.length<st.want.length){ renderLongMul(); return; }
+  if(L.buf===st.want){
+    sStep(); L.tries=0;
+    if(st.t==='partial'||st.t==='placeholder') L.ent.partials[st.row][st.col]=st.want;
+    else if(st.t==='partialCarry') L.ent.partialCarries[st.row][st.col]=st.want;
+    else if(st.t==='sum') L.ent.sum[st.col]=st.want;
+    else if(st.t==='sumCarry') L.ent.sumCarry[st.col]=st.want;
+    L.buf=''; L.si++;
+    if(L.si>=L.steps.length){ renderLongMul(); finishLongMul(); return; }
+    renderLongMul(); return;
+  }
+  sBad(); L.tries++;
+  if(L.tries>=2){ L.err++; S.streak=0; $('fb').innerHTML='<span class="no">'+petName()+' is thinking with you. It’s '+st.want+'.</span>'; }
+  else $('fb').innerHTML='<span class="no">Nearly there. '+petName()+' believes in you!</span>';
+  setPlayMood('wrong'); shake(); S.locked=true;
+  setTimeout(()=>{ $('fb').textContent=''; L.buf=''; S.locked=false; renderLongMul(); },L.tries>=2?1500:1000);
+  renderLongMul();
+}
+function finishLongMul(){
+  const L=S.longMul; S.locked=true; const clean=L.err===0&&!L.hint;
+  if(clean){ ease(S.q.vid,.2); award(true); } else { if(L.err>0) ease(S.q.vid,-.6); softXP(); }
+  $('fb').innerHTML='<span class="ok">'+L.a+' × '+L.b+' = '+L.total+'</span>'+(clean?bonusStamp():'');
+  setPlayMood(S.streak>=3?'streak':'correct'); save(); setTimeout(nextQuestion,2200);
 }
 
 /* ---------------- division in columns (Italian layout) ---------------- */
@@ -1374,7 +1526,7 @@ function openDeveloper(){ renderDeveloper(); show('s-dev'); }
 function resetPlayerProgress(){
   P.stageProgress=blankStageProgress(); P.monsterStage=1; delete P.devMonsterOverride;
   P.collectibles={}; COLLECTIBLES.forEach(c=>P.collectibles[c.id]=0); P.accessories=[];
-  P.right=0; P.best=0; P.total=0; P.xp=0; P.level=1; P.storySeen=false; P.migrationVersion=3; save();
+  P.right=0; P.best=0; P.total=0; P.xp=0; P.level=1; P.storySeen=false; P.migrationVersion=4; save();
 }
 
 /* ---------------- wiring ---------------- */
@@ -1419,6 +1571,7 @@ $('swSound').onclick=()=>{ DB.sound=!DB.sound; $('swSound').classList.toggle('on
 $('hintBtn').onclick=()=>{
   if(!S) return;
   if(S.div){ S.div.hint=true; renderDiv(); }
+  else if(S.longMul){ S.longMul.hint=true; renderLongMul(); }
   else if(S.col){ S.col.hint=true; renderCol(); }
   setPlayMood('hint');
   sTap();
