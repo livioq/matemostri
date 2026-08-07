@@ -79,6 +79,12 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
 .question{font-size:clamp(30px,10vw,42px);font-weight:700;color:var(--ink);text-align:center;padding:14px 0 6px}
 .answer{min-height:56px;margin:0 auto;width:min(220px,70%);border-bottom:3px solid var(--pen);text-align:center;font-size:36px;font-weight:700;color:var(--pen);padding-bottom:4px}
 .answer.empty::after{content:"?";color:rgba(214,48,58,.28)}
+.stars{display:flex;gap:2px;align-items:center;justify-content:center;flex:1;margin:0 8px;line-height:1}
+.stars .star{font-size:15px;color:rgba(27,58,140,.22);transition:color .2s,transform .2s}
+.stars .star.helped{color:rgba(242,185,59,.45)}
+.stars .star.won{color:var(--gold);text-shadow:0 0 6px rgba(242,185,59,.55)}
+.stars .star.fresh{animation:starPop .45s ease-out}
+@keyframes starPop{0%{transform:scale(.4) rotate(-25deg)}60%{transform:scale(1.35) rotate(8deg)}100%{transform:scale(1) rotate(0)}}
 .tagline{text-align:center;font-size:12px;font-weight:700;color:var(--ink-soft);margin-top:8px}
 .prompt{text-align:center;font-weight:800;color:var(--ink);font-size:15px;min-height:38px;margin:2px 0 6px;line-height:1.25}
 .feedback{text-align:center;font-weight:800;font-size:18px;min-height:24px;margin-top:8px}
@@ -325,7 +331,7 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
   <section id="s-play" class="screen">
     <div class="qhead">
       <button class="link" id="quitPlay">exit</button>
-      <span id="progress" class="mono">1/10</span>
+      <span id="progress" class="stars" role="img" aria-label="no stars yet"></span>
       <div class="play-monster" id="playPet" aria-hidden="true"></div>
     </div>
     <div class="card" id="qcard">
@@ -781,27 +787,21 @@ function buildColumn(op,a,b){
   const steps=[];
   if(op==='add'){
     let carry=0;
-    const leftmost=Math.min(ad.findIndex(v=>v!==null),bd.findIndex(v=>v!==null));
     for(let i=wid-1;i>=0;i--){
       if(ad[i]===null&&bd[i]===null&&carry===0) break;
       const tot=(ad[i]||0)+(bd[i]||0)+carry;
-      if(i===leftmost&&tot>=10){
-        steps.push({t:'final',col:i,want:String(tot),x:ad[i],y:bd[i],carry:carry,cols:[i-1,i]});
-        break;
-      }
       steps.push({t:'res',col:i,want:String(tot%10),x:ad[i],y:bd[i],carry:carry});
       carry=Math.floor(tot/10);
-      if(carry>0&&i>0) steps.push({t:'carry',col:i-1,want:String(carry)});
+      // A column with no digits of its own gets no carry mark above it. The carried digit
+      // is written straight into the answer on the next turn, so the child always works
+      // right to left: ones, then tens, then the one that spills into the hundreds.
+      if(carry>0&&i>0&&!(ad[i-1]===null&&bd[i-1]===null)) steps.push({t:'carry',col:i-1,want:String(carry)});
     }
   }else if(op==='mul'){
     const m=Number(b); let carry=0,leftmost=ad.findIndex(v=>v!==null);
     for(let i=wid-1;i>=0;i--){
       if(ad[i]===null&&carry===0) break;
       const tot=(ad[i]||0)*m+carry;
-      if(i===leftmost&&tot>=10){
-        steps.push({t:'mulFinal',col:i,want:String(tot),x:ad[i],m:m,carry:carry,cols:[i-1,i]});
-        break;
-      }
       steps.push({t:'res',col:i,want:String(tot%10),x:ad[i],m:m,carry:carry});
       carry=Math.floor(tot/10);
       if(carry>0&&i>leftmost) steps.push({t:'mulCarry',row:0,col:i-1,anchorCol:i,want:String(carry),placement:'side'});
@@ -850,14 +850,14 @@ function buildLongMultiplication(a,b){
     const digits=upper.split('').reverse().map(Number);
     digits.forEach((digit,k)=>{
       const total=digit*multiplier+carry,col=width-1-offset-k;
-      if(k===digits.length-1&&total>=10){
-        steps.push({t:'partialFinal',row:row,col:col,want:String(total),cols:[col-1,col],digit:digit,multiplier:multiplier,carry:carry});
-        carry=0; return;
-      }
       steps.push({t:'partial',row:row,col:col,want:String(total%10),digit:digit,multiplier:multiplier,carry:carry});
       carry=Math.floor(total/10);
       if(carry&&k<digits.length-1) steps.push({t:'partialCarry',row:row,col:col-1,anchorCol:col,want:String(carry),placement:'side'});
     });
+    // what the last multiplication carried is written on its own, one column further left,
+    // so this row is also filled in right to left rather than two digits at once
+    if(carry) steps.push({t:'partial',row:row,col:width-1-offset-digits.length,want:String(carry),leading:true,multiplier:multiplier,carry:carry});
+    carry=0;
     partials.push(a*multiplier*Math.pow(10,offset));
   });
   let carry=0;
@@ -1139,18 +1139,34 @@ function setPlayMood(mood){
   clearTimeout(sleepyTimer); sleepyTimer=setTimeout(()=>{ if(S&&$('s-play').classList.contains('on')) $('playPet').innerHTML=monsterMarkup(art,'inactive','',petName()); },30000);
 }
 
+/* one space per question, filling with a star as it is answered. A star won without help
+   is gold; one the child needed a hand with still lights, just softly, because an empty
+   space next to a right answer would read as a telling-off. */
+function renderStars(justWon){
+  const box=$('progress'); if(!box||!S) return;
+  box.innerHTML='';
+  for(let i=0;i<S.total;i++){
+    const mark=S.marks[i],s=document.createElement('span');
+    s.className='star'+(mark?' '+mark:'')+(justWon&&i===S.marks.length-1?' fresh':'');
+    s.textContent=mark?'★':'☆';
+    box.appendChild(s);
+  }
+  const won=S.marks.filter(m=>m==='won').length;
+  box.setAttribute('aria-label',won+' of '+S.total+' stars, '+S.pass+' needed');
+}
+function markQuestion(mark){ if(S.marks.length<S.total) S.marks.push(mark); renderStars(true); }
 function startSession(stageId){
   const stage=STAGE_BY_ID(stageId);
   if(!stage||stageStatus(P,stage.id)==='locked') return;
   const plan=sessionPlan(stage);
-  S={gid:stage.gid,vid:stage.id,stageId:stage.id,stage:stage,wasCompleted:P.stageProgress.completed[stage.id],i:0,right:0,mastered:0,streak:0,best:0,q:null,input:'',col:null,longMul:null,div:null,locked:false,attempt:0,mode:'answer',crackMoment:false,reward:null,total:plan.total,pass:plan.pass};
+  S={gid:stage.gid,vid:stage.id,stageId:stage.id,stage:stage,wasCompleted:P.stageProgress.completed[stage.id],i:0,right:0,mastered:0,streak:0,best:0,q:null,input:'',col:null,longMul:null,div:null,locked:false,attempt:0,mode:'answer',crackMoment:false,reward:null,total:plan.total,pass:plan.pass,marks:[]};
   show('s-play'); nextQuestion();
 }
 function nextQuestion(){
   if(S.i>=S.total){ endSession(); return; }
   S.i++; S.input=''; S.locked=false; S.attempt=0; S.mode='answer'; S.crackMoment=false; $('fb').textContent='';
   setPlayMood('beforeQuestion');
-  $('progress').textContent=S.i+'/'+S.total;
+  renderStars(false);
   const made=generateLessonQuestion(S.stage,S.i);
   $('colHint').style.display='none'; $('hintBtn').style.display='none';
   if(made.kind==='n'){
@@ -1245,13 +1261,14 @@ function crackMessage(){ return S.crackMoment?'<br><span class="stamp">The egg w
 function award(mastered){
   S.streak++; S.right++; P.right++;
   if(mastered) S.mastered++;
+  markQuestion(mastered?'won':'helped');
   if(S.streak>P.best) P.best=S.streak;
   if(S.streak>S.best) S.best=S.streak;
   P.total=(Number(P.total)||0)+1;
   if(S.stageId==='add_1digit'&&!S.wasCompleted&&S.mastered===5) S.crackMoment=true;
 }
 /* the child got there, but with help: the answer counts, the mastery does not */
-function awardHelped(){ S.right++; P.right++; S.streak=0; P.total=(Number(P.total)||0)+1; }
+function awardHelped(){ S.right++; P.right++; S.streak=0; P.total=(Number(P.total)||0)+1; markQuestion('helped'); }
 function awardCollectible(){
   const item=COLLECTIBLES[Math.floor(Math.random()*COLLECTIBLES.length)];
   P.collectibles[item.id]=(P.collectibles[item.id]||0)+1;
@@ -1299,14 +1316,13 @@ function colPrompt(M){
   if(!st) return '';
   if(M.op==='add'){
     if(st.t==='carry') return 'Carry the '+st.want+' into the next column.';
-    if(st.t==='final') return (st.x||0)+' + '+(st.y||0)+(st.carry?' + '+st.carry:'')+'. This is the final column, so write the complete '+st.want+'.';
+    if(st.x===null&&st.y===null&&st.carry) return 'Nothing left to add. Write the carried '+st.carry+'.';
     const parts=[]; if(st.x!==null)parts.push(st.x); if(st.y!==null)parts.push(st.y); if(st.carry)parts.push(st.carry);
     if(parts.length===1) return 'Only '+parts[0]+' here. Write it down.';
     return parts.join(' + ')+'. Write the ones digit here.';
   }
   if(M.op==='mul'){
     if(st.t==='mulCarry') return 'Keep the carried '+st.want+' beside this multiplication step.';
-    if(st.t==='mulFinal') return st.x+' × '+st.m+(st.carry?' + '+st.carry:'')+'. This is the final digit, so write the complete '+st.want+'.';
     if(st.x===null) return 'Nothing left to multiply. Write the carried '+st.carry+'.';
     return st.x+' \u00D7 '+st.m+(st.carry?' + '+st.carry:'')+'. Write the ones digit here.';
   }
@@ -1347,9 +1363,9 @@ function renderCol(){
   rule.className='rule'; rule.style.gridRow=4; rule.style.gridColumn='1 / span '+cols;
   g.appendChild(rule);
   const resultCols=new Set();
-  M.steps.forEach(s=>{ if(s.t==='res') resultCols.add(s.col); else if(s.t==='final'||s.t==='mulFinal') s.cols.forEach(c=>resultCols.add(c)); });
+  M.steps.forEach(s=>{ if(s.t==='res') resultCols.add(s.col); });
   resultCols.forEach(col=>{
-    const gc=col+2,active=st&&(st.t==='res'&&st.col===col||(st.t==='final'||st.t==='mulFinal')&&st.cols.includes(col));
+    const gc=col+2,active=st&&st.t==='res'&&st.col===col;
     let typed='';
     if(M.ent.res[col]!==undefined) typed=M.ent.res[col];
     else if(active) typed=(st.t==='res'?M.buf:M.buf[st.cols.indexOf(col)])||'';
@@ -1370,7 +1386,6 @@ function renderCol(){
 function commitColumnStep(M){
   const st=M.steps[M.si]; if(!st) return null;
   if(st.t==='res') M.ent.res[st.col]=st.want;
-  else if(st.t==='final'||st.t==='mulFinal') st.cols.forEach((col,i)=>M.ent.res[col]=st.want[i]);
   else if(st.t==='carry') M.ent.carry[st.col]=st.want;
   else if(st.t==='mulCarry') M.ent.mulCarries[st.row]={value:st.want,anchorCol:st.anchorCol};
   else if(st.t==='ann') M.ent.annotations[st.col].push({value:st.want,role:st.role});
@@ -1414,7 +1429,6 @@ function longMulPrompt(L){
   const st=L.steps[L.si]; if(!st) return '';
   if(st.t==='placeholder') return 'The tens row is worth tens. Put a 0 in the ones place.';
   if(st.t==='partialCarry') return 'Keep the carried '+st.want+' beside this partial-product step.';
-  if(st.t==='partialFinal') return st.digit+' × '+st.multiplier+(st.carry?' + '+st.carry:'')+'. This is the final digit, so write the complete '+st.want+'.';
   if(st.t==='partial'){
     if(st.leading) return 'Write the final carried '+st.want+' at the start of this row.';
     return st.digit+' × '+st.multiplier+(st.carry?' + '+st.carry:'')+'. Write the ones digit in this partial row.';
@@ -1434,13 +1448,10 @@ function renderLongMul(){
   cell(3,1,'×','op'); rule(4);
   [0,1].forEach(row=>{
     Object.entries(L.ent.partials[row]).forEach(([col,value])=>cell(5+row,Number(col)+2,value,'typed'));
-    if(st&&st.row===row&&(st.t==='partial'||st.t==='placeholder'||st.t==='partialFinal')){
-      const activeCols=st.t==='partialFinal'?st.cols:[st.col];
-      activeCols.forEach((col,i)=>cell(5+row,col+2,(st.t==='partialFinal'?L.buf[i]:L.buf)||'','slot act'));
-    }
+    if(st&&st.row===row&&(st.t==='partial'||st.t==='placeholder')) cell(5+row,st.col+2,L.buf||'','slot act');
     const carry=L.ent.partialCarries[row],activeCarry=st&&st.t==='partialCarry'&&st.row===row;
     if(carry||activeCarry){
-      const activeRow=st&&(st.t==='partial'||st.t==='partialCarry'||st.t==='partialFinal'||st.t==='placeholder')?st.row:null;
+      const activeRow=st&&(st.t==='partial'||st.t==='partialCarry'||st.t==='placeholder')?st.row:null;
       cell(5+row,cols+1,'carry '+(activeCarry?L.buf:carry.value),'mul-carry-note'+(activeRow!==row?' retired':''));
     }
   });
@@ -1460,7 +1471,6 @@ function renderLongMul(){
 function commitLongMultiplicationStep(L){
   const st=L.steps[L.si]; if(!st) return null;
   if(st.t==='partial'||st.t==='placeholder') L.ent.partials[st.row][st.col]=st.want;
-  else if(st.t==='partialFinal') st.cols.forEach((col,i)=>L.ent.partials[st.row][col]=st.want[i]);
   else if(st.t==='partialCarry') L.ent.partialCarries[st.row]={value:st.want,anchorCol:st.anchorCol};
   else if(st.t==='sum') L.ent.sum[st.col]=st.want;
   else if(st.t==='sumCarry') L.ent.sumCarry[st.col]=st.want;

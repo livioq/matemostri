@@ -47,18 +47,39 @@ function subtractionAnswer(model) {
     .sort((a, b) => a.col - b.col).map(step => step.want).join(''));
 }
 
+// answer digits are written one column at a time, right to left, the way they are on paper
+function answerDigitOrder(model) {
+  return plain(model.steps.filter(step => step.t === 'res').map(step => step.col));
+}
+function hasDigits(model, col) {
+  return model.ad[col] !== null || model.bd[col] !== null;
+}
+
+assert.deepEqual(
+  plain(context.buildColumn('add', 63, 71).steps.map(step => step.t + ':' + step.want)),
+  ['res:4', 'res:3', 'res:1'],
+  '63 + 71 is written 4, then 3, then the 1 that spills over — not 4, then 1, then 3');
+
 [
-  [61, 63, '12'],
-  [58, 67, '12'],
-  [86, 79, '16'],
-  [487, 658, '11']
-].forEach(([a, b, finalValue]) => {
+  [61, 63],
+  [58, 67],
+  [86, 79],
+  [487, 658],
+  [12, 13],
+  [999, 1],
+  [1000, 9999]
+].forEach(([a, b]) => {
   const model = context.buildColumn('add', a, b);
-  const final = model.steps.at(-1);
-  assert.equal(final.t, 'final', `${a} + ${b} ends with one complete final-column action`);
-  assert.equal(final.want, finalValue);
-  assert.equal(model.steps.some(step => step.t === 'carry' && step.col < final.col), false,
-    'no carry is created in an empty leading column');
+  const order = answerDigitOrder(model);
+  assert.deepEqual(order, [...order].sort((x, y) => y - x),
+    `${a} + ${b} writes its answer digits right to left`);
+  assert.equal(new Set(order).size, order.length, `${a} + ${b} writes each answer column once`);
+  model.steps.filter(step => step.t === 'carry').forEach(step => {
+    assert.equal(hasDigits(model, step.col), true,
+      `${a} + ${b} puts no carry mark above a column with no digits of its own`);
+  });
+  assert.equal(model.steps.some(step => step.want.length > 1), false,
+    `${a} + ${b} never asks for two digits in one go`);
   while (model.steps[model.si]) context.commitColumnStep(model);
   const result = Number(Object.keys(model.ent.res).sort((x, y) => x - y).map(col => model.ent.res[col]).join(''));
   assert.equal(result, a + b);
@@ -127,11 +148,14 @@ assert.equal(zeroChain.ent.annotations.flat().length, 0, 'zero-search steps do n
 ].forEach(([a, b, expected]) => {
   const model = context.buildColumn('mul', a, b);
   const carry = model.steps.find(step => step.t === 'mulCarry');
-  const final = model.steps.at(-1);
   assert.equal(carry.placement, 'side');
   assert.equal(carry.row, 0);
-  assert.equal(final.t, 'mulFinal');
   assert.equal(model.steps.some(step => step.t === 'carry'), false, 'multiplication does not use addition carry placement');
+  const mulOrder = answerDigitOrder(model);
+  assert.deepEqual(mulOrder, [...mulOrder].sort((x, y) => y - x),
+    `${a} × ${b} writes its answer digits right to left too`);
+  assert.equal(model.steps.some(step => step.want.length > 1), false,
+    `${a} × ${b} never asks for two digits in one go`);
   while (model.steps[model.si]) context.commitColumnStep(model);
   const result = Number(Object.keys(model.ent.res).sort((x, y) => x - y).map(col => model.ent.res[col]).join(''));
   assert.equal(result, expected);
@@ -159,8 +183,21 @@ assert.equal(zeroChain.ent.annotations.flat().length, 0, 'zero-search steps do n
 const example = context.buildLongMultiplication(23, 14);
 assert.deepEqual([...example.partials], [92, 230]);
 const largeExample = context.buildLongMultiplication(99, 99);
-assert.ok(largeExample.steps.some(step => step.t === 'partialFinal' && step.row === 0));
-assert.ok(largeExample.steps.some(step => step.t === 'partialFinal' && step.row === 1));
+// 99 × 99 carries out of the last multiplication in both rows: that carry is written on
+// its own, right to left, not tacked onto the previous digit as a two-digit entry
+[0, 1].forEach(row => {
+  const leading = largeExample.steps.filter(step => step.t === 'partial' && step.leading && step.row === row);
+  assert.equal(leading.length, 1, `row ${row} writes its final carried digit once`);
+  assert.equal(leading[0].want, '8');
+  const rowCols = plain(largeExample.steps
+    .filter(step => (step.t === 'partial' || step.t === 'placeholder') && step.row === row)
+    .map(step => step.col));
+  assert.deepEqual(rowCols, [...rowCols].sort((x, y) => y - x), `row ${row} is filled right to left`);
+});
+assert.equal(largeExample.steps.some(step => step.want.length > 1), false,
+  'no step in a long multiplication asks for two digits at once');
+assert.match(context.longMulPrompt({steps:[{t:'partial', leading:true, want:'8'}], si:0}),
+  /final carried 8/, 'and the child is told what that digit is');
 
 for (const index of [1, 2, 3]) {
   const question = context.twoDigitColumnAddition(index);
@@ -334,14 +371,15 @@ assert.equal(String(fallback.d).length, 1, 'the built-in fallback question also 
 assert.equal(Number(fallback.N), fallback.d * Number(fallback.quot) + fallback.rest);
 
 class FakeElement {
-  constructor() { this.children = []; this.style = {}; this.className = ''; this.textContent = ''; }
+  constructor() { this.children = []; this.style = {}; this.className = ''; this.textContent = ''; this.attrs = {}; }
   appendChild(child) { this.children.push(child); return child; }
+  setAttribute(name, value) { this.attrs[name] = value; }
   set innerHTML(value) { this.children = []; this._innerHTML = value; }
   get innerHTML() { return this._innerHTML || ''; }
 }
 const uiElements = {};
 const resetUi = () => {
-  ['colGrid', 'colPrompt', 'colHint', 'hintBtn'].forEach(id => { uiElements[id] = new FakeElement(); });
+  ['colGrid', 'colPrompt', 'colHint', 'hintBtn', 'progress'].forEach(id => { uiElements[id] = new FakeElement(); });
 };
 resetUi();
 const uiContext = {
@@ -354,8 +392,39 @@ vm.runInContext([
   functionSource('colPrompt'),
   functionSource('renderCol'),
   functionSource('longMulPrompt'),
-  functionSource('renderLongMul')
+  functionSource('renderLongMul'),
+  functionSource('renderStars'),
+  functionSource('markQuestion')
 ].join('\n'), uiContext);
+
+// one star space per question, filled as they are answered
+resetUi();
+uiContext.S = {total:5, pass:4, marks:[]};
+uiContext.renderStars(false);
+assert.equal(uiElements.progress.children.length, 5, 'a five-question lesson shows five spaces');
+assert.equal(uiElements.progress.children.every(c => c.textContent === '\u2606'), true, 'all empty to begin with');
+assert.match(uiElements.progress.attrs['aria-label'], /0 of 5 stars, 4 needed/);
+
+uiContext.markQuestion('won');
+uiContext.markQuestion('helped');
+assert.deepEqual(uiElements.progress.children.map(c => c.textContent),
+  ['\u2605', '\u2605', '\u2606', '\u2606', '\u2606'], 'answered questions show a star, the rest stay empty');
+assert.match(uiElements.progress.children[0].className, /won/);
+assert.match(uiElements.progress.children[1].className, /helped/,
+  'a star earned with help still lights, just softly');
+assert.match(uiElements.progress.children[1].className, /fresh/, 'the new star is the one that pops');
+assert.equal(/fresh/.test(uiElements.progress.children[0].className), false, 'and only the new one');
+assert.match(uiElements.progress.attrs['aria-label'], /1 of 5 stars/,
+  'only unhelped stars count towards the pass mark');
+
+// the row can never outgrow the lesson
+for (let i = 0; i < 10; i += 1) uiContext.markQuestion('won');
+assert.equal(uiContext.S.marks.length, 5, 'no more marks than there are questions');
+assert.equal(uiElements.progress.children.length, 5);
+
+uiContext.S = {total:10, pass:8, marks:[]};
+uiContext.renderStars(false);
+assert.equal(uiElements.progress.children.length, 10, 'a ten-question lesson shows ten');
 
 const revealUi = context.buildColumn('sub', 730, 141);
 context.commitColumnStep(revealUi);
