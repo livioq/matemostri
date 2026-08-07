@@ -910,19 +910,21 @@ function genHard(gid,tr){
   return genDivision(tr);
 }
 function genDivision(tr){
+  const tier=Math.max(0,Math.min(3,tr|0));
   for(let guard=0;guard<300;guard++){
-    const d = tr>=3?rnd(11,29):rnd(2,[5,9,9,9][tr]);
-    const qLen = tr<=1?2:3;
+    // the divisor stays a single digit: the lesson teaches the process, not two new things at once
+    const d = rnd(2,[5,9,9,9][tier]);
+    const qLen = tier<=1?2:3;
     let q=''; for(let i=0;i<qLen;i++) q+=rnd(1,9);
     q=parseInt(q,10);
-    const rest = tr>=2?rnd(0,d-1):0;
+    const rest = tier>=2?rnd(0,d-1):0;
     const N=d*q+rest;
     if(String(N).length>4) continue;
     const steps=divSteps(String(N),d);
     if(steps.some(s=>s.q===0)) continue;
     return {div:true,N:String(N),d:d,steps:steps,quot:String(q),rest:rest};
   }
-  return {div:true,N:'144',d:12,steps:divSteps('144',12),quot:'12',rest:0};
+  return {div:true,N:'126',d:6,steps:divSteps('126',6),quot:'21',rest:0};
 }
 function generateLessonQuestion(stage,questionIndex){
   if(stage.id==='add_1digit'){
