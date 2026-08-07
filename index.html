@@ -310,18 +310,7 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
     <div style="height:12px"></div>
     <button class="btn" id="playBtn">Continue the adventure</button>
     <div style="height:10px"></div>
-    <button class="btn ghost" id="journeyBtn">The magical journey</button>
-    <div style="height:10px"></div>
     <button class="btn ghost" id="setBtn">Settings</button>
-  </section>
-
-  <section id="s-journey" class="screen">
-    <div class="row" style="justify-content:space-between">
-      <button class="link" id="journeyBack">back</button>
-      <span class="eyebrow">14 enchanted lessons</span>
-    </div>
-    <div class="journey-hero"><h1 style="font-size:25px" id="journeyTitle">A magical maths journey</h1><p>Each lesson lights the path and helps your friend grow.</p></div>
-    <div class="journey" id="journeyList"></div>
   </section>
 
   <section id="s-menu" class="screen">
@@ -329,7 +318,7 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
       <button class="link" id="menuBack">back</button>
       <span class="eyebrow" id="menuProgress"></span>
     </div>
-    <div class="journey-hero"><h1 style="font-size:24px">Choose a glowing path</h1><p>Complete each enchanted lesson to help your friend grow.</p></div>
+    <div class="journey-hero"><h1 style="font-size:25px" id="menuTitle">A magical maths journey</h1><p>Each lesson lights the path and helps your friend grow.</p></div>
     <div class="journey" id="pickList"></div>
   </section>
 
@@ -373,6 +362,11 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
     <div class="row" style="justify-content:space-between">
       <div class="eyebrow" id="setWho">settings</div>
       <button class="link" id="setBack">close</button>
+    </div>
+    <div class="card">
+      <label class="eyebrow" for="setFriendName">your friend's name</label>
+      <div style="height:6px"></div>
+      <input type="text" id="setFriendName" maxlength="12" autocomplete="off" aria-label="Your magical friend's name">
     </div>
     <div class="card">
       <div class="eyebrow">age</div>
@@ -1046,19 +1040,6 @@ function renderStory(){
 function openStory(){ storyStep=0; $('friendName').value=petName(); renderStory(); show('s-story'); }
 function finishStory(){ captureFriendName(); P.storySeen=true; save(); renderHome(); show('s-home'); }
 
-function renderGrowthJourney(){
-  const L=$('journeyList'),count=completedCount(P); L.innerHTML='';
-  $('journeyTitle').textContent=petName()+"'s enchanted journey";
-  MATH_STAGES.forEach((stage,i)=>{
-    const status=stageStatus(P,stage.id),done=status==='completed',current=status==='available',row=document.createElement('div');
-    row.className='journey-stage '+status+(current?' current':'');
-    const art=done?monsterMarkup(artForCount(i+1),'idle','',petName()):current?monsterMarkup(P.monsterStage,'curious','',petName()):'<span class="silhouette" aria-hidden="true"></span>';
-    const note=done?'The path is glowing':current?'Ready for your next adventure':'Complete the previous lesson to light this path';
-    row.innerHTML='<span class="journey-art">'+art+'</span><span><span class="eyebrow">Lesson '+(i+1)+' · '+stage.magic+'</span><h3>'+stage.label+'</h3><p>'+note+'</p></span>';
-    L.appendChild(row);
-  });
-}
-
 function renderPlayers(){
   const L=$('playerList'); L.innerHTML='';
   DB.players.forEach(pl=>{
@@ -1086,18 +1067,18 @@ function renderHome(){
     '<div><b class="mono">'+P.right+'</b><span>kind answers</span></div>'+
     '<div><b class="mono">'+P.best+'</b><span>best streak</span></div>';
   $('playBtn').textContent=count===0?'Help the egg awaken':count===MATH_STAGES.length?'Revisit the enchanted lessons':'Continue '+petName()+"'s adventure";
-  $('journeyBtn').textContent=petName()+"'s magical journey";
 }
 
 function renderMenu(){
   const count=completedCount(P),L=$('pickList');
+  $('menuTitle').textContent=petName()+"'s enchanted journey";
   $('menuProgress').textContent=count+' of '+MATH_STAGES.length+' path lights'; L.innerHTML='';
   MATH_STAGES.forEach((stage,i)=>{
     const status=stageStatus(P,stage.id),locked=status==='locked',done=status==='completed';
     const prev=MATH_STAGES[i-1],b=document.createElement('button');
     b.className='journey-stage '+status; b.disabled=locked;
     const art=done?monsterMarkup(artForCount(i+1),'idle','',petName()):locked?'<span class="silhouette" aria-hidden="true"></span>':monsterMarkup(P.monsterStage,'curious','',petName());
-    const requirement=locked?'Help '+petName()+' complete '+prev.label+' first':done?'Path glowing · replay to find a collectible':'Ready now · light the path with 8 correct answers';
+    const requirement=locked?'Help '+petName()+' complete '+prev.label+' first':done?'Path glowing · replay to find a collectible':'Ready now · light the path with '+sessionPlan(stage).pass+' correct answers';
     b.innerHTML='<span class="journey-art">'+art+'</span><span><span class="eyebrow">Lesson '+(i+1)+' · '+stage.magic+'</span><h3>'+stage.label+'</h3><p>'+requirement+'</p>'+
       (done?'<span class="accessory-chip">✨ Path glowing</span>':'')+'</span>';
     if(!locked) b.onclick=()=>startSession(stage.id);
@@ -1107,8 +1088,17 @@ function renderMenu(){
 
 
 /* ---------------- settings ---------------- */
+/* the name belongs to the child, so it is theirs to change later, not only at the story */
+function captureSettingsName(){
+  if(!P) return;
+  const value=$('setFriendName').value.trim();
+  P.momoName=value||'Momo';
+  $('setFriendName').value=P.momoName;
+  save();
+}
 function renderSettings(){
   $('setWho').textContent=P.name;
+  $('setFriendName').value=petName();
   const ar=$('setAge'); ar.innerHTML='';
   [6,7,8,9,10,11].forEach(a=>{
     const b=document.createElement('button');
@@ -1652,11 +1642,10 @@ $('saveNew').onclick=()=>{
 };
 $('switchPlayer').onclick=()=>{ renderPlayers(); show('s-players'); };
 $('playBtn').onclick=()=>{ renderMenu(); show('s-menu'); };
-$('journeyBtn').onclick=()=>{ renderGrowthJourney(); show('s-journey'); };
-$('journeyBack').onclick=()=>{ renderHome(); show('s-home'); };
 $('menuBack').onclick=()=>{ renderHome(); show('s-home'); };
 $('setBtn').onclick=()=>{ renderSettings(); show('s-set'); };
-$('setBack').onclick=()=>{ renderHome(); show('s-home'); };
+$('setFriendName').onchange=()=>{ captureSettingsName(); renderSettings(); };
+$('setBack').onclick=()=>{ captureSettingsName(); renderHome(); show('s-home'); };
 $('quitPlay').onclick=()=>{ save(); renderHome(); show('s-home'); };
 $('againBtn').onclick=()=>{ renderMenu(); show('s-menu'); };
 $('endHome').onclick=()=>{ renderHome(); show('s-home'); };

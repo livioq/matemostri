@@ -488,6 +488,13 @@ source.split('\n').forEach((line, i) => {
 assert.equal(/\bGROUPS\b/.test(source.replace(/STAGE_GROUPS/g, '')), false,
   'the xp-only GROUPS table is gone');
 
+// what the lesson list promises has to come from sessionPlan, or it drifts from the pass mark
+const menuSource = functionSource('renderMenu');
+assert.match(menuSource, /sessionPlan\(stage\)\.pass/,
+  'the lesson list reads the pass mark rather than naming a number');
+assert.equal(/\d+ correct answers/.test(source), false,
+  'no screen hard-codes how many correct answers a lesson needs');
+
 // migrate() end to end on the whole model section: saved games must survive the cleanup
 const modelStart = source.indexOf('/* ---------------- model ---------------- */');
 const modelEnd = source.indexOf('/* ---------------- pet ---------------- */');
