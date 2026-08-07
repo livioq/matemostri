@@ -1126,6 +1126,12 @@ function renderSettings(){
 
 /* ---------------- gameplay ---------------- */
 const SESSION=10;
+/* A four-digit column is a lot of work for one question, so the harder lessons ask for
+   fewer of them. The share needed to light the path stays the same 8 in 10 throughout. */
+function sessionPlan(stage){
+  const total=stage&&stage.digits===4?5:stage&&stage.digits===3?7:SESSION;
+  return {total:total,pass:Math.ceil(total*0.8)};
+}
 let S=null;
 let pendingUnlockStage=null;
 let sleepyTimer=null;
@@ -1139,14 +1145,15 @@ function setPlayMood(mood){
 function startSession(stageId){
   const stage=STAGE_BY_ID(stageId);
   if(!stage||stageStatus(P,stage.id)==='locked') return;
-  S={gid:stage.gid,vid:stage.id,stageId:stage.id,stage:stage,wasCompleted:P.stageProgress.completed[stage.id],i:0,right:0,mastered:0,streak:0,best:0,q:null,input:'',col:null,longMul:null,div:null,locked:false,attempt:0,mode:'answer',crackMoment:false,reward:null};
+  const plan=sessionPlan(stage);
+  S={gid:stage.gid,vid:stage.id,stageId:stage.id,stage:stage,wasCompleted:P.stageProgress.completed[stage.id],i:0,right:0,mastered:0,streak:0,best:0,q:null,input:'',col:null,longMul:null,div:null,locked:false,attempt:0,mode:'answer',crackMoment:false,reward:null,total:plan.total,pass:plan.pass};
   show('s-play'); nextQuestion();
 }
 function nextQuestion(){
-  if(S.i>=SESSION){ endSession(); return; }
+  if(S.i>=S.total){ endSession(); return; }
   S.i++; S.input=''; S.locked=false; S.attempt=0; S.mode='answer'; S.crackMoment=false; $('fb').textContent='';
   setPlayMood('beforeQuestion');
-  $('progress').textContent=S.i+'/'+SESSION;
+  $('progress').textContent=S.i+'/'+S.total;
   const made=generateLessonQuestion(S.stage,S.i);
   $('colHint').style.display='none'; $('hintBtn').style.display='none';
   if(made.kind==='n'){
@@ -1256,7 +1263,7 @@ function awardCollectible(){
 }
 
 function maybeCompleteStage(){
-  if(!S.stageId||S.mastered<8) return false;
+  if(!S.stageId||S.mastered<S.pass) return false;
   if(S.wasCompleted){ S.reward=awardCollectible(); save(); return 'collectible'; }
   const beforeArt=P.monsterStage;
   const next=completeMathStage(P,S.stageId);
@@ -1273,8 +1280,8 @@ function maybeCompleteStage(){
 
 function endSession(){
   const result=maybeCompleteStage(); save();
-  $('endTitle').textContent=S.mastered>=8?(S.wasCompleted?'Treasure discovered!':'The path is glowing!'):'The magic needs another try';
-  $('endPet').innerHTML=monsterMarkup(P.monsterStage,S.mastered>=8?'streak':'idle','bob',petName());
+  $('endTitle').textContent=S.mastered>=S.pass?(S.wasCompleted?'Treasure discovered!':'The path is glowing!'):'The magic needs another try';
+  $('endPet').innerHTML=monsterMarkup(P.monsterStage,S.mastered>=S.pass?'streak':'idle','bob',petName());
   $('endStats').innerHTML=
     '<div><b class="mono">'+S.mastered+'</b><span>answers mastered</span></div>'+
     '<div><b class="mono">'+S.best+'</b><span>brightest streak</span></div>'+
@@ -1282,7 +1289,7 @@ function endSession(){
   if(result==='collectible'){
     const cosmetic=S.reward.newCosmetics[0];
     $('endReward').textContent=petName()+' found '+S.reward.item.emoji+' '+S.reward.item.name+'!'+(cosmetic?' A new '+cosmetic.name+' appeared in the magic wardrobe!':'');
-  }else if(S.mastered<8) $('endReward').textContent=petName()+' is proud of every try. Master 8 answers to light this path.';
+  }else if(S.mastered<S.pass) $('endReward').textContent=petName()+' is proud of every try. Master '+S.pass+' answers to light this path.';
   else $('endReward').textContent=petName()+' has grown because you learned together.';
   show('s-end');
 }

@@ -37,7 +37,9 @@ vm.runInContext([
   functionSource('genDivision'),
   functionSource('generateLessonQuestion'),
   functionSource('divPlan'),
-  functionSource('divPromptText')
+  functionSource('divPromptText'),
+  source.match(/const SESSION=\d+;/)[0],
+  functionSource('sessionPlan')
 ].join('\n'), context);
 
 function subtractionAnswer(model) {
@@ -186,6 +188,32 @@ for (let index = 1; index <= 12; index += 1) {
   }
 }
 
+// harder lessons ask for fewer questions, and the share needed to pass moves with them
+[
+  [{id:'add_4column', digits:4}, 5, 4],
+  [{id:'sub_4column', digits:4}, 5, 4],
+  [{id:'add_3column', digits:3}, 7, 6],
+  [{id:'sub_3column', digits:3}, 7, 6],
+  [{id:'add_2column', digits:2}, 10, 8],
+  [{id:'sub_2column', digits:2}, 10, 8],
+  [{id:'mul_1x2', digits:2}, 10, 8],
+  [{id:'mul_2x2', digits:2}, 10, 8],
+  [{id:'add_1digit'}, 10, 8],
+  [{id:'div_long', mode:'division'}, 10, 8]
+].forEach(([stage, total, pass]) => {
+  const plan = context.sessionPlan(stage);
+  assert.equal(plan.total, total, `${stage.id} asks ${total} questions`);
+  assert.equal(plan.pass, pass, `${stage.id} needs ${pass} mastered to light the path`);
+  assert.ok(plan.pass <= plan.total, `${stage.id} is possible to complete at all`);
+  assert.ok(plan.pass >= 1, `${stage.id} cannot be passed with nothing mastered`);
+  assert.equal(plan.pass, Math.ceil(plan.total * 0.8), `${stage.id} keeps the same share as 8 in 10`);
+});
+assert.equal(context.sessionPlan().total, 10, 'a missing stage falls back to the full session');
+assert.equal(context.sessionPlan({id:'add_4column', digits:4}).total < context.sessionPlan({id:'add_3column', digits:3}).total,
+  true, 'four-digit lessons are shorter than three-digit ones');
+assert.equal(context.sessionPlan({id:'add_3column', digits:3}).total < context.sessionPlan({id:'add_2column', digits:2}).total,
+  true, 'three-digit lessons are shorter than two-digit ones');
+
 // the worked example the teaching rules are written around
 const canonical = context.buildColumn('sub', 84, 16);
 assert.equal(subtractionAnswer(canonical), 68);
@@ -215,7 +243,7 @@ for (const tier of [0, 1]) {
 }
 
 const longDivisionStage = {id:'div_long', gid:'div', label:'Long division', mode:'division'};
-const sessionLength = Number(source.match(/const SESSION=(\d+);/)[1]);
+const sessionLength = context.sessionPlan(longDivisionStage).total;
 const rampWidths = {};
 const rampLeftovers = {};
 for (let index = 1; index <= sessionLength; index += 1) {
