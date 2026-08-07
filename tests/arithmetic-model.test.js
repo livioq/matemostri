@@ -47,18 +47,39 @@ function subtractionAnswer(model) {
     .sort((a, b) => a.col - b.col).map(step => step.want).join(''));
 }
 
+// answer digits are written one column at a time, right to left, the way they are on paper
+function answerDigitOrder(model) {
+  return plain(model.steps.filter(step => step.t === 'res').map(step => step.col));
+}
+function hasDigits(model, col) {
+  return model.ad[col] !== null || model.bd[col] !== null;
+}
+
+assert.deepEqual(
+  plain(context.buildColumn('add', 63, 71).steps.map(step => step.t + ':' + step.want)),
+  ['res:4', 'res:3', 'res:1'],
+  '63 + 71 is written 4, then 3, then the 1 that spills over — not 4, then 1, then 3');
+
 [
-  [61, 63, '12'],
-  [58, 67, '12'],
-  [86, 79, '16'],
-  [487, 658, '11']
-].forEach(([a, b, finalValue]) => {
+  [61, 63],
+  [58, 67],
+  [86, 79],
+  [487, 658],
+  [12, 13],
+  [999, 1],
+  [1000, 9999]
+].forEach(([a, b]) => {
   const model = context.buildColumn('add', a, b);
-  const final = model.steps.at(-1);
-  assert.equal(final.t, 'final', `${a} + ${b} ends with one complete final-column action`);
-  assert.equal(final.want, finalValue);
-  assert.equal(model.steps.some(step => step.t === 'carry' && step.col < final.col), false,
-    'no carry is created in an empty leading column');
+  const order = answerDigitOrder(model);
+  assert.deepEqual(order, [...order].sort((x, y) => y - x),
+    `${a} + ${b} writes its answer digits right to left`);
+  assert.equal(new Set(order).size, order.length, `${a} + ${b} writes each answer column once`);
+  model.steps.filter(step => step.t === 'carry').forEach(step => {
+    assert.equal(hasDigits(model, step.col), true,
+      `${a} + ${b} puts no carry mark above a column with no digits of its own`);
+  });
+  assert.equal(model.steps.some(step => step.want.length > 1), false,
+    `${a} + ${b} never asks for two digits in one go`);
   while (model.steps[model.si]) context.commitColumnStep(model);
   const result = Number(Object.keys(model.ent.res).sort((x, y) => x - y).map(col => model.ent.res[col]).join(''));
   assert.equal(result, a + b);
@@ -127,11 +148,14 @@ assert.equal(zeroChain.ent.annotations.flat().length, 0, 'zero-search steps do n
 ].forEach(([a, b, expected]) => {
   const model = context.buildColumn('mul', a, b);
   const carry = model.steps.find(step => step.t === 'mulCarry');
-  const final = model.steps.at(-1);
   assert.equal(carry.placement, 'side');
   assert.equal(carry.row, 0);
-  assert.equal(final.t, 'mulFinal');
   assert.equal(model.steps.some(step => step.t === 'carry'), false, 'multiplication does not use addition carry placement');
+  const mulOrder = answerDigitOrder(model);
+  assert.deepEqual(mulOrder, [...mulOrder].sort((x, y) => y - x),
+    `${a} × ${b} writes its answer digits right to left too`);
+  assert.equal(model.steps.some(step => step.want.length > 1), false,
+    `${a} × ${b} never asks for two digits in one go`);
   while (model.steps[model.si]) context.commitColumnStep(model);
   const result = Number(Object.keys(model.ent.res).sort((x, y) => x - y).map(col => model.ent.res[col]).join(''));
   assert.equal(result, expected);
@@ -159,8 +183,21 @@ assert.equal(zeroChain.ent.annotations.flat().length, 0, 'zero-search steps do n
 const example = context.buildLongMultiplication(23, 14);
 assert.deepEqual([...example.partials], [92, 230]);
 const largeExample = context.buildLongMultiplication(99, 99);
-assert.ok(largeExample.steps.some(step => step.t === 'partialFinal' && step.row === 0));
-assert.ok(largeExample.steps.some(step => step.t === 'partialFinal' && step.row === 1));
+// 99 × 99 carries out of the last multiplication in both rows: that carry is written on
+// its own, right to left, not tacked onto the previous digit as a two-digit entry
+[0, 1].forEach(row => {
+  const leading = largeExample.steps.filter(step => step.t === 'partial' && step.leading && step.row === row);
+  assert.equal(leading.length, 1, `row ${row} writes its final carried digit once`);
+  assert.equal(leading[0].want, '8');
+  const rowCols = plain(largeExample.steps
+    .filter(step => (step.t === 'partial' || step.t === 'placeholder') && step.row === row)
+    .map(step => step.col));
+  assert.deepEqual(rowCols, [...rowCols].sort((x, y) => y - x), `row ${row} is filled right to left`);
+});
+assert.equal(largeExample.steps.some(step => step.want.length > 1), false,
+  'no step in a long multiplication asks for two digits at once');
+assert.match(context.longMulPrompt({steps:[{t:'partial', leading:true, want:'8'}], si:0}),
+  /final carried 8/, 'and the child is told what that digit is');
 
 for (const index of [1, 2, 3]) {
   const question = context.twoDigitColumnAddition(index);
@@ -213,6 +250,19 @@ assert.equal(context.sessionPlan({id:'add_4column', digits:4}).total < context.s
   true, 'four-digit lessons are shorter than three-digit ones');
 assert.equal(context.sessionPlan({id:'add_3column', digits:3}).total < context.sessionPlan({id:'add_2column', digits:2}).total,
   true, 'three-digit lessons are shorter than two-digit ones');
+
+// two-digit subtraction in the head, after the columns have taught it
+const mentalSubStage = {id:'sub_2mental', gid:'sub', label:'Two-digit mental subtraction', mode:'mental'};
+for (let i = 0; i < 400; i += 1) {
+  const question = context.generateLessonQuestion(mentalSubStage, (i % 10) + 1);
+  assert.equal(question.kind, 'n', 'a mental lesson asks for the answer, not column working');
+  const [a, b] = question.txt.split(' − ').map(Number);
+  assert.equal(question.ans, a - b);
+  assert.ok(question.ans > 0, `${question.txt} never reaches zero or below`);
+  assert.equal(String(a).length, 2, `${question.txt} takes from a two-digit number`);
+  assert.equal(String(b).length, 2, `${question.txt} takes away a two-digit number`);
+  assert.ok(question.ans >= 10, `${question.txt} leaves a two-digit answer`);
+}
 
 // the worked example the teaching rules are written around
 const canonical = context.buildColumn('sub', 84, 16);
@@ -321,14 +371,15 @@ assert.equal(String(fallback.d).length, 1, 'the built-in fallback question also 
 assert.equal(Number(fallback.N), fallback.d * Number(fallback.quot) + fallback.rest);
 
 class FakeElement {
-  constructor() { this.children = []; this.style = {}; this.className = ''; this.textContent = ''; }
+  constructor() { this.children = []; this.style = {}; this.className = ''; this.textContent = ''; this.attrs = {}; }
   appendChild(child) { this.children.push(child); return child; }
+  setAttribute(name, value) { this.attrs[name] = value; }
   set innerHTML(value) { this.children = []; this._innerHTML = value; }
   get innerHTML() { return this._innerHTML || ''; }
 }
 const uiElements = {};
 const resetUi = () => {
-  ['colGrid', 'colPrompt', 'colHint', 'hintBtn'].forEach(id => { uiElements[id] = new FakeElement(); });
+  ['colGrid', 'colPrompt', 'colHint', 'hintBtn', 'progress'].forEach(id => { uiElements[id] = new FakeElement(); });
 };
 resetUi();
 const uiContext = {
@@ -341,8 +392,39 @@ vm.runInContext([
   functionSource('colPrompt'),
   functionSource('renderCol'),
   functionSource('longMulPrompt'),
-  functionSource('renderLongMul')
+  functionSource('renderLongMul'),
+  functionSource('renderStars'),
+  functionSource('markQuestion')
 ].join('\n'), uiContext);
+
+// one star space per question, filled as they are answered
+resetUi();
+uiContext.S = {total:5, pass:4, marks:[]};
+uiContext.renderStars(false);
+assert.equal(uiElements.progress.children.length, 5, 'a five-question lesson shows five spaces');
+assert.equal(uiElements.progress.children.every(c => c.textContent === '\u2606'), true, 'all empty to begin with');
+assert.match(uiElements.progress.attrs['aria-label'], /0 of 5 stars, 4 needed/);
+
+uiContext.markQuestion('won');
+uiContext.markQuestion('helped');
+assert.deepEqual(uiElements.progress.children.map(c => c.textContent),
+  ['\u2605', '\u2605', '\u2606', '\u2606', '\u2606'], 'answered questions show a star, the rest stay empty');
+assert.match(uiElements.progress.children[0].className, /won/);
+assert.match(uiElements.progress.children[1].className, /helped/,
+  'a star earned with help still lights, just softly');
+assert.match(uiElements.progress.children[1].className, /fresh/, 'the new star is the one that pops');
+assert.equal(/fresh/.test(uiElements.progress.children[0].className), false, 'and only the new one');
+assert.match(uiElements.progress.attrs['aria-label'], /1 of 5 stars/,
+  'only unhelped stars count towards the pass mark');
+
+// the row can never outgrow the lesson
+for (let i = 0; i < 10; i += 1) uiContext.markQuestion('won');
+assert.equal(uiContext.S.marks.length, 5, 'no more marks than there are questions');
+assert.equal(uiElements.progress.children.length, 5);
+
+uiContext.S = {total:10, pass:8, marks:[]};
+uiContext.renderStars(false);
+assert.equal(uiElements.progress.children.length, 10, 'a ten-question lesson shows ten');
 
 const revealUi = context.buildColumn('sub', 730, 141);
 context.commitColumnStep(revealUi);
@@ -408,10 +490,13 @@ vm.runInContext([
 assert.deepEqual([...migrationContext.stageIds].slice(0, 5), [
   'add_1digit', 'add_2column', 'add_2mental', 'add_3column', 'add_4column'
 ]);
-assert.equal(migrationContext.stageIds.length, 14, 'renaming a lesson does not change how many there are');
-assert.deepEqual([...migrationContext.stageIds].slice(5, 9), [
-  'sub_1digit', 'sub_2column', 'sub_3column', 'sub_4column'
-], 'two-digit subtraction sits between one-digit and three-digit column work');
+assert.equal(migrationContext.stageIds.length, 15);
+assert.deepEqual([...migrationContext.stageIds].slice(5, 10), [
+  'sub_1digit', 'sub_2column', 'sub_2mental', 'sub_3column', 'sub_4column'
+], 'subtraction mirrors addition: columns first, then the same size in the head');
+assert.deepEqual([...migrationContext.stageIds].slice(0, 5), [
+  'add_1digit', 'add_2column', 'add_2mental', 'add_3column', 'add_4column'
+], 'and addition is the shape subtraction mirrors');
 const migrated = migrationContext.migrateProgress({completed:{
   add_1digit:true, add_2digit:true, add_3column:true
 }});
@@ -420,14 +505,45 @@ assert.equal(migrated.completed.add_2mental, true);
 assert.equal(migrated.completed.add_3column, true);
 assert.equal(migrated.completed.add_4column, false);
 
+// a v3 save that had finished the old mental two-digit subtraction is credited with both
+// lessons that now stand in its place, the same way the addition insertion was handled
+const v3Subtraction = migrationContext.migrateProgress({completed:{
+  add_1digit:true, add_2digit:true, add_3column:true, add_4column:true,
+  sub_1digit:true, sub_2digit:true
+}});
+assert.equal(v3Subtraction.completed.sub_2column, true);
+assert.equal(v3Subtraction.completed.sub_2mental, true);
+assert.equal(v3Subtraction.completed.sub_3column, false, 'and no further');
+assert.equal(v3Subtraction.available.sub_3column, true, 'which is what comes next');
+
+// every v3 position still lands on the right lesson after two insertions
+[
+  ['add_1digit', 'add_1digit'],
+  ['add_2digit', 'add_2mental'],
+  ['add_4column', 'add_4column'],
+  ['sub_1digit', 'sub_1digit'],
+  ['sub_4column', 'sub_4column'],
+  ['div_long', 'div_long']
+].forEach(([oldFurthest, newFurthest]) => {
+  const result = migrationContext.migrateProgress({completed:{[oldFurthest]:true}});
+  const completedIds = migrationContext.stageIds.filter(id => result.completed[id]);
+  assert.equal(completedIds.at(-1), newFurthest,
+    `a v3 save stopped at ${oldFurthest} now stands at ${newFurthest}`);
+});
+const finishedV3 = migrationContext.migrateProgress({completed:{div_long:true}});
+assert.equal(migrationContext.stageIds.every(id => finishedV3.completed[id]), true,
+  'a v3 save that finished everything is still finished');
+
 // a saved game that stopped on the renamed lesson keeps it, and does not sit through it again
 const stoppedThere = migrationContext.migrateV4({completed:{
   add_1digit:true, add_2column:true, add_2mental:true, add_3column:true, add_4column:true,
   sub_1digit:true, sub_2digit:true
 }, available:{sub_3column:true}});
 assert.equal(stoppedThere.completed.sub_2column, true, 'the old save key still counts as completed');
-assert.equal(stoppedThere.completed.sub_3column, false);
-assert.equal(stoppedThere.available.sub_3column, true, 'the next lesson stays unlocked');
+assert.equal(stoppedThere.completed.sub_2mental, false);
+assert.equal(stoppedThere.available.sub_2mental, true,
+  'the newly inserted mental lesson is what comes next, not a locked gap');
+assert.equal(stoppedThere.available.sub_3column, false, 'and the lesson after it stays shut');
 assert.equal(Object.keys(stoppedThere.completed).filter(id => stoppedThere.completed[id]).length, 7,
   'no lesson is lost and none is handed out for free');
 assert.equal(stoppedThere.completed.sub_2digit, undefined, 'the retired key is gone from the save');
@@ -524,6 +640,22 @@ assert.ok(currentSave.accessories.includes('scarf'), 'cosmetics survive');
 });
 assert.equal(currentSave.stageProgress.completed.sub_2column, false, 'no lesson is handed out free');
 assert.equal(currentSave.stageProgress.available.sub_2column, true, 'the next lesson is still open');
+
+// the last evolution waits for the last lesson, however many lessons there are
+vm.runInContext('this.stages=MATH_STAGES;this.evolutions=EVOLUTIONS;this.artFor=artForCount;this.evolutionFor=evolutionForCount;', saveContext);
+const lessonTotal = saveContext.stages.length;
+const finalEvolution = plain(saveContext.evolutions).at(-1);
+assert.equal(finalEvolution.completed, lessonTotal,
+  'becoming a Guardian of Maths needs every lesson, not all but one');
+assert.equal(saveContext.evolutionFor(lessonTotal).title, 'Guardian of Maths');
+assert.notEqual(saveContext.evolutionFor(lessonTotal - 1).title, 'Guardian of Maths',
+  'one lesson short is not a Guardian');
+plain(saveContext.evolutions).forEach(step => {
+  assert.ok(step.completed <= lessonTotal, `the ${step.title} milestone is reachable`);
+});
+assert.deepEqual(plain(saveContext.evolutions).map(step => step.completed),
+  [...plain(saveContext.evolutions).map(step => step.completed)].sort((a, b) => a - b),
+  'the milestones climb');
 
 // a pre-v3 save still gets its progress out of level before level is deleted
 const legacySave = saveContext.migrate({id:'p2', name:'Bo', age:8, level:12, xp:900, unlocked:{add:true}});
