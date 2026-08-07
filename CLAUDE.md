@@ -57,13 +57,19 @@ Division: simple division; long division.
 
 ## Current priority
 
-Long division still generates two-digit divisors. Fix the generation
-only; preserve the existing interactive working UI, step-by-step answer
-entry, multiply-back, subtraction and bring-down.
+Nothing outstanding. Long division is done: the divisor is always a
+single digit, the dividend ramps from two digits to four across the
+lesson, and every question divides exactly. The interactive working UI
+was left untouched.
+
+Remainders are the next thing to bring back, once the process is
+steady. `genDivision` already takes a phase with an `exact` flag, so
+the generator side is a one-word change; the wording the child reads
+("write what is left") and the ramp are the parts that need thought.
 
 ## Code map
 
-`index.html` is ~1654 lines: one `<style>` block, the screen markup, then
+`index.html` is ~1670 lines: one `<style>` block, the screen markup, then
 three `<script>` blocks. Line numbers drift as the file is edited — the
 `/* ---- name ---- */` banner comments are the durable anchors, so grep for
 those rather than trusting the numbers.
@@ -102,9 +108,11 @@ level-up overlay (392), and the hidden `s-dev` spellbook (413).
 
 The test suite text-extracts `buildColumn`, `commitColumnStep`,
 `buildLongMultiplication`, `commitLongMultiplicationStep`, `colPrompt`,
-`longMulPrompt`, `blankStageProgress`, `progressFromCount`,
-`migrateV3StageProgress` and the `MATH_STAGES` array by name, so keep them
-as top-level `function name(...)  {...}` declarations.
+`longMulPrompt`, `divSteps`, `longDivisionPhase`, `genDivision`,
+`generateLessonQuestion`, `blankStageProgress`, `progressFromCount`,
+`migrateV3StageProgress` and the `MATH_STAGES` array by name, plus the
+`SESSION` constant, so keep them as top-level `function name(...)  {...}`
+declarations.
 
 ### Script 2 — screens and session flow (977-1243)
 
@@ -124,7 +132,8 @@ as top-level `function name(...)  {...}` declarations.
 | 1562-1575 | `hidden developer spellbook` | `renderDeveloper`, `resetPlayerProgress` |
 | 1576-1652 | `wiring` | Age picker, all event listeners, dev-tap unlock, boot |
 
-Note on the current priority: long-division question generation lives in
-`genDivision` (912) and `generateLessonQuestion` (927) in script 1, while
-the working UI is `divPlan`/`renderDiv`/`pressDiv` in script 3 — the
-divisor fix belongs in the former and should leave the latter untouched.
+Note on long division: question generation lives in `longDivisionPhase`
+and `genDivision` (912) plus `generateLessonQuestion` (927) in script 1,
+while the working UI is `divPlan`/`renderDiv`/`pressDiv` in script 3.
+The two are independent — changes to what a question looks like belong
+in the former and should leave the latter untouched.
