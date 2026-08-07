@@ -29,7 +29,11 @@ vm.runInContext([
   functionSource('commitColumnStep'),
   functionSource('commitLongMultiplicationStep'),
   functionSource('colPrompt'),
-  functionSource('longMulPrompt')
+  functionSource('longMulPrompt'),
+  functionSource('divSteps'),
+  functionSource('longDivisionPhase'),
+  functionSource('genDivision'),
+  functionSource('generateLessonQuestion')
 ].join('\n'), context);
 
 function subtractionAnswer(model) {
@@ -160,6 +164,54 @@ for (const index of [4, 5, 6]) {
   const question = context.twoDigitColumnAddition(index);
   assert.equal(question.M.steps.filter(step => step.t === 'carry').length, 1, 'middle phase has one carry');
 }
+
+function checkDivisionQuestion(made, label) {
+  assert.equal(String(made.d).length, 1, `${label}: the divisor stays a single digit (got ${made.d})`);
+  assert.ok(made.d >= 2 && made.d <= 9, `${label}: the divisor is between 2 and 9 (got ${made.d})`);
+  assert.ok(made.rest < made.d, `${label}: what is left over is smaller than the divisor`);
+  assert.equal(Number(made.N), made.d * Number(made.quot) + made.rest, `${label}: ${made.N} ÷ ${made.d}`);
+  assert.ok(made.N.length >= 2 && made.N.length <= 4, `${label}: the dividend has 2 to 4 digits`);
+  assert.deepEqual(plain(made.steps), plain(context.divSteps(made.N, made.d)), `${label}: steps match the dividend`);
+  assert.equal(made.steps.some(step => step.q === 0), false, `${label}: no round writes a 0 above the line`);
+  assert.ok(made.steps.length >= 2, `${label}: there is at least one digit to bring down`);
+  assert.equal(made.steps.map(step => step.q).join(''), made.quot, `${label}: the written digits spell the answer`);
+  assert.equal(made.steps.at(-1).rem, made.rest, `${label}: the last subtraction leaves the remainder`);
+}
+
+for (const tier of [0, 1, 2, 3]) {
+  for (let i = 0; i < 300; i += 1) checkDivisionQuestion(context.genDivision(tier), `tier ${tier}`);
+}
+for (const tier of [0, 1]) {
+  for (let i = 0; i < 50; i += 1) {
+    assert.equal(context.genDivision(tier).rest, 0, `tier ${tier} divides exactly`);
+  }
+}
+
+const longDivisionStage = {id:'div_long', gid:'div', label:'Long division', mode:'division'};
+const sessionLength = Number(source.match(/const SESSION=(\d+);/)[1]);
+const rampWidths = {};
+for (let index = 1; index <= sessionLength; index += 1) {
+  rampWidths[index] = new Set();
+  for (let i = 0; i < 200; i += 1) {
+    const question = context.generateLessonQuestion(longDivisionStage, index);
+    assert.equal(question.kind, 'div');
+    checkDivisionQuestion(question.made, `long division question ${index}`);
+    assert.equal(question.made.rest, 0, `long division question ${index} divides exactly`);
+    rampWidths[index].add(question.made.N.length);
+  }
+  assert.equal(rampWidths[index].size, 1, `question ${index} always has one dividend length`);
+}
+const rampByIndex = Object.keys(rampWidths).map(index => [...rampWidths[index]][0]);
+assert.deepEqual(rampByIndex, [2, 2, 2, 3, 3, 3, 4, 4, 4, 4],
+  'the lesson ramps from two-digit dividends to three then four');
+assert.deepEqual([...rampByIndex].sort((a, b) => a - b), rampByIndex, 'the ramp never goes backwards');
+
+const fallbackContext = {Math, rnd:() => 0, divSteps:() => [{q:0}]};
+vm.createContext(fallbackContext);
+vm.runInContext(functionSource('genDivision'), fallbackContext);
+const fallback = fallbackContext.genDivision(3);
+assert.equal(String(fallback.d).length, 1, 'the built-in fallback question also uses a single-digit divisor');
+assert.equal(Number(fallback.N), fallback.d * Number(fallback.quot) + fallback.rest);
 
 class FakeElement {
   constructor() { this.children = []; this.style = {}; this.className = ''; this.textContent = ''; }

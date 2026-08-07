@@ -909,20 +909,38 @@ function genHard(gid,tr){
   }
   return genDivision(tr);
 }
-function genDivision(tr){
-  for(let guard=0;guard<300;guard++){
-    const d = tr>=3?rnd(11,29):rnd(2,[5,9,9,9][tr]);
-    const qLen = tr<=1?2:3;
-    let q=''; for(let i=0;i<qLen;i++) q+=rnd(1,9);
-    q=parseInt(q,10);
-    const rest = tr>=2?rnd(0,d-1):0;
+/* the long division lesson starts short and grows: two-digit dividends, then three, then four.
+   Nothing is left over yet — the child learns the process before learning remainders. */
+function longDivisionPhase(questionIndex){
+  const i=questionIndex||1;
+  return {digits:i<=3?2:i<=6?3:4,exact:true};
+}
+function genDivision(tr,phase){
+  const tier=Math.max(0,Math.min(3,tr|0));
+  const digits=phase&&phase.digits?Math.max(2,Math.min(4,phase.digits|0)):0;
+  const exact=phase?phase.exact!==false:tier<=1;
+  for(let guard=0;guard<400;guard++){
+    // the divisor stays a single digit: the lesson teaches the process, not two new things at once
+    const d = rnd(2,digits?9:[5,9,9,9][tier]);
+    const rest = exact?0:rnd(0,d-1);
+    let q;
+    if(digits){
+      // land the dividend inside the wanted length, remainder included
+      const lo=Math.pow(10,digits-1),hi=Math.pow(10,digits)-1;
+      q=rnd(Math.ceil((lo-rest)/d),Math.floor((hi-rest)/d));
+    }else{
+      let s=''; for(let i=0;i<(tier<=1?2:3);i++) s+=rnd(1,9);
+      q=parseInt(s,10);
+    }
+    if(q<1) continue;
     const N=d*q+rest;
-    if(String(N).length>4) continue;
+    if(digits?String(N).length!==digits:String(N).length>4) continue;
     const steps=divSteps(String(N),d);
-    if(steps.some(s=>s.q===0)) continue;
+    if(steps.length<2) continue;          // there is always at least one digit to bring down
+    if(steps.some(s=>s.q===0)) continue;  // never write a 0 above the line
     return {div:true,N:String(N),d:d,steps:steps,quot:String(q),rest:rest};
   }
-  return {div:true,N:'144',d:12,steps:divSteps('144',12),quot:'12',rest:0};
+  return {div:true,N:'126',d:6,steps:divSteps('126',6),quot:'21',rest:0};
 }
 function generateLessonQuestion(stage,questionIndex){
   if(stage.id==='add_1digit'){
@@ -944,7 +962,7 @@ function generateLessonQuestion(stage,questionIndex){
   if(stage.id==='div_simple'){
     const d=rnd(2,12),q=rnd(2,12); return {kind:'n',txt:(d*q)+' \u00F7 '+d,ans:q};
   }
-  if(stage.mode==='division') return {kind:'div',made:genDivision(3)};
+  if(stage.mode==='division') return {kind:'div',made:genDivision(3,longDivisionPhase(questionIndex))};
   if(stage.gid==='add'){
     const lo=stage.digits===4?1000:100,hi=stage.digits===4?8999:899;
     for(let i=0;i<250;i++){ const a=rnd(lo,hi),b=rnd(lo,hi),M=buildColumn('add',a,b); if(M.steps.some(s=>s.t==='carry')&&colValid(M)) return {kind:'col',a,b,M}; }
