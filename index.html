@@ -910,10 +910,12 @@ function genHard(gid,tr){
   return genDivision(tr);
 }
 /* the long division lesson starts short and grows: two-digit dividends, then three, then four.
-   Nothing is left over yet — the child learns the process before learning remainders. */
+   Each length is met dividing exactly first and only then with something left over, so a
+   question never grows longer and starts leaving something over at the same time. */
 function longDivisionPhase(questionIndex){
   const i=questionIndex||1;
-  return {digits:i<=3?2:i<=6?3:4,exact:true};
+  const leftover=i===3||i===6||i>=9;
+  return {digits:i<=3?2:i<=6?3:4,exact:!leftover};
 }
 function genDivision(tr,phase){
   const tier=Math.max(0,Math.min(3,tr|0));
@@ -922,7 +924,8 @@ function genDivision(tr,phase){
   for(let guard=0;guard<400;guard++){
     // the divisor stays a single digit: the lesson teaches the process, not two new things at once
     const d = rnd(2,digits?9:[5,9,9,9][tier]);
-    const rest = exact?0:rnd(0,d-1);
+    // a lesson question that is not exact really does leave something over, never a sneaky 0
+    const rest = exact?0:rnd(phase?1:0,d-1);
     let q;
     if(digits){
       // land the dividend inside the wanted length, remainder included
@@ -1468,7 +1471,7 @@ function divPlan(g){
   g.steps.forEach((c,k)=>{
     plan.push({t:'fit', k:k,into:c.cur,want:String(c.q)});
     plan.push({t:'prod',k:k,q:c.q,want:String(c.prod)});
-    plan.push({t:'rem', k:k,into:c.cur,prod:c.prod,want:String(c.rem)});
+    plan.push({t:'rem', k:k,into:c.cur,prod:c.prod,want:String(c.rem),last:k===g.steps.length-1});
   });
   return plan;
 }
@@ -1477,6 +1480,8 @@ function divPromptText(D){
   if(!st) return '';
   if(st.t==='skip'||st.t==='fit') return 'How many times does '+d+' go into '+st.into+'?';
   if(st.t==='prod') return st.q+' \u00D7 '+d+'. Write it underneath.';
+  // on the last take-away there is no digit waiting to come down, so what is left simply stays
+  if(st.last) return 'Nothing left to bring down. '+st.into+' \u2212 '+st.prod+'. Write what is left over.';
   return st.into+' \u2212 '+st.prod+'. Write what is left.';
 }
 function renderDiv(){
@@ -1571,7 +1576,8 @@ function finishDiv(){
   const clean=D.err===0&&!D.hint;
   if(clean){ ease(S.q.vid,0.2); award(true); }
   else { if(D.err>0) ease(S.q.vid,-0.6); softXP(); }
-  const rest=D.g.rest>0?' with '+D.g.rest+' left over':'';
+  // a leftover is not a mistake, so say so the first time the child sees one
+  const rest=D.g.rest>0?' with '+D.g.rest+' left over. Not everything fits evenly!':'';
   $('fb').innerHTML='<span class="ok">'+D.g.N+' \u00F7 '+D.g.d+' = '+D.g.quot+rest+'</span>'+(clean?bonusStamp():'');
   setPlayMood(S.streak>=3?'streak':'correct');
   save(); setTimeout(nextQuestion,2400);

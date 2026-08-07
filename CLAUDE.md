@@ -47,7 +47,12 @@ Division: simple division; long division.
   crossed out and becomes 7, the 4 becomes 14.
 - Long division uses a single-digit divisor (2-9) into a multi-digit
   dividend: 84/4, 126/6, 384/3, 1248/4, 3276/7. Never two-digit divisors
-  like 1248/12. The lesson teaches the process, not two new things at once.
+  like 1248/12. The lesson teaches the process, not two new things at once:
+  a question never grows a digit longer and starts leaving something over
+  at the same time. Each dividend length is met dividing exactly first.
+- Something left over is not a mistake and must never read like one. The
+  last take-away says so ("nothing left to bring down"), and the summary
+  adds that not everything fits evenly.
 - No jargon in anything a child reads. Not quotient, product or
   remainder. Say "how many times does 3 go into 22", "write it
   underneath", "write what is left".
@@ -59,17 +64,16 @@ Division: simple division; long division.
 
 Nothing outstanding. Long division is done: the divisor is always a
 single digit, the dividend ramps from two digits to four across the
-lesson, and every question divides exactly. The interactive working UI
-was left untouched.
+lesson, and questions that leave something over are back, on questions
+3, 6, 9 and 10.
 
-Remainders are the next thing to bring back, once the process is
-steady. `genDivision` already takes a phase with an `exact` flag, so
-the generator side is a one-word change; the wording the child reads
-("write what is left") and the ramp are the parts that need thought.
+Worth watching when the children next play: whether four questions in
+ten that leave something over is the right amount, and whether the two
+back-to-back at the end of the session are one too many.
 
 ## Code map
 
-`index.html` is ~1670 lines: one `<style>` block, the screen markup, then
+`index.html` is ~1678 lines: one `<style>` block, the screen markup, then
 three `<script>` blocks. Line numbers drift as the file is edited — the
 `/* ---- name ---- */` banner comments are the durable anchors, so grep for
 those rather than trusting the numbers.
@@ -109,7 +113,8 @@ level-up overlay (392), and the hidden `s-dev` spellbook (413).
 The test suite text-extracts `buildColumn`, `commitColumnStep`,
 `buildLongMultiplication`, `commitLongMultiplicationStep`, `colPrompt`,
 `longMulPrompt`, `divSteps`, `longDivisionPhase`, `genDivision`,
-`generateLessonQuestion`, `blankStageProgress`, `progressFromCount`,
+`generateLessonQuestion`, `divPlan`, `divPromptText`,
+`blankStageProgress`, `progressFromCount`,
 `migrateV3StageProgress` and the `MATH_STAGES` array by name, plus the
 `SESSION` constant, so keep them as top-level `function name(...)  {...}`
 declarations.
@@ -136,4 +141,6 @@ Note on long division: question generation lives in `longDivisionPhase`
 and `genDivision` (912) plus `generateLessonQuestion` (927) in script 1,
 while the working UI is `divPlan`/`renderDiv`/`pressDiv` in script 3.
 The two are independent — changes to what a question looks like belong
-in the former and should leave the latter untouched.
+in the former and should leave the latter untouched. The words the child
+reads during the working are `divPromptText`, and the summary at the end
+is in `finishDiv`.

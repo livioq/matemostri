@@ -33,7 +33,9 @@ vm.runInContext([
   functionSource('divSteps'),
   functionSource('longDivisionPhase'),
   functionSource('genDivision'),
-  functionSource('generateLessonQuestion')
+  functionSource('generateLessonQuestion'),
+  functionSource('divPlan'),
+  functionSource('divPromptText')
 ].join('\n'), context);
 
 function subtractionAnswer(model) {
@@ -190,21 +192,73 @@ for (const tier of [0, 1]) {
 const longDivisionStage = {id:'div_long', gid:'div', label:'Long division', mode:'division'};
 const sessionLength = Number(source.match(/const SESSION=(\d+);/)[1]);
 const rampWidths = {};
+const rampLeftovers = {};
 for (let index = 1; index <= sessionLength; index += 1) {
   rampWidths[index] = new Set();
+  rampLeftovers[index] = new Set();
   for (let i = 0; i < 200; i += 1) {
     const question = context.generateLessonQuestion(longDivisionStage, index);
     assert.equal(question.kind, 'div');
     checkDivisionQuestion(question.made, `long division question ${index}`);
-    assert.equal(question.made.rest, 0, `long division question ${index} divides exactly`);
     rampWidths[index].add(question.made.N.length);
+    rampLeftovers[index].add(question.made.rest > 0);
+    if (question.made.rest > 0) {
+      assert.ok(question.made.rest >= 1 && question.made.rest < question.made.d,
+        `question ${index} leaves 1 to d-1 over, never a sneaky 0`);
+    }
   }
   assert.equal(rampWidths[index].size, 1, `question ${index} always has one dividend length`);
+  assert.equal(rampLeftovers[index].size, 1, `question ${index} either always leaves something over or never does`);
 }
 const rampByIndex = Object.keys(rampWidths).map(index => [...rampWidths[index]][0]);
 assert.deepEqual(rampByIndex, [2, 2, 2, 3, 3, 3, 4, 4, 4, 4],
   'the lesson ramps from two-digit dividends to three then four');
 assert.deepEqual([...rampByIndex].sort((a, b) => a - b), rampByIndex, 'the ramp never goes backwards');
+
+const leftoverByIndex = Object.keys(rampLeftovers).map(index => [...rampLeftovers[index]][0]);
+assert.deepEqual(leftoverByIndex,
+  [false, false, true, false, false, true, false, false, true, true],
+  'each dividend length is met dividing exactly before it is met with something left over');
+leftoverByIndex.forEach((leftover, i) => {
+  if (!leftover) return;
+  const grew = i > 0 && rampByIndex[i] !== rampByIndex[i - 1];
+  assert.equal(grew, false, `question ${i + 1} does not grow longer and leave something over at once`);
+});
+
+function promptsFor(question) {
+  const plan = context.divPlan(question);
+  return plan.map((step, pi) => context.divPromptText({plan, pi, g:question}));
+}
+
+const leftoverQuestion = {div:true, N:'23', d:2, steps:context.divSteps('23', 2), quot:'11', rest:1};
+const leftoverPlan = context.divPlan(leftoverQuestion);
+const lastSteps = leftoverPlan.filter(step => step.last);
+assert.equal(lastSteps.length, 1, 'exactly one take-away is the last one');
+assert.equal(lastSteps[0].t, 'rem');
+assert.equal(lastSteps[0], leftoverPlan.at(-1), 'the last take-away ends the question');
+assert.equal(lastSteps[0].want, '1', 'the last take-away is what is left over');
+
+const leftoverPrompts = promptsFor(leftoverQuestion);
+assert.match(leftoverPrompts.at(-1), /Nothing left to bring down/,
+  'the child is told there is no digit waiting to come down');
+assert.match(leftoverPrompts.at(-1), /left over/);
+assert.equal(leftoverPrompts.slice(0, -1).some(text => /left over/.test(text)), false,
+  'earlier take-aways are still just what is left, not what is left over');
+
+const bringDownPrompt = leftoverPrompts.find((text, i) => leftoverPlan[i].t === 'rem' && !leftoverPlan[i].last);
+assert.match(bringDownPrompt, /Write what is left\./);
+
+// no jargon in anything a child reads
+const jargon = /remainder|quotient|product|divisor|dividend/i;
+[
+  leftoverQuestion,
+  {div:true, N:'126', d:6, steps:context.divSteps('126', 6), quot:'21', rest:0},
+  context.generateLessonQuestion(longDivisionStage, 9).made
+].forEach(question => {
+  promptsFor(question).forEach(text => {
+    assert.equal(jargon.test(text), false, `no jargon in "${text}"`);
+  });
+});
 
 const fallbackContext = {Math, rnd:() => 0, divSteps:() => [{q:0}]};
 vm.createContext(fallbackContext);
