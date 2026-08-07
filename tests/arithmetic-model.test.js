@@ -214,6 +214,19 @@ assert.equal(context.sessionPlan({id:'add_4column', digits:4}).total < context.s
 assert.equal(context.sessionPlan({id:'add_3column', digits:3}).total < context.sessionPlan({id:'add_2column', digits:2}).total,
   true, 'three-digit lessons are shorter than two-digit ones');
 
+// two-digit subtraction in the head, after the columns have taught it
+const mentalSubStage = {id:'sub_2mental', gid:'sub', label:'Two-digit mental subtraction', mode:'mental'};
+for (let i = 0; i < 400; i += 1) {
+  const question = context.generateLessonQuestion(mentalSubStage, (i % 10) + 1);
+  assert.equal(question.kind, 'n', 'a mental lesson asks for the answer, not column working');
+  const [a, b] = question.txt.split(' − ').map(Number);
+  assert.equal(question.ans, a - b);
+  assert.ok(question.ans > 0, `${question.txt} never reaches zero or below`);
+  assert.equal(String(a).length, 2, `${question.txt} takes from a two-digit number`);
+  assert.equal(String(b).length, 2, `${question.txt} takes away a two-digit number`);
+  assert.ok(question.ans >= 10, `${question.txt} leaves a two-digit answer`);
+}
+
 // the worked example the teaching rules are written around
 const canonical = context.buildColumn('sub', 84, 16);
 assert.equal(subtractionAnswer(canonical), 68);
@@ -408,10 +421,13 @@ vm.runInContext([
 assert.deepEqual([...migrationContext.stageIds].slice(0, 5), [
   'add_1digit', 'add_2column', 'add_2mental', 'add_3column', 'add_4column'
 ]);
-assert.equal(migrationContext.stageIds.length, 14, 'renaming a lesson does not change how many there are');
-assert.deepEqual([...migrationContext.stageIds].slice(5, 9), [
-  'sub_1digit', 'sub_2column', 'sub_3column', 'sub_4column'
-], 'two-digit subtraction sits between one-digit and three-digit column work');
+assert.equal(migrationContext.stageIds.length, 15);
+assert.deepEqual([...migrationContext.stageIds].slice(5, 10), [
+  'sub_1digit', 'sub_2column', 'sub_2mental', 'sub_3column', 'sub_4column'
+], 'subtraction mirrors addition: columns first, then the same size in the head');
+assert.deepEqual([...migrationContext.stageIds].slice(0, 5), [
+  'add_1digit', 'add_2column', 'add_2mental', 'add_3column', 'add_4column'
+], 'and addition is the shape subtraction mirrors');
 const migrated = migrationContext.migrateProgress({completed:{
   add_1digit:true, add_2digit:true, add_3column:true
 }});
@@ -420,14 +436,45 @@ assert.equal(migrated.completed.add_2mental, true);
 assert.equal(migrated.completed.add_3column, true);
 assert.equal(migrated.completed.add_4column, false);
 
+// a v3 save that had finished the old mental two-digit subtraction is credited with both
+// lessons that now stand in its place, the same way the addition insertion was handled
+const v3Subtraction = migrationContext.migrateProgress({completed:{
+  add_1digit:true, add_2digit:true, add_3column:true, add_4column:true,
+  sub_1digit:true, sub_2digit:true
+}});
+assert.equal(v3Subtraction.completed.sub_2column, true);
+assert.equal(v3Subtraction.completed.sub_2mental, true);
+assert.equal(v3Subtraction.completed.sub_3column, false, 'and no further');
+assert.equal(v3Subtraction.available.sub_3column, true, 'which is what comes next');
+
+// every v3 position still lands on the right lesson after two insertions
+[
+  ['add_1digit', 'add_1digit'],
+  ['add_2digit', 'add_2mental'],
+  ['add_4column', 'add_4column'],
+  ['sub_1digit', 'sub_1digit'],
+  ['sub_4column', 'sub_4column'],
+  ['div_long', 'div_long']
+].forEach(([oldFurthest, newFurthest]) => {
+  const result = migrationContext.migrateProgress({completed:{[oldFurthest]:true}});
+  const completedIds = migrationContext.stageIds.filter(id => result.completed[id]);
+  assert.equal(completedIds.at(-1), newFurthest,
+    `a v3 save stopped at ${oldFurthest} now stands at ${newFurthest}`);
+});
+const finishedV3 = migrationContext.migrateProgress({completed:{div_long:true}});
+assert.equal(migrationContext.stageIds.every(id => finishedV3.completed[id]), true,
+  'a v3 save that finished everything is still finished');
+
 // a saved game that stopped on the renamed lesson keeps it, and does not sit through it again
 const stoppedThere = migrationContext.migrateV4({completed:{
   add_1digit:true, add_2column:true, add_2mental:true, add_3column:true, add_4column:true,
   sub_1digit:true, sub_2digit:true
 }, available:{sub_3column:true}});
 assert.equal(stoppedThere.completed.sub_2column, true, 'the old save key still counts as completed');
-assert.equal(stoppedThere.completed.sub_3column, false);
-assert.equal(stoppedThere.available.sub_3column, true, 'the next lesson stays unlocked');
+assert.equal(stoppedThere.completed.sub_2mental, false);
+assert.equal(stoppedThere.available.sub_2mental, true,
+  'the newly inserted mental lesson is what comes next, not a locked gap');
+assert.equal(stoppedThere.available.sub_3column, false, 'and the lesson after it stays shut');
 assert.equal(Object.keys(stoppedThere.completed).filter(id => stoppedThere.completed[id]).length, 7,
   'no lesson is lost and none is handed out for free');
 assert.equal(stoppedThere.completed.sub_2digit, undefined, 'the retired key is gone from the save');
@@ -524,6 +571,22 @@ assert.ok(currentSave.accessories.includes('scarf'), 'cosmetics survive');
 });
 assert.equal(currentSave.stageProgress.completed.sub_2column, false, 'no lesson is handed out free');
 assert.equal(currentSave.stageProgress.available.sub_2column, true, 'the next lesson is still open');
+
+// the last evolution waits for the last lesson, however many lessons there are
+vm.runInContext('this.stages=MATH_STAGES;this.evolutions=EVOLUTIONS;this.artFor=artForCount;this.evolutionFor=evolutionForCount;', saveContext);
+const lessonTotal = saveContext.stages.length;
+const finalEvolution = plain(saveContext.evolutions).at(-1);
+assert.equal(finalEvolution.completed, lessonTotal,
+  'becoming a Guardian of Maths needs every lesson, not all but one');
+assert.equal(saveContext.evolutionFor(lessonTotal).title, 'Guardian of Maths');
+assert.notEqual(saveContext.evolutionFor(lessonTotal - 1).title, 'Guardian of Maths',
+  'one lesson short is not a Guardian');
+plain(saveContext.evolutions).forEach(step => {
+  assert.ok(step.completed <= lessonTotal, `the ${step.title} milestone is reachable`);
+});
+assert.deepEqual(plain(saveContext.evolutions).map(step => step.completed),
+  [...plain(saveContext.evolutions).map(step => step.completed)].sort((a, b) => a - b),
+  'the milestones climb');
 
 // a pre-v3 save still gets its progress out of level before level is deleted
 const legacySave = saveContext.migrate({id:'p2', name:'Bo', age:8, level:12, xp:900, unlocked:{add:true}});

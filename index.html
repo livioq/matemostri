@@ -454,6 +454,7 @@ const MATH_STAGES=[
   {id:'add_4column',gid:'add',label:'Four-digit column addition',mode:'column',digits:4,magic:'Starlight Tower'},
   {id:'sub_1digit',gid:'sub',label:'One-digit subtraction',mode:'mental',magic:'Whispering Woods'},
   {id:'sub_2column',gid:'sub',label:'Two-digit column subtraction',mode:'column',digits:2,magic:'Silver Stream'},
+  {id:'sub_2mental',gid:'sub',label:'Two-digit mental subtraction',mode:'mental',magic:'Moonlit Hollow'},
   {id:'sub_3column',gid:'sub',label:'Three-digit column subtraction',mode:'column',digits:3,magic:'Borrowing Caves'},
   {id:'sub_4column',gid:'sub',label:'Four-digit column subtraction',mode:'column',digits:4,magic:'Crystal Mountain'},
   {id:'mul_1x1',gid:'mul',label:'Single digit × single digit',mode:'mental',magic:'Mushroom Grove'},
@@ -472,7 +473,7 @@ const EVOLUTIONS=[
   {completed:6,art:5,title:'Winged Friend',message:'{name} learned to flutter on tiny wings!'},
   {completed:8,art:9,title:'Explorer',message:'{name} became a brave magical explorer!'},
   {completed:11,art:18,title:'Apprentice Guardian',message:'{name} began Guardian training!'},
-  {completed:14,art:20,title:'Guardian of Maths',message:'{name} became a Guardian of Maths!'}
+  {completed:15,art:20,title:'Guardian of Maths',message:'{name} became a Guardian of Maths!'}
 ];
 const EVOLUTION_LEVELS=EVOLUTIONS.map(e=>e.art);
 const ACC=[
@@ -554,14 +555,14 @@ function normalizeStageProgress(progress){
 }
 function legacyCompletedCount(p){
   const oldIds=['add_simple','add_complex','sub_simple','sub_complex','mul_simple','mul_complex','div_simple','div_complex'];
-  const mapped=[1,5,6,9,10,12,13,14];
+  const mapped=[1,5,6,10,11,13,14,15];
   let best=0;
   if(p.stageProgress&&p.stageProgress.completed) oldIds.forEach((id,i)=>{ if(p.stageProgress.completed[id]) best=Math.max(best,mapped[i]); });
   const old=p.unlocked||{};
   if(old.add2||old.add) best=Math.max(best,1);
   if(old.sub2||old.sub) best=Math.max(best,6);
-  if(old.mul2||old.mul) best=Math.max(best,10);
-  if(old.div2||old.div) best=Math.max(best,13);
+  if(old.mul2||old.mul) best=Math.max(best,11);
+  if(old.div2||old.div) best=Math.max(best,14);
   if(Number(p.level)>1) best=Math.max(best,Math.floor((Math.min(20,Number(p.level))-1)/19*MATH_STAGES.length));
   return best;
 }
@@ -570,9 +571,10 @@ function migrateV3StageProgress(progress){
   const completed=progress&&progress.completed?progress.completed:{};
   let oldCount=0;
   oldIds.forEach((id,i)=>{ if(completed[id]) oldCount=Math.max(oldCount,i+1); });
-  // A learner who had finished the former mental-addition lesson keeps that
-  // achievement and receives credit for the newly inserted column lesson too.
-  const newCount=oldCount<2?oldCount:oldCount+1;
+  // Two lessons have been inserted since: column addition at position 2 and mental
+  // subtraction at position 8. A learner who had finished the mental lesson each one
+  // sits beside keeps that achievement and receives credit for the new lesson too.
+  const newCount=oldCount+(oldCount>=2?1:0)+(oldCount>=6?1:0);
   return progressFromCount(newCount);
 }
 /* Lessons that were renamed keep their old save key working, so a child who had
@@ -979,6 +981,10 @@ function generateLessonQuestion(stage,questionIndex){
     const a=rnd(2,9),b=rnd(0,a); return {kind:'n',txt:a+' \u2212 '+b,ans:a-b};
   }
   if(stage.id==='sub_2column') return twoDigitColumnSubtraction(questionIndex||1);
+  if(stage.id==='sub_2mental'){
+    // in the head now, after the columns taught it: never below zero, never a single digit
+    const a=rnd(25,95),b=rnd(11,Math.min(49,a-10)); return {kind:'n',txt:a+' − '+b,ans:a-b};
+  }
   if(stage.id==='mul_1x1'){
     const a=rnd(2,12),b=rnd(2,12); return {kind:'n',txt:a+' \u00D7 '+b,ans:a*b};
   }
