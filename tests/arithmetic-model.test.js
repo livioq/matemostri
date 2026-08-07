@@ -447,4 +447,98 @@ migrationContext.stageIds.forEach(id => {
 });
 assert.deepEqual(plain(migrationContext.retired), {sub_2digit:'sub_2column'});
 
+// XP is gone from the save, and nothing else goes with it
+vm.runInContext([
+  source.match(/const RETIRED_PLAYER_FIELDS=\[[^\]]*\];/)[0],
+  functionSource('dropRetiredPlayerFields'),
+  'this.dropRetired=dropRetiredPlayerFields;this.retiredFields=RETIRED_PLAYER_FIELDS;'
+].join('\n'), migrationContext);
+assert.deepEqual(plain(migrationContext.retiredFields), ['xp', 'level']);
+const saved = {
+  id:'p1', name:'Ada', age:9, xp:340, level:12, total:88, right:70, best:9,
+  ease:{add_1digit:0.4}, momoName:'Sparkle', monsterStage:9,
+  collectibles:{stars:3}, accessories:['scarf'], storySeen:true,
+  stageProgress:{completed:{add_1digit:true}, available:{add_2column:true}}
+};
+const cleaned = migrationContext.dropRetired(saved);
+assert.equal('xp' in cleaned, false, 'xp is gone from the save');
+assert.equal('level' in cleaned, false, 'the level it fed is gone too');
+assert.deepEqual(Object.keys(cleaned).sort(), [
+  'accessories', 'age', 'best', 'collectibles', 'ease', 'id', 'momoName',
+  'monsterStage', 'name', 'right', 'stageProgress', 'storySeen', 'total'
+], 'nothing else is dropped');
+assert.equal(cleaned.momoName, 'Sparkle');
+assert.equal(cleaned.best, 9);
+assert.deepEqual(plain(cleaned.stageProgress.completed), {add_1digit:true},
+  'progress is untouched by the field drop');
+assert.equal(migrationContext.dropRetired({name:'no xp here'}).name, 'no xp here',
+  'a save that never had xp is unharmed');
+
+// migrate() reads a legacy save's level before dropping it, so progress is not lost
+const legacyReader = source.slice(source.indexOf('function migrate(p){'));
+assert.ok(legacyReader.indexOf('Number(p.level)') < legacyReader.indexOf('dropRetiredPlayerFields'),
+  'the legacy level is consumed before the field is deleted');
+
+// XP must not come back: no field, no property read, no award call anywhere in the app.
+// A comment about its removal, and the 'xp' string in RETIRED_PLAYER_FIELDS, are not uses.
+const xpUse = /\.xp\b|\bxp\s*[:=]|\bxp\+\+|\bsoftXP\b|\baddXP\b/i;
+source.split('\n').forEach((line, i) => {
+  assert.equal(xpUse.test(line), false, `line ${i + 1} reintroduces xp: ${line.trim()}`);
+});
+assert.equal(/\bGROUPS\b/.test(source.replace(/STAGE_GROUPS/g, '')), false,
+  'the xp-only GROUPS table is gone');
+
+// what the lesson list promises has to come from sessionPlan, or it drifts from the pass mark
+const menuSource = functionSource('renderMenu');
+assert.match(menuSource, /sessionPlan\(stage\)\.pass/,
+  'the lesson list reads the pass mark rather than naming a number');
+assert.equal(/\d+ correct answers/.test(source), false,
+  'no screen hard-codes how many correct answers a lesson needs');
+
+// migrate() end to end on the whole model section: saved games must survive the cleanup
+const modelStart = source.indexOf('/* ---------------- model ---------------- */');
+const modelEnd = source.indexOf('/* ---------------- pet ---------------- */');
+assert.ok(modelStart > 0 && modelEnd > modelStart, 'the model section is where the code map says');
+const saveContext = {};
+vm.createContext(saveContext);
+vm.runInContext(source.slice(modelStart, modelEnd) + '\nthis.migrate=migrate;this.newPlayer=newPlayer;', saveContext);
+
+const currentSave = saveContext.migrate({
+  id:'p1', name:'Ada', age:9, xp:340, level:12, total:88, right:70, best:9,
+  momoName:'Sparkle', collectibles:{stars:3}, accessories:['scarf'], storySeen:true,
+  migrationVersion:5,
+  stageProgress:{
+    completed:{add_1digit:true, add_2column:true, add_2mental:true, sub_1digit:true},
+    available:{add_3column:true}
+  }
+});
+assert.equal('xp' in currentSave, false, 'xp is dropped from a current save');
+assert.equal('level' in currentSave, false);
+assert.equal(currentSave.migrationVersion, 6);
+assert.equal(currentSave.momoName, 'Sparkle', 'the chosen name survives');
+assert.equal(currentSave.best, 9, 'play stats survive');
+assert.deepEqual(plain(currentSave.collectibles).stars, 3, 'collectibles survive');
+assert.ok(currentSave.accessories.includes('scarf'), 'cosmetics survive');
+['add_1digit', 'add_2column', 'add_2mental', 'sub_1digit'].forEach(id => {
+  assert.equal(currentSave.stageProgress.completed[id], true, `${id} stays completed`);
+});
+assert.equal(currentSave.stageProgress.completed.sub_2column, false, 'no lesson is handed out free');
+assert.equal(currentSave.stageProgress.available.sub_2column, true, 'the next lesson is still open');
+
+// a pre-v3 save still gets its progress out of level before level is deleted
+const legacySave = saveContext.migrate({id:'p2', name:'Bo', age:8, level:12, xp:900, unlocked:{add:true}});
+assert.equal('level' in legacySave, false, 'the legacy level is dropped once it has been read');
+assert.equal('xp' in legacySave, false);
+assert.ok(legacySave.stageProgress.completed.add_1digit, 'legacy level still became real progress');
+assert.equal(legacySave.migrationVersion, 6);
+
+// a save already on the new version is left alone
+const fresh = saveContext.newPlayer('Cy', 7);
+assert.equal('xp' in fresh, false, 'a new player never has xp');
+assert.equal('level' in fresh, false);
+assert.equal(fresh.migrationVersion, 6);
+const rerun = saveContext.migrate(saveContext.migrate(fresh));
+assert.equal(rerun.migrationVersion, 6, 'migrating twice changes nothing');
+assert.equal('xp' in rerun, false);
+
 console.log('Arithmetic model tests passed.');

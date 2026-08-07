@@ -19,8 +19,9 @@ public release.
 ## Design direction
 
 - Maths progress drives Momo's growth.
-- XP is being phased out as the main progression mechanic. Do not
-  reintroduce it.
+- XP is gone, not merely unused. There is no xp field, no level number
+  and no points table left in the code or in a saved game, and a test
+  fails if one comes back. Do not reintroduce it.
 - Each completed lesson unlocks the next part of the journey.
 - Replaying a completed lesson awards collectibles rather than advancing
   the story. Collectibles can later unlock cosmetic items.
@@ -34,7 +35,8 @@ public release.
   they must never drift apart or a lesson becomes impossible to
   complete.
 - The player names the creature. Default is Momo. All story and
-  evolution text uses the player-chosen name.
+  evolution text uses the player-chosen name, and the name can be
+  changed at any time in settings, not only during the opening story.
 
 ## Curriculum
 
@@ -68,15 +70,24 @@ Division: simple division; long division.
 
 ## Current priority
 
-Nothing outstanding. The second subtraction lesson is now column work,
-so 84-16 — the example the teaching rules are written around — is
-finally a lesson the child actually sits. It was mental arithmetic
-before, which meant two-digit regrouping was never taught on paper and
-the child met it first at three digits.
+Nothing outstanding.
 
-Lesson lengths now match how heavy a question is: ten normally, seven
-at three digits, five at four. The whole journey is 124 questions
-rather than 140.
+Recently done, in case something looks unfamiliar:
+
+- XP is removed rather than merely unused. The points table, the `xp`
+  field and the `level` it fed are gone from the code and from saved
+  games, and `softXP` — which never awarded anything — is now
+  `awardHelped`. A test fails if any of it comes back.
+- The second subtraction lesson is column work, so 84-16 — the example
+  the teaching rules are written around — is finally a lesson the child
+  actually sits. It was mental arithmetic before, which meant two-digit
+  regrouping was never taught on paper.
+- Lesson lengths match how heavy a question is: ten normally, seven at
+  three digits, five at four. The journey is 124 questions, not 140.
+- The creature can be renamed in settings.
+- There was a second lesson list, reached from the home screen, that
+  showed the same fourteen rows as `s-menu` but could not be tapped.
+  It is gone, and its personalised title moved onto `s-menu`.
 
 Worth watching when the children next play:
 
@@ -85,7 +96,7 @@ Worth watching when the children next play:
   ending drags, shorten the lesson or move the ramp rather than
   reaching for the four-digit rule, which keys on `stage.digits` and
   does not apply to a lesson that grows within itself.
-- Two digits × two digits is also still ten questions. It keys as a
+- Two digits x two digits is also still ten questions. It keys as a
   two-digit lesson, but each question is a full long multiplication.
 - Whether four long-division questions in ten that leave something over
   is the right amount, and whether the two back-to-back at the end of
@@ -95,9 +106,15 @@ Worth watching when the children next play:
   Addition has always behaved this way and subtraction now matches it,
   but if the children coast through the endings, that is the reason.
 
+The adaptive-difficulty leftovers are the obvious next cleanup: `ease`
+writes `P.ease` on every answer, but its only reader is `tierFor`,
+which nothing calls, and the `genEasy` and `genHard` generators it was
+built for are unreachable too. A whole inert subsystem, and removing it
+would be another save-shape change.
+
 ## Code map
 
-`index.html` is ~1710 lines: one `<style>` block, the screen markup, then
+`index.html` is ~1701 lines: one `<style>` block, the screen markup, then
 three `<script>` blocks. Line numbers drift as the file is edited — the
 `/* ---- name ---- */` banner comments are the durable anchors, so grep for
 those rather than trusting the numbers.
@@ -115,24 +132,25 @@ those rather than trusting the numbers.
 | 122-185 | `/* settings */` |
 | 186-258 | `/* opening story + maths journey */` — story panels, journey track, level-up overlay |
 
-### Markup (261-428)
+### Markup (261-422)
 
 Every screen is a `<section class="screen">`; `show(id)` toggles the `on`
 class. In DOM order: `s-story` (264), `s-players` (280), `s-home` (297),
-`s-journey` (318), `s-menu` (327), `s-play` (336, holding both `normalQ`
-at 343 and `colQ` at 347), `s-end` (359), `s-set` (372), the `lvUp`
-level-up overlay (392), and the hidden `s-dev` spellbook (413).
+`s-menu` (316), `s-play` (325, holding both `normalQ` at 332 and `colQ`
+at 336), `s-end` (348), `s-set` (361), the `lvUp` level-up overlay (387),
+and the hidden `s-dev` spellbook (407). There is one lesson list, not
+two: `s-menu`. A read-only twin used to sit beside it.
 
-### Script 1 — data and maths (429-1022)
+### Script 1 — data and maths (423-1018)
 
 | Lines | Section | Notes |
 | --- | --- | --- |
-| 430-453 | `storage` | `KEY='matemostri:v2'`, `LEGACY_KEYS`, `store` get/set |
-| 454-649 | `model` | `MATH_STAGES` (462, the 14 lessons), `EVOLUTIONS`, `ACC`, `COLLECTIBLES`, `MONSTER_STAGES`; save-shape helpers `blankStageProgress`, `progressFromCount`, `normalizeStageProgress`, `migrateV3StageProgress` (581), `RETIRED_STAGE_IDS` and `migrateV4StageProgress` (593), `completeMathStage`, `migrate` (618) |
-| 650-755 | `pet` | `petSVG` (652) fallback art and `monsterMarkup` (745), which emits the `<img onerror>` → inline-SVG fallback |
-| 756-774 | `sound` | WebAudio beeps |
-| 775-903 | `column working model` | `buildColumn` (778), `buildLongMultiplication` (846), `twoDigitColumnAddition` (878), `twoDigitColumnSubtraction` (890) — pure step generators |
-| 904-1022 | `question generation` | `genEasy`, `genHard`, `longDivisionPhase` (942), `genDivision` (947), `generateLessonQuestion` (975), `divSteps` (1010) |
+| 424-447 | `storage` | `KEY='matemostri:v2'`, `LEGACY_KEYS`, `store` get/set |
+| 448-644 | `model` | `MATH_STAGES` (449, the 14 lessons), `EVOLUTIONS`, `ACC`, `COLLECTIBLES`, `MONSTER_STAGES`; save-shape helpers `blankStageProgress`, `progressFromCount`, `normalizeStageProgress`, `migrateV3StageProgress` (568), `RETIRED_STAGE_IDS` and `migrateV4StageProgress` (580), `RETIRED_PLAYER_FIELDS` and `dropRetiredPlayerFields` (591), `completeMathStage`, `migrate` (612) |
+| 645-750 | `pet` | `petSVG` (647) fallback art and `monsterMarkup` (740), which emits the `<img onerror>` → inline-SVG fallback |
+| 751-769 | `sound` | WebAudio beeps |
+| 770-898 | `column working model` | `buildColumn` (773), `buildLongMultiplication` (841), `twoDigitColumnAddition` (873), `twoDigitColumnSubtraction` (885) — pure step generators |
+| 899-1018 | `question generation` | `genEasy`, `genHard`, `longDivisionPhase` (937), `genDivision` (942), `generateLessonQuestion` (970), `divSteps` (1005) |
 
 The test suite text-extracts `buildColumn`, `commitColumnStep`,
 `buildLongMultiplication`, `commitLongMultiplicationStep`, `colPrompt`,
@@ -140,31 +158,32 @@ The test suite text-extracts `buildColumn`, `commitColumnStep`,
 `generateLessonQuestion`, `divPlan`, `divPromptText`,
 `twoDigitColumnAddition`, `twoDigitColumnSubtraction`,
 `blankStageProgress`, `progressFromCount`, `normalizeStageProgress`,
-`migrateV3StageProgress`, `migrateV4StageProgress` and the
-`MATH_STAGES` array by name, plus `sessionPlan`, and the `SESSION`
-and `RETIRED_STAGE_IDS` constants, so keep them as top-level
+`migrateV3StageProgress`, `migrateV4StageProgress`,
+`dropRetiredPlayerFields` and the
+`MATH_STAGES` array by name, plus `sessionPlan`, and the `SESSION`,
+`RETIRED_STAGE_IDS` and `RETIRED_PLAYER_FIELDS` constants, so keep them as top-level
 `function name(...)  {...}` declarations.
 
-### Script 2 — screens and session flow (1023-1296)
+### Script 2 — screens and session flow (1019-1288)
 
 | Lines | Section | Notes |
 | --- | --- | --- |
-| 1024-1107 | `screens` | `$`, `esc`, `show`; `STORY_SCENES` (1029) and story flow, `renderGrowthJourney` (1048), `renderPlayers`, `renderHome`, `renderMenu` |
-| 1108-1126 | `settings` | |
-| 1127-1294 | `gameplay` | `SESSION` and `sessionPlan` (1131) sizing the lesson and its pass mark, `startSession` (1145), `nextQuestion` (1152) dispatching to the right renderer, keypad `press`, `checkNormal` (1216) with the two-try feedback rule, `award`, `awardCollectible` (1256), `maybeCompleteStage` (1264), `endSession` |
+| 1019-1089 | `screens` | `$`, `esc`, `show`; `STORY_SCENES` (1024) and story flow, `renderPlayers` (1043), `renderHome` (1055), `renderMenu` (1072) — the one lesson list |
+| 1090-1117 | `settings` | `captureSettingsName` (1092) renames the creature, `renderSettings` (1099) |
+| 1118-1288 | `gameplay` | `SESSION` and `sessionPlan` (1122) sizing the lesson and its pass mark, `startSession` (1136), `nextQuestion` (1143) dispatching to the right renderer, keypad `press`, `checkNormal` (1208) with the two-try feedback rule, `award` and `awardHelped` (1248), `awardCollectible` (1249), `maybeCompleteStage` (1257), `endSession` |
 
-### Script 3 — column UIs and wiring (1297-1710)
+### Script 3 — column UIs and wiring (1289-1701)
 
 | Lines | Section | Notes |
 | --- | --- | --- |
-| 1298-1413 | `columns: addition, subtraction, multiplication` | `colPrompt` (1299), `renderCol` (1321), `commitColumnStep`, `pressCol`, `finishCol` |
-| 1414-1496 | `two-digit long multiplication` | `longMulPrompt`, `renderLongMul` (1427), `commitLongMultiplicationStep`, `pressLongMul`, `finishLongMul` |
-| 1497-1617 | `division in columns` | `divPlan` (1500), `divPromptText`, `renderDiv` (1519), `pressDiv` (1575), `finishDiv` — the interactive working: multiply-back, subtract, bring down |
-| 1618-1631 | `hidden developer spellbook` | `renderDeveloper`, `resetPlayerProgress` |
-| 1632-1710 | `wiring` | Age picker, all event listeners, dev-tap unlock, boot |
+| 1290-1405 | `columns: addition, subtraction, multiplication` | `colPrompt` (1291), `renderCol` (1313), `commitColumnStep`, `pressCol`, `finishCol` |
+| 1406-1488 | `two-digit long multiplication` | `longMulPrompt`, `renderLongMul` (1419), `commitLongMultiplicationStep`, `pressLongMul`, `finishLongMul` |
+| 1489-1609 | `division in columns` | `divPlan` (1492), `divPromptText`, `renderDiv` (1511), `pressDiv` (1567), `finishDiv` — the interactive working: multiply-back, subtract, bring down |
+| 1610-1623 | `hidden developer spellbook` | `renderDeveloper`, `resetPlayerProgress` |
+| 1624-1701 | `wiring` | Age picker, all event listeners, dev-tap unlock, boot |
 
 Note on long division: question generation lives in `longDivisionPhase`
-and `genDivision` (947) plus `generateLessonQuestion` (975) in script 1,
+and `genDivision` (942) plus `generateLessonQuestion` (970) in script 1,
 while the working UI is `divPlan`/`renderDiv`/`pressDiv` in script 3.
 The two are independent — changes to what a question looks like belong
 in the former and should leave the latter untouched. The words the child
