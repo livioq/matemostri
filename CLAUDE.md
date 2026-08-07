@@ -62,18 +62,25 @@ Division: simple division; long division.
 
 ## Current priority
 
-Nothing outstanding. Long division is done: the divisor is always a
-single digit, the dividend ramps from two digits to four across the
-lesson, and questions that leave something over are back, on questions
-3, 6, 9 and 10.
+Nothing outstanding. The second subtraction lesson is now column work,
+so 84-16 — the example the teaching rules are written around — is
+finally a lesson the child actually sits. It was mental arithmetic
+before, which meant two-digit regrouping was never taught on paper and
+the child met it first at three digits.
 
-Worth watching when the children next play: whether four questions in
-ten that leave something over is the right amount, and whether the two
-back-to-back at the end of the session are one too many.
+Worth watching when the children next play:
+
+- Whether four long-division questions in ten that leave something over
+  is the right amount, and whether the two back-to-back at the end of
+  the session are one too many.
+- The last four questions of both two-digit column lessons are a free
+  mix, so a session can end without a single carry or crossing-out.
+  Addition has always behaved this way and subtraction now matches it,
+  but if the children coast through the endings, that is the reason.
 
 ## Code map
 
-`index.html` is ~1678 lines: one `<style>` block, the screen markup, then
+`index.html` is ~1703 lines: one `<style>` block, the screen markup, then
 three `<script>` blocks. Line numbers drift as the file is edited — the
 `/* ---- name ---- */` banner comments are the durable anchors, so grep for
 those rather than trusting the numbers.
@@ -99,46 +106,48 @@ class. In DOM order: `s-story` (264), `s-players` (280), `s-home` (297),
 at 343 and `colQ` at 347), `s-end` (359), `s-set` (372), the `lvUp`
 level-up overlay (392), and the hidden `s-dev` spellbook (413).
 
-### Script 1 — data and maths (429-976)
+### Script 1 — data and maths (429-1022)
 
 | Lines | Section | Notes |
 | --- | --- | --- |
 | 430-453 | `storage` | `KEY='matemostri:v2'`, `LEGACY_KEYS`, `store` get/set |
-| 454-637 | `model` | `MATH_STAGES` (the 14 lessons), `EVOLUTIONS`, `ACC`, `COLLECTIBLES`, `MONSTER_STAGES`; save-shape helpers `blankStageProgress`, `progressFromCount`, `normalizeStageProgress`, `migrateV3StageProgress` (581), `completeMathStage`, `migrate` (607) |
-| 638-743 | `pet` | `petSVG` fallback art and `monsterMarkup` (733), which emits the `<img onerror>` → inline-SVG fallback |
-| 744-762 | `sound` | WebAudio beeps |
-| 763-876 | `column working model` | `buildColumn` (766), `buildLongMultiplication` (834), `twoDigitColumnAddition` (866) — pure step generators |
-| 877-975 | `question generation` | `genEasy`, `genHard`, `genDivision` (912), `generateLessonQuestion` (927), `divSteps` (964) |
+| 454-649 | `model` | `MATH_STAGES` (462, the 14 lessons), `EVOLUTIONS`, `ACC`, `COLLECTIBLES`, `MONSTER_STAGES`; save-shape helpers `blankStageProgress`, `progressFromCount`, `normalizeStageProgress`, `migrateV3StageProgress` (581), `RETIRED_STAGE_IDS` and `migrateV4StageProgress` (593), `completeMathStage`, `migrate` (618) |
+| 650-755 | `pet` | `petSVG` (652) fallback art and `monsterMarkup` (745), which emits the `<img onerror>` → inline-SVG fallback |
+| 756-774 | `sound` | WebAudio beeps |
+| 775-903 | `column working model` | `buildColumn` (778), `buildLongMultiplication` (846), `twoDigitColumnAddition` (878), `twoDigitColumnSubtraction` (890) — pure step generators |
+| 904-1022 | `question generation` | `genEasy`, `genHard`, `longDivisionPhase` (942), `genDivision` (947), `generateLessonQuestion` (975), `divSteps` (1010) |
 
 The test suite text-extracts `buildColumn`, `commitColumnStep`,
 `buildLongMultiplication`, `commitLongMultiplicationStep`, `colPrompt`,
 `longMulPrompt`, `divSteps`, `longDivisionPhase`, `genDivision`,
 `generateLessonQuestion`, `divPlan`, `divPromptText`,
-`blankStageProgress`, `progressFromCount`,
-`migrateV3StageProgress` and the `MATH_STAGES` array by name, plus the
-`SESSION` constant, so keep them as top-level `function name(...)  {...}`
-declarations.
+`twoDigitColumnAddition`, `twoDigitColumnSubtraction`,
+`blankStageProgress`, `progressFromCount`, `normalizeStageProgress`,
+`migrateV3StageProgress`, `migrateV4StageProgress` and the
+`MATH_STAGES` array by name, plus the `SESSION` and
+`RETIRED_STAGE_IDS` constants, so keep them as top-level
+`function name(...)  {...}` declarations.
 
-### Script 2 — screens and session flow (977-1243)
-
-| Lines | Section | Notes |
-| --- | --- | --- |
-| 978-1061 | `screens` | `$`, `esc`, `show`; `STORY_SCENES` and story flow (983-1000), `renderGrowthJourney` (1002), `renderPlayers`, `renderHome`, `renderMenu` |
-| 1062-1080 | `settings` | |
-| 1081-1242 | `gameplay` | `startSession` (1093), `nextQuestion` (1099) dispatching to the right renderer, keypad `press`, `checkNormal` (1164) with the two-try feedback rule, `award`, `awardCollectible` (1204), `maybeCompleteStage` (1212), `endSession` |
-
-### Script 3 — column UIs and wiring (1244-1652)
+### Script 2 — screens and session flow (1023-1289)
 
 | Lines | Section | Notes |
 | --- | --- | --- |
-| 1245-1360 | `columns: addition, subtraction, multiplication` | `colPrompt` (1246), `renderCol` (1268), `commitColumnStep`, `pressCol`, `finishCol` |
-| 1361-1443 | `two-digit long multiplication` | `longMulPrompt`, `renderLongMul` (1374), `commitLongMultiplicationStep`, `pressLongMul`, `finishLongMul` |
-| 1444-1561 | `division in columns` | `divPlan` (1447), `divPromptText`, `renderDiv` (1464), `pressDiv` (1520), `finishDiv` — the interactive working: multiply-back, subtract, bring down |
-| 1562-1575 | `hidden developer spellbook` | `renderDeveloper`, `resetPlayerProgress` |
-| 1576-1652 | `wiring` | Age picker, all event listeners, dev-tap unlock, boot |
+| 1024-1107 | `screens` | `$`, `esc`, `show`; `STORY_SCENES` (1029) and story flow, `renderGrowthJourney` (1048), `renderPlayers`, `renderHome`, `renderMenu` |
+| 1108-1126 | `settings` | |
+| 1127-1288 | `gameplay` | `startSession` (1139), `nextQuestion` (1145) dispatching to the right renderer, keypad `press`, `checkNormal` (1210) with the two-try feedback rule, `award`, `awardCollectible` (1250), `maybeCompleteStage` (1258), `endSession` |
+
+### Script 3 — column UIs and wiring (1290-1703)
+
+| Lines | Section | Notes |
+| --- | --- | --- |
+| 1291-1406 | `columns: addition, subtraction, multiplication` | `colPrompt` (1292), `renderCol` (1314), `commitColumnStep`, `pressCol`, `finishCol` |
+| 1407-1489 | `two-digit long multiplication` | `longMulPrompt`, `renderLongMul` (1420), `commitLongMultiplicationStep`, `pressLongMul`, `finishLongMul` |
+| 1490-1610 | `division in columns` | `divPlan` (1493), `divPromptText`, `renderDiv` (1512), `pressDiv` (1568), `finishDiv` — the interactive working: multiply-back, subtract, bring down |
+| 1611-1624 | `hidden developer spellbook` | `renderDeveloper`, `resetPlayerProgress` |
+| 1625-1703 | `wiring` | Age picker, all event listeners, dev-tap unlock, boot |
 
 Note on long division: question generation lives in `longDivisionPhase`
-and `genDivision` (912) plus `generateLessonQuestion` (927) in script 1,
+and `genDivision` (947) plus `generateLessonQuestion` (975) in script 1,
 while the working UI is `divPlan`/`renderDiv`/`pressDiv` in script 3.
 The two are independent — changes to what a question looks like belong
 in the former and should leave the latter untouched. The words the child

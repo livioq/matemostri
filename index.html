@@ -466,7 +466,7 @@ const MATH_STAGES=[
   {id:'add_3column',gid:'add',label:'Three-digit column addition',mode:'column',digits:3,magic:'Carrying Clouds'},
   {id:'add_4column',gid:'add',label:'Four-digit column addition',mode:'column',digits:4,magic:'Starlight Tower'},
   {id:'sub_1digit',gid:'sub',label:'One-digit subtraction',mode:'mental',magic:'Whispering Woods'},
-  {id:'sub_2digit',gid:'sub',label:'Two-digit subtraction',mode:'mental',magic:'Silver Stream'},
+  {id:'sub_2column',gid:'sub',label:'Two-digit column subtraction',mode:'column',digits:2,magic:'Silver Stream'},
   {id:'sub_3column',gid:'sub',label:'Three-digit column subtraction',mode:'column',digits:3,magic:'Borrowing Caves'},
   {id:'sub_4column',gid:'sub',label:'Four-digit column subtraction',mode:'column',digits:4,magic:'Crystal Mountain'},
   {id:'mul_1x1',gid:'mul',label:'Single digit × single digit',mode:'mental',magic:'Mushroom Grove'},
@@ -588,6 +588,17 @@ function migrateV3StageProgress(progress){
   const newCount=oldCount<2?oldCount:oldCount+1;
   return progressFromCount(newCount);
 }
+/* Lessons that were renamed keep their old save key working, so a child who had
+   finished one never has to sit through it again. */
+const RETIRED_STAGE_IDS={sub_2digit:'sub_2column'};
+function migrateV4StageProgress(progress){
+  const moved={available:{},completed:{}};
+  ['available','completed'].forEach(field=>{
+    const saved=(progress&&progress[field])||{};
+    Object.keys(saved).forEach(id=>{ if(saved[id]) moved[field][RETIRED_STAGE_IDS[id]||id]=true; });
+  });
+  return normalizeStageProgress(moved);
+}
 function stageStatus(p,id){ return p.stageProgress.completed[id]?'completed':p.stageProgress.available[id]?'available':'locked'; }
 function completeMathStage(p,id){
   const i=MATH_STAGES.findIndex(s=>s.id===id); if(i<0||!p.stageProgress.available[id]) return null;
@@ -602,7 +613,7 @@ function newPlayer(name,age){
   return {id:'p'+Date.now(),name:name,age:age,level:1,xp:0,total:0,ease:{},right:0,best:0,
           groups:{add:true,sub:true,mul:true,div:!young},
           unlocked:{add2:false,sub2:false,mul2:false,div2:false},
-          stageProgress:blankStageProgress(),monsterStage:1,momoName:'Momo',collectibles:{},accessories:[],storySeen:false,migrationVersion:4};
+          stageProgress:blankStageProgress(),monsterStage:1,momoName:'Momo',collectibles:{},accessories:[],storySeen:false,migrationVersion:5};
 }
 function migrate(p){
   const version=Number(p.migrationVersion)||0,wasLegacy=version<3;
@@ -615,8 +626,9 @@ function migrate(p){
   if(wasLegacy){
     const legacyCount=legacyCompletedCount(p);
     const hasNewProgress=p.stageProgress&&p.stageProgress.completed&&Object.prototype.hasOwnProperty.call(p.stageProgress.completed,'add_1digit');
-    p.stageProgress=hasNewProgress?normalizeStageProgress(p.stageProgress):progressFromCount(legacyCount);
+    p.stageProgress=hasNewProgress?migrateV4StageProgress(p.stageProgress):progressFromCount(legacyCount);
   }else if(version===3) p.stageProgress=migrateV3StageProgress(p.stageProgress);
+  else if(version===4) p.stageProgress=migrateV4StageProgress(p.stageProgress);
   else p.stageProgress=normalizeStageProgress(p.stageProgress);
   if(!p.momoName) p.momoName='Momo';
   if(!p.collectibles||typeof p.collectibles!=='object') p.collectibles={};
@@ -631,7 +643,7 @@ function migrate(p){
   COSMETIC_REWARDS.forEach(a=>{ if(collectibleTotal(p)>=a.total&&!p.accessories.includes(a.id)) p.accessories.push(a.id); });
   p.monsterStage=p.devMonsterOverride||artForCount(completedCount(p));
   if(p.storySeen===undefined) p.storySeen=true;
-  p.migrationVersion=4;
+  p.migrationVersion=5;
   return p;
 }
 
@@ -873,6 +885,21 @@ function twoDigitColumnAddition(questionIndex){
   }
   return {kind:'col',a:phase==='no-carry'?23:phase==='one-carry'?27:58,b:phase==='no-carry'?14:phase==='one-carry'?15:34,M:buildColumn('add',phase==='no-carry'?23:phase==='one-carry'?27:58,phase==='no-carry'?14:phase==='one-carry'?15:34),phase:phase};
 }
+/* the lesson 84-16 is written for: take-aways that need no crossing out first, then
+   ones that do, then a mix. The answer fills both columns so no leading 0 is written. */
+function twoDigitColumnSubtraction(questionIndex){
+  const phase=questionIndex<=3?'no-regroup':questionIndex<=6?'regroup':'mixed';
+  for(let guard=0;guard<300;guard++){
+    const a=rnd(21,99),b=rnd(11,a-10);
+    const M=buildColumn('sub',a,b);
+    if(!colValid(M)) continue;
+    const regroups=M.steps.some(s=>s.t==='ann');
+    if((phase==='no-regroup'&&regroups)||(phase==='regroup'&&!regroups)) continue;
+    return {kind:'col',a:a,b:b,M:M,phase:phase};
+  }
+  const a=phase==='no-regroup'?68:84,b=phase==='no-regroup'?24:16;
+  return {kind:'col',a:a,b:b,M:buildColumn('sub',a,b),phase:phase};
+}
 
 /* ---------------- question generation ---------------- */
 function genEasy(gid,tr){
@@ -956,9 +983,7 @@ function generateLessonQuestion(stage,questionIndex){
   if(stage.id==='sub_1digit'){
     const a=rnd(2,9),b=rnd(0,a); return {kind:'n',txt:a+' \u2212 '+b,ans:a-b};
   }
-  if(stage.id==='sub_2digit'){
-    const a=rnd(20,99),b=rnd(10,a); return {kind:'n',txt:a+' \u2212 '+b,ans:a-b};
-  }
+  if(stage.id==='sub_2column') return twoDigitColumnSubtraction(questionIndex||1);
   if(stage.id==='mul_1x1'){
     const a=rnd(2,12),b=rnd(2,12); return {kind:'n',txt:a+' \u00D7 '+b,ans:a*b};
   }
@@ -1594,7 +1619,7 @@ function openDeveloper(){ renderDeveloper(); show('s-dev'); }
 function resetPlayerProgress(){
   P.stageProgress=blankStageProgress(); P.monsterStage=1; delete P.devMonsterOverride;
   P.collectibles={}; COLLECTIBLES.forEach(c=>P.collectibles[c.id]=0); P.accessories=[];
-  P.right=0; P.best=0; P.total=0; P.xp=0; P.level=1; P.storySeen=false; P.migrationVersion=4; save();
+  P.right=0; P.best=0; P.total=0; P.xp=0; P.level=1; P.storySeen=false; P.migrationVersion=5; save();
 }
 
 /* ---------------- wiring ---------------- */
