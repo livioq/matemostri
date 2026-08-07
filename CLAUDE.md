@@ -72,7 +72,9 @@ Division: simple division; long division.
   adds that not everything fits evenly.
 - No jargon in anything a child reads. Not quotient, product or
   remainder. Say "how many times does 3 go into 22", "write it
-  underneath", "write what is left".
+  underneath", "write what is left". That includes the game's own
+  vocabulary: the screens say "lessons lit" and "right answers", not
+  "path lights" and "kind answers", and a count says what it is out of.
 - Feedback must never feel punishing. A wrong answer gets a second try
   with nothing revealed; only after that is the answer shown, and the
   child still types it in and still moves forward.
@@ -97,6 +99,9 @@ Recently done, in case something looks unfamiliar:
   three digits, five at four. The journey is 134 questions across 15
   lessons, where ten-a-lesson would have been 150.
 - The play screen shows a row of star spaces instead of "2/10".
+- The home tiles, the lesson list header and the end screen said "path
+  lights" and "kind answers". They now say "7 of 15 lessons lit" and
+  "right answers".
 - Column answers are written right to left one digit at a time. The old
   model asked for the last two digits as a single entry, so 63+71 went
   4, then 1, then 3. The `final`, `mulFinal` and `partialFinal` step
@@ -132,7 +137,7 @@ would be another save-shape change.
 
 ## Code map
 
-`index.html` is ~1717 lines: one `<style>` block, the screen markup, then
+`index.html` is ~1719 lines: one `<style>` block, the screen markup, then
 three `<script>` blocks. Line numbers drift as the file is edited — the
 `/* ---- name ---- */` banner comments are the durable anchors, so grep for
 those rather than trusting the numbers.
@@ -183,23 +188,23 @@ The test suite text-extracts `buildColumn`, `commitColumnStep`,
 `RETIRED_STAGE_IDS` and `RETIRED_PLAYER_FIELDS` constants, so keep them as top-level
 `function name(...)  {...}` declarations.
 
-### Script 2 — screens and session flow (1025-1311)
+### Script 2 — screens and session flow (1025-1313)
 
 | Lines | Section | Notes |
 | --- | --- | --- |
-| 1025-1095 | `screens` | `$`, `esc`, `show`; `STORY_SCENES` (1030) and story flow, `renderPlayers` (1049), `renderHome` (1061), `renderMenu` (1078) — the one lesson list |
+| 1025-1095 | `screens` | `$`, `esc`, `show`; `STORY_SCENES` (1030) and story flow, `renderPlayers` (1049), `renderHome` (1061), `renderMenu` (1080) — the one lesson list |
 | 1096-1123 | `settings` | `captureSettingsName` (1098) renames the creature, `renderSettings` (1105) |
-| 1124-1311 | `gameplay` | `SESSION` and `sessionPlan` (1128) sizing the lesson and its pass mark, `renderStars` (1145) and `markQuestion` (1157) filling the star row, `startSession` (1158), `nextQuestion` (1165) dispatching to the right renderer, keypad `press`, `checkNormal` (1230) with the two-try feedback rule, `award` (1261) and `awardHelped` (1271), `awardCollectible` (1272), `maybeCompleteStage` (1280), `endSession` |
+| 1124-1313 | `gameplay` | `SESSION` and `sessionPlan` (1128) sizing the lesson and its pass mark, `renderStars` (1145) and `markQuestion` (1157) filling the star row, `startSession` (1158), `nextQuestion` (1165) dispatching to the right renderer, keypad `press`, `checkNormal` (1230) with the two-try feedback rule, `award` (1261) and `awardHelped` (1271), `awardCollectible` (1272), `maybeCompleteStage` (1280), `endSession` |
 
-### Script 3 — column UIs and wiring (1312-1717)
+### Script 3 — column UIs and wiring (1314-1719)
 
 | Lines | Section | Notes |
 | --- | --- | --- |
-| 1313-1426 | `columns: addition, subtraction, multiplication` | `colPrompt` (1314), `renderCol` (1335), `commitColumnStep`, `pressCol`, `finishCol` |
-| 1427-1504 | `two-digit long multiplication` | `longMulPrompt`, `renderLongMul` (1439), `commitLongMultiplicationStep`, `pressLongMul`, `finishLongMul` |
-| 1505-1625 | `division in columns` | `divPlan` (1508), `divPromptText`, `renderDiv` (1527), `pressDiv` (1583), `finishDiv` — the interactive working: multiply-back, subtract, bring down |
-| 1626-1639 | `hidden developer spellbook` | `renderDeveloper`, `resetPlayerProgress` |
-| 1640-1717 | `wiring` | Age picker, all event listeners, dev-tap unlock, boot |
+| 1315-1428 | `columns: addition, subtraction, multiplication` | `colPrompt` (1316), `renderCol` (1337), `commitColumnStep`, `pressCol`, `finishCol` |
+| 1429-1506 | `two-digit long multiplication` | `longMulPrompt`, `renderLongMul` (1441), `commitLongMultiplicationStep`, `pressLongMul`, `finishLongMul` |
+| 1507-1627 | `division in columns` | `divPlan` (1510), `divPromptText`, `renderDiv` (1529), `pressDiv` (1585), `finishDiv` — the interactive working: multiply-back, subtract, bring down |
+| 1628-1641 | `hidden developer spellbook` | `renderDeveloper`, `resetPlayerProgress` |
+| 1642-1719 | `wiring` | Age picker, all event listeners, dev-tap unlock, boot |
 
 Note on long division: question generation lives in `longDivisionPhase`
 and `genDivision` (944) plus `generateLessonQuestion` (972) in script 1,

@@ -1068,9 +1068,11 @@ function renderHome(){
   else $('nextReward').textContent='The whole enchanted path is glowing.';
   $('collectionBox').innerHTML=COLLECTIBLES.filter(c=>P.collectibles[c.id]>0).map(c=>'<span class="collectible">'+c.emoji+' '+c.name+' ×'+P.collectibles[c.id]+'</span>').join('')||'<span class="magic-whisper">Replay a glowing lesson to discover magical treasures.</span>';
   $('wardrobeBox').innerHTML=COSMETIC_REWARDS.filter(a=>P.accessories.includes(a.id)).map(a=>'<span class="accessory-chip">'+a.emoji+' '+a.name+'</span>').join('');
+  // plain words and a number that says what it is out of: "path lights" and "kind
+  // answers" were the game's own vocabulary, which is no use to the child reading them
   $('statBox').innerHTML=
-    '<div><b class="mono">'+count+'</b><span>path lights</span></div>'+
-    '<div><b class="mono">'+P.right+'</b><span>kind answers</span></div>'+
+    '<div><b class="mono">'+count+' of '+MATH_STAGES.length+'</b><span>lessons lit</span></div>'+
+    '<div><b class="mono">'+P.right+'</b><span>right answers</span></div>'+
     '<div><b class="mono">'+P.best+'</b><span>best streak</span></div>';
   $('playBtn').textContent=count===0?'Help the egg awaken':count===MATH_STAGES.length?'Revisit the enchanted lessons':'Continue '+petName()+"'s adventure";
 }
@@ -1078,7 +1080,7 @@ function renderHome(){
 function renderMenu(){
   const count=completedCount(P),L=$('pickList');
   $('menuTitle').textContent=petName()+"'s enchanted journey";
-  $('menuProgress').textContent=count+' of '+MATH_STAGES.length+' path lights'; L.innerHTML='';
+  $('menuProgress').textContent=count+' of '+MATH_STAGES.length+' lessons lit'; L.innerHTML='';
   MATH_STAGES.forEach((stage,i)=>{
     const status=stageStatus(P,stage.id),locked=status==='locked',done=status==='completed';
     const prev=MATH_STAGES[i-1],b=document.createElement('button');
@@ -1300,7 +1302,7 @@ function endSession(){
   $('endStats').innerHTML=
     '<div><b class="mono">'+S.mastered+'</b><span>answers mastered</span></div>'+
     '<div><b class="mono">'+S.best+'</b><span>brightest streak</span></div>'+
-    '<div><b class="mono">'+completedCount(P)+'</b><span>path lights</span></div>';
+    '<div><b class="mono">'+completedCount(P)+' of '+MATH_STAGES.length+'</b><span>lessons lit</span></div>';
   if(result==='collectible'){
     const cosmetic=S.reward.newCosmetics[0];
     $('endReward').textContent=petName()+' found '+S.reward.item.emoji+' '+S.reward.item.name+'!'+(cosmetic?' A new '+cosmetic.name+' appeared in the magic wardrobe!':'');
