@@ -19,8 +19,9 @@ public release.
 ## Design direction
 
 - Maths progress drives Momo's growth.
-- XP is being phased out as the main progression mechanic. Do not
-  reintroduce it.
+- XP is gone, not merely unused. There is no xp field, no level number
+  and no points table left in the code or in a saved game, and a test
+  fails if one comes back. Do not reintroduce it.
 - Each completed lesson unlocks the next part of the journey.
 - Replaying a completed lesson awards collectibles rather than advancing
   the story. Collectibles can later unlock cosmetic items.
@@ -68,7 +69,19 @@ Division: simple division; long division.
 
 ## Current priority
 
-Nothing outstanding. The second subtraction lesson is now column work,
+Nothing outstanding. XP is now removed rather than merely unused: the
+points table, the `xp` field and the `level` it fed are gone from the
+code and from saved games, and `softXP` — which never awarded anything
+— is now `awardHelped`.
+
+The adaptive-difficulty leftovers are the obvious next cleanup and are
+deliberately untouched: `ease` writes `P.ease` on every answer, but its
+only reader is `tierFor`, which nothing calls, and the `genEasy` and
+`genHard` generators it was built for are unreachable too. That is a
+whole inert subsystem, but it is a different mechanic from XP and
+removing it would be another save-shape change.
+
+The second subtraction lesson is now column work,
 so 84-16 — the example the teaching rules are written around — is
 finally a lesson the child actually sits. It was mental arithmetic
 before, which meant two-digit regrouping was never taught on paper and
@@ -97,7 +110,7 @@ Worth watching when the children next play:
 
 ## Code map
 
-`index.html` is ~1710 lines: one `<style>` block, the screen markup, then
+`index.html` is ~1712 lines: one `<style>` block, the screen markup, then
 three `<script>` blocks. Line numbers drift as the file is edited — the
 `/* ---- name ---- */` banner comments are the durable anchors, so grep for
 those rather than trusting the numbers.
@@ -123,16 +136,16 @@ class. In DOM order: `s-story` (264), `s-players` (280), `s-home` (297),
 at 343 and `colQ` at 347), `s-end` (359), `s-set` (372), the `lvUp`
 level-up overlay (392), and the hidden `s-dev` spellbook (413).
 
-### Script 1 — data and maths (429-1022)
+### Script 1 — data and maths (429-1024)
 
 | Lines | Section | Notes |
 | --- | --- | --- |
 | 430-453 | `storage` | `KEY='matemostri:v2'`, `LEGACY_KEYS`, `store` get/set |
-| 454-649 | `model` | `MATH_STAGES` (462, the 14 lessons), `EVOLUTIONS`, `ACC`, `COLLECTIBLES`, `MONSTER_STAGES`; save-shape helpers `blankStageProgress`, `progressFromCount`, `normalizeStageProgress`, `migrateV3StageProgress` (581), `RETIRED_STAGE_IDS` and `migrateV4StageProgress` (593), `completeMathStage`, `migrate` (618) |
-| 650-755 | `pet` | `petSVG` (652) fallback art and `monsterMarkup` (745), which emits the `<img onerror>` → inline-SVG fallback |
-| 756-774 | `sound` | WebAudio beeps |
-| 775-903 | `column working model` | `buildColumn` (778), `buildLongMultiplication` (846), `twoDigitColumnAddition` (878), `twoDigitColumnSubtraction` (890) — pure step generators |
-| 904-1022 | `question generation` | `genEasy`, `genHard`, `longDivisionPhase` (942), `genDivision` (947), `generateLessonQuestion` (975), `divSteps` (1010) |
+| 454-650 | `model` | `MATH_STAGES` (455, the 14 lessons), `EVOLUTIONS`, `ACC`, `COLLECTIBLES`, `MONSTER_STAGES`; save-shape helpers `blankStageProgress`, `progressFromCount`, `normalizeStageProgress`, `migrateV3StageProgress` (574), `RETIRED_STAGE_IDS` and `migrateV4StageProgress` (586), `RETIRED_PLAYER_FIELDS` and `dropRetiredPlayerFields` (597), `completeMathStage`, `migrate` (618) |
+| 651-756 | `pet` | `petSVG` (653) fallback art and `monsterMarkup` (746), which emits the `<img onerror>` → inline-SVG fallback |
+| 757-775 | `sound` | WebAudio beeps |
+| 776-904 | `column working model` | `buildColumn` (779), `buildLongMultiplication` (847), `twoDigitColumnAddition` (879), `twoDigitColumnSubtraction` (891) — pure step generators |
+| 905-1024 | `question generation` | `genEasy`, `genHard`, `longDivisionPhase` (943), `genDivision` (948), `generateLessonQuestion` (976), `divSteps` (1011) |
 
 The test suite text-extracts `buildColumn`, `commitColumnStep`,
 `buildLongMultiplication`, `commitLongMultiplicationStep`, `colPrompt`,
@@ -140,31 +153,32 @@ The test suite text-extracts `buildColumn`, `commitColumnStep`,
 `generateLessonQuestion`, `divPlan`, `divPromptText`,
 `twoDigitColumnAddition`, `twoDigitColumnSubtraction`,
 `blankStageProgress`, `progressFromCount`, `normalizeStageProgress`,
-`migrateV3StageProgress`, `migrateV4StageProgress` and the
-`MATH_STAGES` array by name, plus `sessionPlan`, and the `SESSION`
-and `RETIRED_STAGE_IDS` constants, so keep them as top-level
+`migrateV3StageProgress`, `migrateV4StageProgress`,
+`dropRetiredPlayerFields` and the
+`MATH_STAGES` array by name, plus `sessionPlan`, and the `SESSION`,
+`RETIRED_STAGE_IDS` and `RETIRED_PLAYER_FIELDS` constants, so keep them as top-level
 `function name(...)  {...}` declarations.
 
-### Script 2 — screens and session flow (1023-1296)
+### Script 2 — screens and session flow (1025-1298)
 
 | Lines | Section | Notes |
 | --- | --- | --- |
-| 1024-1107 | `screens` | `$`, `esc`, `show`; `STORY_SCENES` (1029) and story flow, `renderGrowthJourney` (1048), `renderPlayers`, `renderHome`, `renderMenu` |
-| 1108-1126 | `settings` | |
-| 1127-1294 | `gameplay` | `SESSION` and `sessionPlan` (1131) sizing the lesson and its pass mark, `startSession` (1145), `nextQuestion` (1152) dispatching to the right renderer, keypad `press`, `checkNormal` (1216) with the two-try feedback rule, `award`, `awardCollectible` (1256), `maybeCompleteStage` (1264), `endSession` |
+| 1025-1108 | `screens` | `$`, `esc`, `show`; `STORY_SCENES` (1030) and story flow, `renderGrowthJourney` (1049), `renderPlayers`, `renderHome`, `renderMenu` |
+| 1109-1127 | `settings` | |
+| 1128-1298 | `gameplay` | `SESSION` and `sessionPlan` (1132) sizing the lesson and its pass mark, `startSession` (1146), `nextQuestion` (1153) dispatching to the right renderer, keypad `press`, `checkNormal` (1218) with the two-try feedback rule, `award` and `awardHelped` (1258), `awardCollectible` (1259), `maybeCompleteStage` (1267), `endSession` |
 
-### Script 3 — column UIs and wiring (1297-1710)
+### Script 3 — column UIs and wiring (1299-1712)
 
 | Lines | Section | Notes |
 | --- | --- | --- |
-| 1298-1413 | `columns: addition, subtraction, multiplication` | `colPrompt` (1299), `renderCol` (1321), `commitColumnStep`, `pressCol`, `finishCol` |
-| 1414-1496 | `two-digit long multiplication` | `longMulPrompt`, `renderLongMul` (1427), `commitLongMultiplicationStep`, `pressLongMul`, `finishLongMul` |
-| 1497-1617 | `division in columns` | `divPlan` (1500), `divPromptText`, `renderDiv` (1519), `pressDiv` (1575), `finishDiv` — the interactive working: multiply-back, subtract, bring down |
-| 1618-1631 | `hidden developer spellbook` | `renderDeveloper`, `resetPlayerProgress` |
-| 1632-1710 | `wiring` | Age picker, all event listeners, dev-tap unlock, boot |
+| 1300-1415 | `columns: addition, subtraction, multiplication` | `colPrompt` (1301), `renderCol` (1323), `commitColumnStep`, `pressCol`, `finishCol` |
+| 1416-1498 | `two-digit long multiplication` | `longMulPrompt`, `renderLongMul` (1429), `commitLongMultiplicationStep`, `pressLongMul`, `finishLongMul` |
+| 1499-1619 | `division in columns` | `divPlan` (1502), `divPromptText`, `renderDiv` (1521), `pressDiv` (1577), `finishDiv` — the interactive working: multiply-back, subtract, bring down |
+| 1620-1633 | `hidden developer spellbook` | `renderDeveloper`, `resetPlayerProgress` |
+| 1634-1712 | `wiring` | Age picker, all event listeners, dev-tap unlock, boot |
 
 Note on long division: question generation lives in `longDivisionPhase`
-and `genDivision` (947) plus `generateLessonQuestion` (975) in script 1,
+and `genDivision` (948) plus `generateLessonQuestion` (976) in script 1,
 while the working UI is `divPlan`/`renderDiv`/`pressDiv` in script 3.
 The two are independent — changes to what a question looks like belong
 in the former and should leave the latter untouched. The words the child

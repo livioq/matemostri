@@ -123,7 +123,7 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
 .opt{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px dashed var(--grid)}
 .opt:last-child{border-bottom:none}
 .opt .lbl{font-weight:700;color:var(--ink);font-size:15px}
-.opt .xp{font-size:12px;color:var(--ink-soft);font-weight:700}
+.opt .magic{font-size:12px;color:var(--ink-soft);font-weight:700}
 .sw{width:52px;height:30px;border-radius:20px;background:#dfe4ec;position:relative;flex:0 0 52px;transition:background .15s}
 .sw::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.3);transition:left .15s}
 .sw.on{background:var(--grass)}
@@ -452,13 +452,6 @@ const store={
 };
 
 /* ---------------- model ---------------- */
-const GROUPS=[
-  {id:'add',sign:'+',name:'Addition',      easy:{id:'add1',xp:5},  hard:{id:'add2',xp:14}},
-  {id:'sub',sign:'\u2212',name:'Subtraction',easy:{id:'sub1',xp:8},  hard:{id:'sub2',xp:20}},
-  {id:'mul',sign:'\u00D7',name:'Multiplication',easy:{id:'mul1',xp:20},hard:{id:'mul2',xp:34}},
-  {id:'div',sign:'\u00F7',name:'Division',  easy:{id:'div1',xp:40}, hard:{id:'div2',xp:70}}
-];
-const G=id=>GROUPS.find(g=>g.id===id);
 const MATH_STAGES=[
   {id:'add_1digit',gid:'add',label:'One-digit addition',mode:'mental',magic:'Firefly Meadow'},
   {id:'add_2column',gid:'add',label:'Two-digit column addition',mode:'column',digits:2,magic:'Carrying Lanterns'},
@@ -599,6 +592,13 @@ function migrateV4StageProgress(progress){
   });
   return normalizeStageProgress(moved);
 }
+/* XP and the level it fed are gone. An old save is read for its legacy progress first,
+   in migrate, and only then are the fields dropped — so nothing is lost on the way out. */
+const RETIRED_PLAYER_FIELDS=['xp','level'];
+function dropRetiredPlayerFields(p){
+  RETIRED_PLAYER_FIELDS.forEach(field=>{ delete p[field]; });
+  return p;
+}
 function stageStatus(p,id){ return p.stageProgress.completed[id]?'completed':p.stageProgress.available[id]?'available':'locked'; }
 function completeMathStage(p,id){
   const i=MATH_STAGES.findIndex(s=>s.id===id); if(i<0||!p.stageProgress.available[id]) return null;
@@ -610,10 +610,10 @@ function completeMathStage(p,id){
 
 function newPlayer(name,age){
   const young=age<=7;
-  return {id:'p'+Date.now(),name:name,age:age,level:1,xp:0,total:0,ease:{},right:0,best:0,
+  return {id:'p'+Date.now(),name:name,age:age,total:0,ease:{},right:0,best:0,
           groups:{add:true,sub:true,mul:true,div:!young},
           unlocked:{add2:false,sub2:false,mul2:false,div2:false},
-          stageProgress:blankStageProgress(),monsterStage:1,momoName:'Momo',collectibles:{},accessories:[],storySeen:false,migrationVersion:5};
+          stageProgress:blankStageProgress(),monsterStage:1,momoName:'Momo',collectibles:{},accessories:[],storySeen:false,migrationVersion:6};
 }
 function migrate(p){
   const version=Number(p.migrationVersion)||0,wasLegacy=version<3;
@@ -643,7 +643,8 @@ function migrate(p){
   COSMETIC_REWARDS.forEach(a=>{ if(collectibleTotal(p)>=a.total&&!p.accessories.includes(a.id)) p.accessories.push(a.id); });
   p.monsterStage=p.devMonsterOverride||artForCount(completedCount(p));
   if(p.storySeen===undefined) p.storySeen=true;
-  p.migrationVersion=5;
+  dropRetiredPlayerFields(p);
+  p.migrationVersion=6;
   return p;
 }
 
@@ -1118,7 +1119,7 @@ function renderSettings(){
   const L=$('opList'); L.innerHTML='';
   MATH_STAGES.forEach(stage=>{
     const row=document.createElement('div'),status=stageStatus(P,stage.id); row.className='opt';
-    row.innerHTML='<span><span class="lbl">'+stage.label+'</span><br><span class="xp">'+stage.magic+'</span></span><span class="accessory-chip">'+(status==='completed'?'✨ glowing':status)+'</span>';
+    row.innerHTML='<span><span class="lbl">'+stage.label+'</span><br><span class="magic">'+stage.magic+'</span></span><span class="accessory-chip">'+(status==='completed'?'✨ glowing':status)+'</span>';
     L.appendChild(row);
   });
   $('swSound').className='sw'+(DB.sound?' on':'');
@@ -1157,27 +1158,27 @@ function nextQuestion(){
   const made=generateLessonQuestion(S.stage,S.i);
   $('colHint').style.display='none'; $('hintBtn').style.display='none';
   if(made.kind==='n'){
-    S.q={vid:S.stage.id,xp:1,kind:'n',ans:made.ans};
+    S.q={vid:S.stage.id,kind:'n',ans:made.ans};
     $('normalQ').style.display='block'; $('colQ').style.display='none';
     $('qText').textContent=made.txt+' =';
     S.input=''; paintAns();
     $('qTag').textContent=S.stage.magic+' · help '+petName()+' find the answer';
   }else{
     if(made.kind==='div'){
-      S.q={vid:S.stage.id,xp:1,kind:'div'};
+      S.q={vid:S.stage.id,kind:'div'};
       S.div={g:made.made,plan:divPlan(made.made),pi:0,buf:'',done:{},err:0,tries:0,hint:false};
       S.col=null;
       $('normalQ').style.display='none'; $('colQ').style.display='block';
       $('hintBtn').style.display='block'; $('hintBtn').textContent='need a hint?';
       renderDiv();
     }else if(made.kind==='longmul'){
-      S.q={vid:S.stage.id,xp:1,kind:'longmul'};
+      S.q={vid:S.stage.id,kind:'longmul'};
       S.longMul=made.L; S.col=null; S.div=null; S.colB=made.b;
       $('normalQ').style.display='none'; $('colQ').style.display='block';
       $('hintBtn').style.display='block'; $('hintBtn').textContent='open a multiplication spell?';
       renderLongMul();
     }else{
-      S.q={vid:S.stage.id,xp:1,kind:'col'};
+      S.q={vid:S.stage.id,kind:'col'};
       S.col=made.M; S.longMul=null; S.div=null;
       S.colB=made.b;
       $('normalQ').style.display='none'; $('colQ').style.display='block';
@@ -1218,7 +1219,7 @@ function checkNormal(){
   const ok=Number(S.input)===S.q.ans;
   if(S.mode==='copy'){
     if(!ok){ $('fb').innerHTML='<span class="no">'+petName()+' is thinking with you. It\u2019s '+S.q.ans+'.</span>'; setPlayMood('wrong'); S.input=''; paintAns(); return; }
-    S.locked=true; softXP();
+    S.locked=true; awardHelped();
     $('fb').innerHTML='<span class="ok">There it is.</span>'; sGood(); save();
     setTimeout(nextQuestion,900); return;
   }
@@ -1253,7 +1254,8 @@ function award(mastered){
   P.total=(Number(P.total)||0)+1;
   if(S.stageId==='add_1digit'&&!S.wasCompleted&&S.mastered===5) S.crackMoment=true;
 }
-function softXP(){ S.right++; P.right++; S.streak=0; P.total=(Number(P.total)||0)+1; }
+/* the child got there, but with help: the answer counts, the mastery does not */
+function awardHelped(){ S.right++; P.right++; S.streak=0; P.total=(Number(P.total)||0)+1; }
 function awardCollectible(){
   const item=COLLECTIBLES[Math.floor(Math.random()*COLLECTIBLES.length)];
   P.collectibles[item.id]=(P.collectibles[item.id]||0)+1;
@@ -1404,7 +1406,7 @@ function finishCol(){
   const M=S.col; S.locked=true;
   const clean=M.err===0&&!M.hint;
   if(clean){ ease(S.q.vid,0.2); award(true); }
-  else { if(M.err>0) ease(S.q.vid,-0.6); softXP(); }
+  else { if(M.err>0) ease(S.q.vid,-0.6); awardHelped(); }
   let total=''; for(let i=0;i<M.wid;i++) if(M.ent.res[i]!==undefined) total+=M.ent.res[i];
   $('fb').innerHTML='<span class="ok">'+(clean?praise():'Worked all the way through.')+' '+Number(total)+'</span>'+(clean?bonusStamp():'')+crackMessage();
   setPlayMood(S.streak>=3?'streak':'correct');
@@ -1489,7 +1491,7 @@ function pressLongMul(k){
 }
 function finishLongMul(){
   const L=S.longMul; S.locked=true; const clean=L.err===0&&!L.hint;
-  if(clean){ ease(S.q.vid,.2); award(true); } else { if(L.err>0) ease(S.q.vid,-.6); softXP(); }
+  if(clean){ ease(S.q.vid,.2); award(true); } else { if(L.err>0) ease(S.q.vid,-.6); awardHelped(); }
   $('fb').innerHTML='<span class="ok">'+L.a+' × '+L.b+' = '+L.total+'</span>'+(clean?bonusStamp():'');
   setPlayMood(S.streak>=3?'streak':'correct'); save(); setTimeout(nextQuestion,2200);
 }
@@ -1607,7 +1609,7 @@ function finishDiv(){
   const D=S.div; S.locked=true;
   const clean=D.err===0&&!D.hint;
   if(clean){ ease(S.q.vid,0.2); award(true); }
-  else { if(D.err>0) ease(S.q.vid,-0.6); softXP(); }
+  else { if(D.err>0) ease(S.q.vid,-0.6); awardHelped(); }
   // a leftover is not a mistake, so say so the first time the child sees one
   const rest=D.g.rest>0?' with '+D.g.rest+' left over. Not everything fits evenly!':'';
   $('fb').innerHTML='<span class="ok">'+D.g.N+' \u00F7 '+D.g.d+' = '+D.g.quot+rest+'</span>'+(clean?bonusStamp():'');
@@ -1626,7 +1628,7 @@ function openDeveloper(){ renderDeveloper(); show('s-dev'); }
 function resetPlayerProgress(){
   P.stageProgress=blankStageProgress(); P.monsterStage=1; delete P.devMonsterOverride;
   P.collectibles={}; COLLECTIBLES.forEach(c=>P.collectibles[c.id]=0); P.accessories=[];
-  P.right=0; P.best=0; P.total=0; P.xp=0; P.level=1; P.storySeen=false; P.migrationVersion=5; save();
+  P.right=0; P.best=0; P.total=0; P.storySeen=false; P.migrationVersion=6; save();
 }
 
 /* ---------------- wiring ---------------- */
