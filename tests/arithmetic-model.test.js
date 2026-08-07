@@ -23,9 +23,11 @@ vm.createContext(context);
 vm.runInContext([
   'const rnd=(a,b)=>a+Math.floor(Math.random()*(b-a+1));',
   "const columnPlace=(wid,col)=>['ones','tens','hundreds','thousands','ten-thousands'][wid-1-col]||'next';",
+  'const colValid=M=>M.steps.every(s=>/^\\d+$/.test(s.want));',
   functionSource('buildColumn'),
   functionSource('buildLongMultiplication'),
   functionSource('twoDigitColumnAddition'),
+  functionSource('twoDigitColumnSubtraction'),
   functionSource('commitColumnStep'),
   functionSource('commitLongMultiplicationStep'),
   functionSource('colPrompt'),
@@ -33,7 +35,11 @@ vm.runInContext([
   functionSource('divSteps'),
   functionSource('longDivisionPhase'),
   functionSource('genDivision'),
-  functionSource('generateLessonQuestion')
+  functionSource('generateLessonQuestion'),
+  functionSource('divPlan'),
+  functionSource('divPromptText'),
+  source.match(/const SESSION=\d+;/)[0],
+  functionSource('sessionPlan')
 ].join('\n'), context);
 
 function subtractionAnswer(model) {
@@ -165,6 +171,55 @@ for (const index of [4, 5, 6]) {
   assert.equal(question.M.steps.filter(step => step.t === 'carry').length, 1, 'middle phase has one carry');
 }
 
+for (let index = 1; index <= 12; index += 1) {
+  for (let i = 0; i < 60; i += 1) {
+    const question = context.twoDigitColumnSubtraction(index);
+    const regroups = question.M.steps.some(step => step.t === 'ann');
+    assert.equal(question.kind, 'col', 'two-digit subtraction is column work, not mental');
+    assert.equal(String(question.a).length, 2);
+    assert.equal(String(question.b).length, 2);
+    assert.ok(question.a > question.b, `${question.a} − ${question.b} never goes below zero`);
+    assert.equal(String(question.a - question.b).length, 2,
+      `${question.a} − ${question.b} fills both columns, so no leading 0 is written`);
+    assert.equal(subtractionAnswer(question.M), question.a - question.b);
+    assert.equal(question.M.steps.every(step => /^\d+$/.test(step.want)), true, 'every step asks for digits');
+    if (index <= 3) assert.equal(regroups, false, 'the opening phase never crosses a digit out');
+    if (index > 3 && index <= 6) assert.equal(regroups, true, 'the middle phase always crosses a digit out');
+  }
+}
+
+// harder lessons ask for fewer questions, and the share needed to pass moves with them
+[
+  [{id:'add_4column', digits:4}, 5, 4],
+  [{id:'sub_4column', digits:4}, 5, 4],
+  [{id:'add_3column', digits:3}, 7, 6],
+  [{id:'sub_3column', digits:3}, 7, 6],
+  [{id:'add_2column', digits:2}, 10, 8],
+  [{id:'sub_2column', digits:2}, 10, 8],
+  [{id:'mul_1x2', digits:2}, 10, 8],
+  [{id:'mul_2x2', digits:2}, 10, 8],
+  [{id:'add_1digit'}, 10, 8],
+  [{id:'div_long', mode:'division'}, 10, 8]
+].forEach(([stage, total, pass]) => {
+  const plan = context.sessionPlan(stage);
+  assert.equal(plan.total, total, `${stage.id} asks ${total} questions`);
+  assert.equal(plan.pass, pass, `${stage.id} needs ${pass} mastered to light the path`);
+  assert.ok(plan.pass <= plan.total, `${stage.id} is possible to complete at all`);
+  assert.ok(plan.pass >= 1, `${stage.id} cannot be passed with nothing mastered`);
+  assert.equal(plan.pass, Math.ceil(plan.total * 0.8), `${stage.id} keeps the same share as 8 in 10`);
+});
+assert.equal(context.sessionPlan().total, 10, 'a missing stage falls back to the full session');
+assert.equal(context.sessionPlan({id:'add_4column', digits:4}).total < context.sessionPlan({id:'add_3column', digits:3}).total,
+  true, 'four-digit lessons are shorter than three-digit ones');
+assert.equal(context.sessionPlan({id:'add_3column', digits:3}).total < context.sessionPlan({id:'add_2column', digits:2}).total,
+  true, 'three-digit lessons are shorter than two-digit ones');
+
+// the worked example the teaching rules are written around
+const canonical = context.buildColumn('sub', 84, 16);
+assert.equal(subtractionAnswer(canonical), 68);
+assert.deepEqual(annotationHistory(canonical), {0: ['7'], 1: ['14']},
+  'on 84 − 16 the 8 becomes 7 and the 4 becomes 14');
+
 function checkDivisionQuestion(made, label) {
   assert.equal(String(made.d).length, 1, `${label}: the divisor stays a single digit (got ${made.d})`);
   assert.ok(made.d >= 2 && made.d <= 9, `${label}: the divisor is between 2 and 9 (got ${made.d})`);
@@ -188,23 +243,75 @@ for (const tier of [0, 1]) {
 }
 
 const longDivisionStage = {id:'div_long', gid:'div', label:'Long division', mode:'division'};
-const sessionLength = Number(source.match(/const SESSION=(\d+);/)[1]);
+const sessionLength = context.sessionPlan(longDivisionStage).total;
 const rampWidths = {};
+const rampLeftovers = {};
 for (let index = 1; index <= sessionLength; index += 1) {
   rampWidths[index] = new Set();
+  rampLeftovers[index] = new Set();
   for (let i = 0; i < 200; i += 1) {
     const question = context.generateLessonQuestion(longDivisionStage, index);
     assert.equal(question.kind, 'div');
     checkDivisionQuestion(question.made, `long division question ${index}`);
-    assert.equal(question.made.rest, 0, `long division question ${index} divides exactly`);
     rampWidths[index].add(question.made.N.length);
+    rampLeftovers[index].add(question.made.rest > 0);
+    if (question.made.rest > 0) {
+      assert.ok(question.made.rest >= 1 && question.made.rest < question.made.d,
+        `question ${index} leaves 1 to d-1 over, never a sneaky 0`);
+    }
   }
   assert.equal(rampWidths[index].size, 1, `question ${index} always has one dividend length`);
+  assert.equal(rampLeftovers[index].size, 1, `question ${index} either always leaves something over or never does`);
 }
 const rampByIndex = Object.keys(rampWidths).map(index => [...rampWidths[index]][0]);
 assert.deepEqual(rampByIndex, [2, 2, 2, 3, 3, 3, 4, 4, 4, 4],
   'the lesson ramps from two-digit dividends to three then four');
 assert.deepEqual([...rampByIndex].sort((a, b) => a - b), rampByIndex, 'the ramp never goes backwards');
+
+const leftoverByIndex = Object.keys(rampLeftovers).map(index => [...rampLeftovers[index]][0]);
+assert.deepEqual(leftoverByIndex,
+  [false, false, true, false, false, true, false, false, true, true],
+  'each dividend length is met dividing exactly before it is met with something left over');
+leftoverByIndex.forEach((leftover, i) => {
+  if (!leftover) return;
+  const grew = i > 0 && rampByIndex[i] !== rampByIndex[i - 1];
+  assert.equal(grew, false, `question ${i + 1} does not grow longer and leave something over at once`);
+});
+
+function promptsFor(question) {
+  const plan = context.divPlan(question);
+  return plan.map((step, pi) => context.divPromptText({plan, pi, g:question}));
+}
+
+const leftoverQuestion = {div:true, N:'23', d:2, steps:context.divSteps('23', 2), quot:'11', rest:1};
+const leftoverPlan = context.divPlan(leftoverQuestion);
+const lastSteps = leftoverPlan.filter(step => step.last);
+assert.equal(lastSteps.length, 1, 'exactly one take-away is the last one');
+assert.equal(lastSteps[0].t, 'rem');
+assert.equal(lastSteps[0], leftoverPlan.at(-1), 'the last take-away ends the question');
+assert.equal(lastSteps[0].want, '1', 'the last take-away is what is left over');
+
+const leftoverPrompts = promptsFor(leftoverQuestion);
+assert.match(leftoverPrompts.at(-1), /Nothing left to bring down/,
+  'the child is told there is no digit waiting to come down');
+assert.match(leftoverPrompts.at(-1), /left over/);
+assert.equal(leftoverPrompts.slice(0, -1).some(text => /left over/.test(text)), false,
+  'earlier take-aways are still just what is left, not what is left over');
+
+const bringDownPrompt = leftoverPrompts.find((text, i) => leftoverPlan[i].t === 'rem' && !leftoverPlan[i].last);
+assert.match(bringDownPrompt, /Write what is left\./);
+
+// no jargon in anything a child reads
+const jargon = /remainder|quotient|product|divisor|dividend/i;
+[
+  leftoverQuestion,
+  {div:true, N:'126', d:6, steps:context.divSteps('126', 6), quot:'21', rest:0},
+  context.generateLessonQuestion(longDivisionStage, 9).made
+].forEach(question => {
+  promptsFor(question).forEach(text => {
+    assert.equal(jargon.test(text), false, `no jargon in "${text}"`);
+  });
+});
 
 const fallbackContext = {Math, rnd:() => 0, divSteps:() => [{q:0}]};
 vm.createContext(fallbackContext);
@@ -286,17 +393,25 @@ assert.equal(carryNotes.find(note => note.style.gridRow === 6).className.include
 const migrationContext = {};
 vm.createContext(migrationContext);
 const stagesSource = source.match(/const MATH_STAGES=\[[\s\S]*?\n\];/)[0];
+const retiredSource = source.match(/const RETIRED_STAGE_IDS=\{[^}]*\};/)[0];
 vm.runInContext([
   stagesSource,
+  retiredSource,
   functionSource('blankStageProgress'),
   functionSource('progressFromCount'),
+  functionSource('normalizeStageProgress'),
   functionSource('migrateV3StageProgress'),
-  'this.stageIds=MATH_STAGES.map(stage=>stage.id);this.migrateProgress=migrateV3StageProgress;'
+  functionSource('migrateV4StageProgress'),
+  'this.stageIds=MATH_STAGES.map(stage=>stage.id);this.migrateProgress=migrateV3StageProgress;',
+  'this.migrateV4=migrateV4StageProgress;this.retired=RETIRED_STAGE_IDS;'
 ].join('\n'), migrationContext);
 assert.deepEqual([...migrationContext.stageIds].slice(0, 5), [
   'add_1digit', 'add_2column', 'add_2mental', 'add_3column', 'add_4column'
 ]);
-assert.equal(migrationContext.stageIds.length, 14);
+assert.equal(migrationContext.stageIds.length, 14, 'renaming a lesson does not change how many there are');
+assert.deepEqual([...migrationContext.stageIds].slice(5, 9), [
+  'sub_1digit', 'sub_2column', 'sub_3column', 'sub_4column'
+], 'two-digit subtraction sits between one-digit and three-digit column work');
 const migrated = migrationContext.migrateProgress({completed:{
   add_1digit:true, add_2digit:true, add_3column:true
 }});
@@ -304,5 +419,32 @@ assert.equal(migrated.completed.add_2column, true);
 assert.equal(migrated.completed.add_2mental, true);
 assert.equal(migrated.completed.add_3column, true);
 assert.equal(migrated.completed.add_4column, false);
+
+// a saved game that stopped on the renamed lesson keeps it, and does not sit through it again
+const stoppedThere = migrationContext.migrateV4({completed:{
+  add_1digit:true, add_2column:true, add_2mental:true, add_3column:true, add_4column:true,
+  sub_1digit:true, sub_2digit:true
+}, available:{sub_3column:true}});
+assert.equal(stoppedThere.completed.sub_2column, true, 'the old save key still counts as completed');
+assert.equal(stoppedThere.completed.sub_3column, false);
+assert.equal(stoppedThere.available.sub_3column, true, 'the next lesson stays unlocked');
+assert.equal(Object.keys(stoppedThere.completed).filter(id => stoppedThere.completed[id]).length, 7,
+  'no lesson is lost and none is handed out for free');
+assert.equal(stoppedThere.completed.sub_2digit, undefined, 'the retired key is gone from the save');
+
+// a save that never reached it is untouched
+const earlier = migrationContext.migrateV4({completed:{add_1digit:true, add_2column:true}});
+assert.equal(earlier.completed.sub_2column, false);
+assert.equal(earlier.completed.add_2column, true);
+assert.equal(earlier.available.add_2mental, true);
+
+// a finished game stays finished
+const everything = {completed:{}, available:{}};
+migrationContext.stageIds.forEach(id => { everything.completed[id === 'sub_2column' ? 'sub_2digit' : id] = true; });
+const finished = migrationContext.migrateV4(everything);
+migrationContext.stageIds.forEach(id => {
+  assert.equal(finished.completed[id], true, `${id} survives the rename`);
+});
+assert.deepEqual(plain(migrationContext.retired), {sub_2digit:'sub_2column'});
 
 console.log('Arithmetic model tests passed.');

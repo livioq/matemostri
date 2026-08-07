@@ -466,7 +466,7 @@ const MATH_STAGES=[
   {id:'add_3column',gid:'add',label:'Three-digit column addition',mode:'column',digits:3,magic:'Carrying Clouds'},
   {id:'add_4column',gid:'add',label:'Four-digit column addition',mode:'column',digits:4,magic:'Starlight Tower'},
   {id:'sub_1digit',gid:'sub',label:'One-digit subtraction',mode:'mental',magic:'Whispering Woods'},
-  {id:'sub_2digit',gid:'sub',label:'Two-digit subtraction',mode:'mental',magic:'Silver Stream'},
+  {id:'sub_2column',gid:'sub',label:'Two-digit column subtraction',mode:'column',digits:2,magic:'Silver Stream'},
   {id:'sub_3column',gid:'sub',label:'Three-digit column subtraction',mode:'column',digits:3,magic:'Borrowing Caves'},
   {id:'sub_4column',gid:'sub',label:'Four-digit column subtraction',mode:'column',digits:4,magic:'Crystal Mountain'},
   {id:'mul_1x1',gid:'mul',label:'Single digit × single digit',mode:'mental',magic:'Mushroom Grove'},
@@ -588,6 +588,17 @@ function migrateV3StageProgress(progress){
   const newCount=oldCount<2?oldCount:oldCount+1;
   return progressFromCount(newCount);
 }
+/* Lessons that were renamed keep their old save key working, so a child who had
+   finished one never has to sit through it again. */
+const RETIRED_STAGE_IDS={sub_2digit:'sub_2column'};
+function migrateV4StageProgress(progress){
+  const moved={available:{},completed:{}};
+  ['available','completed'].forEach(field=>{
+    const saved=(progress&&progress[field])||{};
+    Object.keys(saved).forEach(id=>{ if(saved[id]) moved[field][RETIRED_STAGE_IDS[id]||id]=true; });
+  });
+  return normalizeStageProgress(moved);
+}
 function stageStatus(p,id){ return p.stageProgress.completed[id]?'completed':p.stageProgress.available[id]?'available':'locked'; }
 function completeMathStage(p,id){
   const i=MATH_STAGES.findIndex(s=>s.id===id); if(i<0||!p.stageProgress.available[id]) return null;
@@ -602,7 +613,7 @@ function newPlayer(name,age){
   return {id:'p'+Date.now(),name:name,age:age,level:1,xp:0,total:0,ease:{},right:0,best:0,
           groups:{add:true,sub:true,mul:true,div:!young},
           unlocked:{add2:false,sub2:false,mul2:false,div2:false},
-          stageProgress:blankStageProgress(),monsterStage:1,momoName:'Momo',collectibles:{},accessories:[],storySeen:false,migrationVersion:4};
+          stageProgress:blankStageProgress(),monsterStage:1,momoName:'Momo',collectibles:{},accessories:[],storySeen:false,migrationVersion:5};
 }
 function migrate(p){
   const version=Number(p.migrationVersion)||0,wasLegacy=version<3;
@@ -615,8 +626,9 @@ function migrate(p){
   if(wasLegacy){
     const legacyCount=legacyCompletedCount(p);
     const hasNewProgress=p.stageProgress&&p.stageProgress.completed&&Object.prototype.hasOwnProperty.call(p.stageProgress.completed,'add_1digit');
-    p.stageProgress=hasNewProgress?normalizeStageProgress(p.stageProgress):progressFromCount(legacyCount);
+    p.stageProgress=hasNewProgress?migrateV4StageProgress(p.stageProgress):progressFromCount(legacyCount);
   }else if(version===3) p.stageProgress=migrateV3StageProgress(p.stageProgress);
+  else if(version===4) p.stageProgress=migrateV4StageProgress(p.stageProgress);
   else p.stageProgress=normalizeStageProgress(p.stageProgress);
   if(!p.momoName) p.momoName='Momo';
   if(!p.collectibles||typeof p.collectibles!=='object') p.collectibles={};
@@ -631,7 +643,7 @@ function migrate(p){
   COSMETIC_REWARDS.forEach(a=>{ if(collectibleTotal(p)>=a.total&&!p.accessories.includes(a.id)) p.accessories.push(a.id); });
   p.monsterStage=p.devMonsterOverride||artForCount(completedCount(p));
   if(p.storySeen===undefined) p.storySeen=true;
-  p.migrationVersion=4;
+  p.migrationVersion=5;
   return p;
 }
 
@@ -873,6 +885,21 @@ function twoDigitColumnAddition(questionIndex){
   }
   return {kind:'col',a:phase==='no-carry'?23:phase==='one-carry'?27:58,b:phase==='no-carry'?14:phase==='one-carry'?15:34,M:buildColumn('add',phase==='no-carry'?23:phase==='one-carry'?27:58,phase==='no-carry'?14:phase==='one-carry'?15:34),phase:phase};
 }
+/* the lesson 84-16 is written for: take-aways that need no crossing out first, then
+   ones that do, then a mix. The answer fills both columns so no leading 0 is written. */
+function twoDigitColumnSubtraction(questionIndex){
+  const phase=questionIndex<=3?'no-regroup':questionIndex<=6?'regroup':'mixed';
+  for(let guard=0;guard<300;guard++){
+    const a=rnd(21,99),b=rnd(11,a-10);
+    const M=buildColumn('sub',a,b);
+    if(!colValid(M)) continue;
+    const regroups=M.steps.some(s=>s.t==='ann');
+    if((phase==='no-regroup'&&regroups)||(phase==='regroup'&&!regroups)) continue;
+    return {kind:'col',a:a,b:b,M:M,phase:phase};
+  }
+  const a=phase==='no-regroup'?68:84,b=phase==='no-regroup'?24:16;
+  return {kind:'col',a:a,b:b,M:buildColumn('sub',a,b),phase:phase};
+}
 
 /* ---------------- question generation ---------------- */
 function genEasy(gid,tr){
@@ -910,10 +937,12 @@ function genHard(gid,tr){
   return genDivision(tr);
 }
 /* the long division lesson starts short and grows: two-digit dividends, then three, then four.
-   Nothing is left over yet — the child learns the process before learning remainders. */
+   Each length is met dividing exactly first and only then with something left over, so a
+   question never grows longer and starts leaving something over at the same time. */
 function longDivisionPhase(questionIndex){
   const i=questionIndex||1;
-  return {digits:i<=3?2:i<=6?3:4,exact:true};
+  const leftover=i===3||i===6||i>=9;
+  return {digits:i<=3?2:i<=6?3:4,exact:!leftover};
 }
 function genDivision(tr,phase){
   const tier=Math.max(0,Math.min(3,tr|0));
@@ -922,7 +951,8 @@ function genDivision(tr,phase){
   for(let guard=0;guard<400;guard++){
     // the divisor stays a single digit: the lesson teaches the process, not two new things at once
     const d = rnd(2,digits?9:[5,9,9,9][tier]);
-    const rest = exact?0:rnd(0,d-1);
+    // a lesson question that is not exact really does leave something over, never a sneaky 0
+    const rest = exact?0:rnd(phase?1:0,d-1);
     let q;
     if(digits){
       // land the dividend inside the wanted length, remainder included
@@ -953,9 +983,7 @@ function generateLessonQuestion(stage,questionIndex){
   if(stage.id==='sub_1digit'){
     const a=rnd(2,9),b=rnd(0,a); return {kind:'n',txt:a+' \u2212 '+b,ans:a-b};
   }
-  if(stage.id==='sub_2digit'){
-    const a=rnd(20,99),b=rnd(10,a); return {kind:'n',txt:a+' \u2212 '+b,ans:a-b};
-  }
+  if(stage.id==='sub_2column') return twoDigitColumnSubtraction(questionIndex||1);
   if(stage.id==='mul_1x1'){
     const a=rnd(2,12),b=rnd(2,12); return {kind:'n',txt:a+' \u00D7 '+b,ans:a*b};
   }
@@ -1098,6 +1126,12 @@ function renderSettings(){
 
 /* ---------------- gameplay ---------------- */
 const SESSION=10;
+/* A four-digit column is a lot of work for one question, so the harder lessons ask for
+   fewer of them. The share needed to light the path stays the same 8 in 10 throughout. */
+function sessionPlan(stage){
+  const total=stage&&stage.digits===4?5:stage&&stage.digits===3?7:SESSION;
+  return {total:total,pass:Math.ceil(total*0.8)};
+}
 let S=null;
 let pendingUnlockStage=null;
 let sleepyTimer=null;
@@ -1111,14 +1145,15 @@ function setPlayMood(mood){
 function startSession(stageId){
   const stage=STAGE_BY_ID(stageId);
   if(!stage||stageStatus(P,stage.id)==='locked') return;
-  S={gid:stage.gid,vid:stage.id,stageId:stage.id,stage:stage,wasCompleted:P.stageProgress.completed[stage.id],i:0,right:0,mastered:0,streak:0,best:0,q:null,input:'',col:null,longMul:null,div:null,locked:false,attempt:0,mode:'answer',crackMoment:false,reward:null};
+  const plan=sessionPlan(stage);
+  S={gid:stage.gid,vid:stage.id,stageId:stage.id,stage:stage,wasCompleted:P.stageProgress.completed[stage.id],i:0,right:0,mastered:0,streak:0,best:0,q:null,input:'',col:null,longMul:null,div:null,locked:false,attempt:0,mode:'answer',crackMoment:false,reward:null,total:plan.total,pass:plan.pass};
   show('s-play'); nextQuestion();
 }
 function nextQuestion(){
-  if(S.i>=SESSION){ endSession(); return; }
+  if(S.i>=S.total){ endSession(); return; }
   S.i++; S.input=''; S.locked=false; S.attempt=0; S.mode='answer'; S.crackMoment=false; $('fb').textContent='';
   setPlayMood('beforeQuestion');
-  $('progress').textContent=S.i+'/'+SESSION;
+  $('progress').textContent=S.i+'/'+S.total;
   const made=generateLessonQuestion(S.stage,S.i);
   $('colHint').style.display='none'; $('hintBtn').style.display='none';
   if(made.kind==='n'){
@@ -1228,7 +1263,7 @@ function awardCollectible(){
 }
 
 function maybeCompleteStage(){
-  if(!S.stageId||S.mastered<8) return false;
+  if(!S.stageId||S.mastered<S.pass) return false;
   if(S.wasCompleted){ S.reward=awardCollectible(); save(); return 'collectible'; }
   const beforeArt=P.monsterStage;
   const next=completeMathStage(P,S.stageId);
@@ -1245,8 +1280,8 @@ function maybeCompleteStage(){
 
 function endSession(){
   const result=maybeCompleteStage(); save();
-  $('endTitle').textContent=S.mastered>=8?(S.wasCompleted?'Treasure discovered!':'The path is glowing!'):'The magic needs another try';
-  $('endPet').innerHTML=monsterMarkup(P.monsterStage,S.mastered>=8?'streak':'idle','bob',petName());
+  $('endTitle').textContent=S.mastered>=S.pass?(S.wasCompleted?'Treasure discovered!':'The path is glowing!'):'The magic needs another try';
+  $('endPet').innerHTML=monsterMarkup(P.monsterStage,S.mastered>=S.pass?'streak':'idle','bob',petName());
   $('endStats').innerHTML=
     '<div><b class="mono">'+S.mastered+'</b><span>answers mastered</span></div>'+
     '<div><b class="mono">'+S.best+'</b><span>brightest streak</span></div>'+
@@ -1254,7 +1289,7 @@ function endSession(){
   if(result==='collectible'){
     const cosmetic=S.reward.newCosmetics[0];
     $('endReward').textContent=petName()+' found '+S.reward.item.emoji+' '+S.reward.item.name+'!'+(cosmetic?' A new '+cosmetic.name+' appeared in the magic wardrobe!':'');
-  }else if(S.mastered<8) $('endReward').textContent=petName()+' is proud of every try. Master 8 answers to light this path.';
+  }else if(S.mastered<S.pass) $('endReward').textContent=petName()+' is proud of every try. Master '+S.pass+' answers to light this path.';
   else $('endReward').textContent=petName()+' has grown because you learned together.';
   show('s-end');
 }
@@ -1468,7 +1503,7 @@ function divPlan(g){
   g.steps.forEach((c,k)=>{
     plan.push({t:'fit', k:k,into:c.cur,want:String(c.q)});
     plan.push({t:'prod',k:k,q:c.q,want:String(c.prod)});
-    plan.push({t:'rem', k:k,into:c.cur,prod:c.prod,want:String(c.rem)});
+    plan.push({t:'rem', k:k,into:c.cur,prod:c.prod,want:String(c.rem),last:k===g.steps.length-1});
   });
   return plan;
 }
@@ -1477,6 +1512,8 @@ function divPromptText(D){
   if(!st) return '';
   if(st.t==='skip'||st.t==='fit') return 'How many times does '+d+' go into '+st.into+'?';
   if(st.t==='prod') return st.q+' \u00D7 '+d+'. Write it underneath.';
+  // on the last take-away there is no digit waiting to come down, so what is left simply stays
+  if(st.last) return 'Nothing left to bring down. '+st.into+' \u2212 '+st.prod+'. Write what is left over.';
   return st.into+' \u2212 '+st.prod+'. Write what is left.';
 }
 function renderDiv(){
@@ -1571,7 +1608,8 @@ function finishDiv(){
   const clean=D.err===0&&!D.hint;
   if(clean){ ease(S.q.vid,0.2); award(true); }
   else { if(D.err>0) ease(S.q.vid,-0.6); softXP(); }
-  const rest=D.g.rest>0?' with '+D.g.rest+' left over':'';
+  // a leftover is not a mistake, so say so the first time the child sees one
+  const rest=D.g.rest>0?' with '+D.g.rest+' left over. Not everything fits evenly!':'';
   $('fb').innerHTML='<span class="ok">'+D.g.N+' \u00F7 '+D.g.d+' = '+D.g.quot+rest+'</span>'+(clean?bonusStamp():'');
   setPlayMood(S.streak>=3?'streak':'correct');
   save(); setTimeout(nextQuestion,2400);
@@ -1588,7 +1626,7 @@ function openDeveloper(){ renderDeveloper(); show('s-dev'); }
 function resetPlayerProgress(){
   P.stageProgress=blankStageProgress(); P.monsterStage=1; delete P.devMonsterOverride;
   P.collectibles={}; COLLECTIBLES.forEach(c=>P.collectibles[c.id]=0); P.accessories=[];
-  P.right=0; P.best=0; P.total=0; P.xp=0; P.level=1; P.storySeen=false; P.migrationVersion=4; save();
+  P.right=0; P.best=0; P.total=0; P.xp=0; P.level=1; P.storySeen=false; P.migrationVersion=5; save();
 }
 
 /* ---------------- wiring ---------------- */
