@@ -31,6 +31,7 @@ vm.runInContext([
   functionSource('colPrompt'),
   functionSource('longMulPrompt'),
   functionSource('divSteps'),
+  functionSource('longDivisionPhase'),
   functionSource('genDivision'),
   functionSource('generateLessonQuestion')
 ].join('\n'), context);
@@ -172,6 +173,7 @@ function checkDivisionQuestion(made, label) {
   assert.ok(made.N.length >= 2 && made.N.length <= 4, `${label}: the dividend has 2 to 4 digits`);
   assert.deepEqual(plain(made.steps), plain(context.divSteps(made.N, made.d)), `${label}: steps match the dividend`);
   assert.equal(made.steps.some(step => step.q === 0), false, `${label}: no round writes a 0 above the line`);
+  assert.ok(made.steps.length >= 2, `${label}: there is at least one digit to bring down`);
   assert.equal(made.steps.map(step => step.q).join(''), made.quot, `${label}: the written digits spell the answer`);
   assert.equal(made.steps.at(-1).rem, made.rest, `${label}: the last subtraction leaves the remainder`);
 }
@@ -186,11 +188,23 @@ for (const tier of [0, 1]) {
 }
 
 const longDivisionStage = {id:'div_long', gid:'div', label:'Long division', mode:'division'};
-for (let i = 0; i < 300; i += 1) {
-  const question = context.generateLessonQuestion(longDivisionStage, i + 1);
-  assert.equal(question.kind, 'div');
-  checkDivisionQuestion(question.made, 'long division lesson');
+const sessionLength = Number(source.match(/const SESSION=(\d+);/)[1]);
+const rampWidths = {};
+for (let index = 1; index <= sessionLength; index += 1) {
+  rampWidths[index] = new Set();
+  for (let i = 0; i < 200; i += 1) {
+    const question = context.generateLessonQuestion(longDivisionStage, index);
+    assert.equal(question.kind, 'div');
+    checkDivisionQuestion(question.made, `long division question ${index}`);
+    assert.equal(question.made.rest, 0, `long division question ${index} divides exactly`);
+    rampWidths[index].add(question.made.N.length);
+  }
+  assert.equal(rampWidths[index].size, 1, `question ${index} always has one dividend length`);
 }
+const rampByIndex = Object.keys(rampWidths).map(index => [...rampWidths[index]][0]);
+assert.deepEqual(rampByIndex, [2, 2, 2, 3, 3, 3, 4, 4, 4, 4],
+  'the lesson ramps from two-digit dividends to three then four');
+assert.deepEqual([...rampByIndex].sort((a, b) => a - b), rampByIndex, 'the ramp never goes backwards');
 
 const fallbackContext = {Math, rnd:() => 0, divSteps:() => [{q:0}]};
 vm.createContext(fallbackContext);
