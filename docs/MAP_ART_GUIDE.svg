@@ -1,0 +1,319 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="21892" viewBox="0 0 1024 21892">
+<title>Matemostri Adventure Map Production Artwork Guide</title>
+<desc>Canonical 1024px-wide geometry guide derived from current production adventure map layout.</desc>
+<defs><style><![CDATA[
+  .small{font: 28px system-ui, sans-serif; fill:#3f2a78; font-weight:700;}
+  .tiny{font: 22px system-ui, sans-serif; fill:#50319a; font-weight:700;}
+  .sceneName{font: 30px system-ui, sans-serif; fill:#50319a; font-weight:900; text-transform:uppercase;}
+  .nodeLabel{font: 30px system-ui, sans-serif; fill:#2f1d69; font-weight:900;}
+  .keep{font: 24px system-ui, sans-serif; fill:#b0186a; font-weight:900; letter-spacing:1px;}
+  .artText{font: 25px system-ui, sans-serif; fill:#6847a5; font-weight:900; letter-spacing:1px;}
+]]></style></defs>
+<rect x="0" y="0" width="1024" height="21892" fill="#fff8ff"/>
+<text x="32" y="54" class="sceneName">Matemostri Adventure Map Artwork Blueprint</text>
+<text x="32" y="92" class="small">Canvas 1024 × 21892. Scale 2.392523 from production CSS map width 428px. Do not compress vertical spacing.</text>
+<g id="scene-01-mysterious-egg">
+<rect x="0" y="0" width="1024" height="1244" fill="#f6d7f0" opacity="0.18"/>
+<line x1="0" y1="0" x2="1024" y2="0" stroke="#50319a" stroke-width="3" stroke-dasharray="18 14" opacity="0.65"/>
+<text x="28" y="42" class="sceneName">1. The Mysterious Egg</text>
+<text x="28" y="78" class="small">Y 0–1244 · height 1244</text>
+<rect x="144" y="306" width="737" height="523" rx="28" fill="#7b5bd6" opacity="0.08" stroke="#6847a5" stroke-width="5" stroke-dasharray="22 14"/>
+<text x="168" y="350" class="artText">map-01-mysterious-egg.png</text>
+<text x="168" y="386" class="tiny">ART SLOT · center · keep behind path/UI</text>
+<rect x="285" y="512" width="455" height="340" rx="34" fill="#ff4fa3" opacity="0.16" stroke="#d94b92" stroke-width="5"/>
+<text x="303" y="546" class="keep">KEEP CLEAR</text>
+<ellipse cx="727" cy="282" rx="110" ry="110" fill="#30b6c9" opacity="0.14" stroke="#218ca0" stroke-width="4" stroke-dasharray="12 10"/>
+<text x="617" y="424" class="tiny">MOMO KEEP CLEAR</text>
+</g>
+<g id="scene-02-whispering-woods">
+<rect x="0" y="1244" width="1024" height="1292" fill="#ddf4ff" opacity="0.18"/>
+<line x1="0" y1="1244" x2="1024" y2="1244" stroke="#50319a" stroke-width="3" stroke-dasharray="18 14" opacity="0.65"/>
+<text x="28" y="1286" class="sceneName">2. Whispering Woods</text>
+<text x="28" y="1322" class="small">Y 1244–2536 · height 1292</text>
+<rect x="430" y="1555" width="594" height="672" rx="28" fill="#7b5bd6" opacity="0.08" stroke="#6847a5" stroke-width="5" stroke-dasharray="22 14"/>
+<text x="454" y="1599" class="artText">map-02-whispering-woods.png</text>
+<text x="454" y="1635" class="tiny">ART SLOT · right · keep behind path/UI</text>
+<rect x="70" y="1792" width="455" height="340" rx="34" fill="#ff4fa3" opacity="0.16" stroke="#d94b92" stroke-width="5"/>
+<text x="88" y="1826" class="keep">KEEP CLEAR</text>
+<ellipse cx="512" cy="1519" rx="110" ry="110" fill="#30b6c9" opacity="0.14" stroke="#218ca0" stroke-width="4" stroke-dasharray="12 10"/>
+<text x="402" y="1661" class="tiny">MOMO KEEP CLEAR</text>
+</g>
+<g id="scene-03-starlight-trail">
+<rect x="0" y="2536" width="1024" height="1244" fill="#e7f9df" opacity="0.18"/>
+<line x1="0" y1="2536" x2="1024" y2="2536" stroke="#50319a" stroke-width="3" stroke-dasharray="18 14" opacity="0.65"/>
+<text x="28" y="2578" class="sceneName">3. Starlight Trail</text>
+<text x="28" y="2614" class="small">Y 2536–3780 · height 1244</text>
+<rect x="-20" y="2818" width="635" height="597" rx="28" fill="#7b5bd6" opacity="0.08" stroke="#6847a5" stroke-width="5" stroke-dasharray="22 14"/>
+<text x="4" y="2862" class="artText">map-03-starlight-trail.png</text>
+<text x="4" y="2898" class="tiny">ART SLOT · left · keep behind path/UI</text>
+<rect x="500" y="3048" width="455" height="340" rx="34" fill="#ff4fa3" opacity="0.16" stroke="#d94b92" stroke-width="5"/>
+<text x="518" y="3082" class="keep">KEEP CLEAR</text>
+<ellipse cx="297" cy="2842" rx="110" ry="110" fill="#30b6c9" opacity="0.14" stroke="#218ca0" stroke-width="4" stroke-dasharray="12 10"/>
+<text x="187" y="2984" class="tiny">MOMO KEEP CLEAR</text>
+</g>
+<g id="scene-04-windy-cliffs">
+<rect x="0" y="3780" width="1024" height="1340" fill="#fff1c7" opacity="0.18"/>
+<line x1="0" y1="3780" x2="1024" y2="3780" stroke="#50319a" stroke-width="3" stroke-dasharray="18 14" opacity="0.65"/>
+<text x="28" y="3822" class="sceneName">4. Windy Cliffs</text>
+<text x="28" y="3858" class="small">Y 3780–5120 · height 1340</text>
+<rect x="-10" y="4072" width="614" height="777" rx="28" fill="#7b5bd6" opacity="0.08" stroke="#6847a5" stroke-width="5" stroke-dasharray="22 14"/>
+<text x="14" y="4116" class="artText">map-04-windy-cliffs.png</text>
+<text x="14" y="4152" class="tiny">ART SLOT · left · keep behind path/UI</text>
+<rect x="285" y="4352" width="455" height="340" rx="34" fill="#ff4fa3" opacity="0.16" stroke="#d94b92" stroke-width="5"/>
+<text x="303" y="4386" class="keep">KEEP CLEAR</text>
+<ellipse cx="727" cy="4127" rx="110" ry="110" fill="#30b6c9" opacity="0.14" stroke="#218ca0" stroke-width="4" stroke-dasharray="12 10"/>
+<text x="617" y="4269" class="tiny">MOMO KEEP CLEAR</text>
+</g>
+<g id="scene-05-great-chasm">
+<rect x="0" y="5120" width="1024" height="1770" fill="#eadfff" opacity="0.18"/>
+<line x1="0" y1="5120" x2="1024" y2="5120" stroke="#50319a" stroke-width="3" stroke-dasharray="18 14" opacity="0.65"/>
+<text x="28" y="5162" class="sceneName">5. The Great Chasm</text>
+<text x="28" y="5198" class="small">Y 5120–6890 · height 1770</text>
+<rect x="62" y="5622" width="901" height="956" rx="28" fill="#7b5bd6" opacity="0.08" stroke="#6847a5" stroke-width="5" stroke-dasharray="22 14"/>
+<text x="86" y="5666" class="artText">map-05-great-chasm.png</text>
+<text x="86" y="5702" class="tiny">ART SLOT · center · keep behind path/UI</text>
+<rect x="500" y="5900" width="455" height="378" rx="34" fill="#ff4fa3" opacity="0.16" stroke="#d94b92" stroke-width="5"/>
+<text x="518" y="5934" class="keep">KEEP CLEAR</text>
+<ellipse cx="512" cy="5527" rx="110" ry="110" fill="#30b6c9" opacity="0.14" stroke="#218ca0" stroke-width="4" stroke-dasharray="12 10"/>
+<text x="402" y="5669" class="tiny">MOMO KEEP CLEAR</text>
+</g>
+<g id="scene-06-explorers-valley">
+<rect x="0" y="6890" width="1024" height="1268" fill="#f6d7f0" opacity="0.18"/>
+<line x1="0" y1="6890" x2="1024" y2="6890" stroke="#50319a" stroke-width="3" stroke-dasharray="18 14" opacity="0.65"/>
+<text x="28" y="6932" class="sceneName">6. Explorer&apos;s Valley</text>
+<text x="28" y="6968" class="small">Y 6890–8159 · height 1268</text>
+<rect x="420" y="7201" width="614" height="609" rx="28" fill="#7b5bd6" opacity="0.08" stroke="#6847a5" stroke-width="5" stroke-dasharray="22 14"/>
+<text x="444" y="7245" class="artText">map-06-explorers-valley.png</text>
+<text x="444" y="7281" class="tiny">ART SLOT · right · keep behind path/UI</text>
+<rect x="70" y="7419" width="455" height="340" rx="34" fill="#ff4fa3" opacity="0.16" stroke="#d94b92" stroke-width="5"/>
+<text x="88" y="7453" class="keep">KEEP CLEAR</text>
+<ellipse cx="727" cy="7192" rx="110" ry="110" fill="#30b6c9" opacity="0.14" stroke="#218ca0" stroke-width="4" stroke-dasharray="12 10"/>
+<text x="617" y="7334" class="tiny">MOMO KEEP CLEAR</text>
+</g>
+<g id="scene-07-crystal-caves">
+<rect x="0" y="8159" width="1024" height="1388" fill="#ddf4ff" opacity="0.18"/>
+<line x1="0" y1="8159" x2="1024" y2="8159" stroke="#50319a" stroke-width="3" stroke-dasharray="18 14" opacity="0.65"/>
+<text x="28" y="8201" class="sceneName">7. Crystal Caves</text>
+<text x="28" y="8237" class="small">Y 8159–9546 · height 1388</text>
+<rect x="-61" y="8441" width="717" height="805" rx="28" fill="#7b5bd6" opacity="0.08" stroke="#6847a5" stroke-width="5" stroke-dasharray="22 14"/>
+<text x="-37" y="8485" class="artText">map-07-crystal-caves.png</text>
+<text x="-37" y="8521" class="tiny">ART SLOT · left · keep behind path/UI</text>
+<rect x="500" y="8754" width="455" height="340" rx="34" fill="#ff4fa3" opacity="0.16" stroke="#d94b92" stroke-width="5"/>
+<text x="518" y="8788" class="keep">KEEP CLEAR</text>
+<ellipse cx="512" cy="8481" rx="110" ry="110" fill="#30b6c9" opacity="0.14" stroke="#218ca0" stroke-width="4" stroke-dasharray="12 10"/>
+<text x="402" y="8623" class="tiny">MOMO KEEP CLEAR</text>
+</g>
+<g id="scene-08-rune-ruins">
+<rect x="0" y="9546" width="1024" height="1244" fill="#e7f9df" opacity="0.18"/>
+<line x1="0" y1="9546" x2="1024" y2="9546" stroke="#50319a" stroke-width="3" stroke-dasharray="18 14" opacity="0.65"/>
+<text x="28" y="9588" class="sceneName">8. The Rune Ruins</text>
+<text x="28" y="9624" class="small">Y 9546–10790 · height 1244</text>
+<rect x="420" y="9848" width="614" height="622" rx="28" fill="#7b5bd6" opacity="0.08" stroke="#6847a5" stroke-width="5" stroke-dasharray="22 14"/>
+<text x="444" y="9892" class="artText">map-08-rune-ruins.png</text>
+<text x="444" y="9928" class="tiny">ART SLOT · right · keep behind path/UI</text>
+<rect x="285" y="10058" width="455" height="340" rx="34" fill="#ff4fa3" opacity="0.16" stroke="#d94b92" stroke-width="5"/>
+<text x="303" y="10092" class="keep">KEEP CLEAR</text>
+<ellipse cx="297" cy="9838" rx="110" ry="110" fill="#30b6c9" opacity="0.14" stroke="#218ca0" stroke-width="4" stroke-dasharray="12 10"/>
+<text x="187" y="9980" class="tiny">MOMO KEEP CLEAR</text>
+</g>
+<g id="scene-09-enchanted-garden">
+<rect x="0" y="10790" width="1024" height="1340" fill="#fff1c7" opacity="0.18"/>
+<line x1="0" y1="10790" x2="1024" y2="10790" stroke="#50319a" stroke-width="3" stroke-dasharray="18 14" opacity="0.65"/>
+<text x="28" y="10832" class="sceneName">9. The Enchanted Garden</text>
+<text x="28" y="10868" class="small">Y 10790–12130 · height 1340</text>
+<rect x="113" y="11097" width="799" height="670" rx="28" fill="#7b5bd6" opacity="0.08" stroke="#6847a5" stroke-width="5" stroke-dasharray="22 14"/>
+<text x="137" y="11141" class="artText">map-09-enchanted-garden.png</text>
+<text x="137" y="11177" class="tiny">ART SLOT · center · keep behind path/UI</text>
+<rect x="70" y="11362" width="455" height="340" rx="34" fill="#ff4fa3" opacity="0.16" stroke="#d94b92" stroke-width="5"/>
+<text x="88" y="11396" class="keep">KEEP CLEAR</text>
+<ellipse cx="727" cy="11101" rx="110" ry="110" fill="#30b6c9" opacity="0.14" stroke="#218ca0" stroke-width="4" stroke-dasharray="12 10"/>
+<text x="617" y="11243" class="tiny">MOMO KEEP CLEAR</text>
+</g>
+<g id="scene-10-guardian-gate">
+<rect x="0" y="12130" width="1024" height="1723" fill="#eadfff" opacity="0.18"/>
+<line x1="0" y1="12130" x2="1024" y2="12130" stroke="#50319a" stroke-width="3" stroke-dasharray="18 14" opacity="0.65"/>
+<text x="28" y="12172" class="sceneName">10. The Guardian Gate</text>
+<text x="28" y="12208" class="small">Y 12130–13853 · height 1723</text>
+<rect x="123" y="12573" width="778" height="1068" rx="28" fill="#7b5bd6" opacity="0.08" stroke="#6847a5" stroke-width="5" stroke-dasharray="22 14"/>
+<text x="147" y="12617" class="artText">map-10-guardian-gate.png</text>
+<text x="147" y="12653" class="tiny">ART SLOT · center · keep behind path/UI</text>
+<rect x="500" y="12886" width="455" height="378" rx="34" fill="#ff4fa3" opacity="0.16" stroke="#d94b92" stroke-width="5"/>
+<text x="518" y="12920" class="keep">KEEP CLEAR</text>
+<ellipse cx="512" cy="12513" rx="110" ry="110" fill="#30b6c9" opacity="0.14" stroke="#218ca0" stroke-width="4" stroke-dasharray="12 10"/>
+<text x="402" y="12655" class="tiny">MOMO KEEP CLEAR</text>
+</g>
+<g id="scene-11-star-fields">
+<rect x="0" y="13853" width="1024" height="1292" fill="#f6d7f0" opacity="0.18"/>
+<line x1="0" y1="13853" x2="1024" y2="13853" stroke="#50319a" stroke-width="3" stroke-dasharray="18 14" opacity="0.65"/>
+<text x="28" y="13895" class="sceneName">11. The Star Fields</text>
+<text x="28" y="13931" class="small">Y 13853–15145 · height 1292</text>
+<rect x="400" y="14149" width="655" height="646" rx="28" fill="#7b5bd6" opacity="0.08" stroke="#6847a5" stroke-width="5" stroke-dasharray="22 14"/>
+<text x="424" y="14193" class="artText">map-11-star-fields.png</text>
+<text x="424" y="14229" class="tiny">ART SLOT · right · keep behind path/UI</text>
+<rect x="285" y="14396" width="455" height="340" rx="34" fill="#ff4fa3" opacity="0.16" stroke="#d94b92" stroke-width="5"/>
+<text x="303" y="14430" class="keep">KEEP CLEAR</text>
+<ellipse cx="297" cy="14169" rx="110" ry="110" fill="#30b6c9" opacity="0.14" stroke="#218ca0" stroke-width="4" stroke-dasharray="12 10"/>
+<text x="187" y="14311" class="tiny">MOMO KEEP CLEAR</text>
+</g>
+<g id="scene-12-celestial-heights">
+<rect x="0" y="15145" width="1024" height="1436" fill="#ddf4ff" opacity="0.18"/>
+<line x1="0" y1="15145" x2="1024" y2="15145" stroke="#50319a" stroke-width="3" stroke-dasharray="18 14" opacity="0.65"/>
+<text x="28" y="15187" class="sceneName">12. The Celestial Heights</text>
+<text x="28" y="15223" class="small">Y 15145–16580 · height 1436</text>
+<rect x="92" y="15499" width="840" height="775" rx="28" fill="#7b5bd6" opacity="0.08" stroke="#6847a5" stroke-width="5" stroke-dasharray="22 14"/>
+<text x="116" y="15543" class="artText">map-12-celestial-heights.png</text>
+<text x="116" y="15579" class="tiny">ART SLOT · center · keep behind path/UI</text>
+<rect x="70" y="15764" width="455" height="340" rx="34" fill="#ff4fa3" opacity="0.16" stroke="#d94b92" stroke-width="5"/>
+<text x="88" y="15798" class="keep">KEEP CLEAR</text>
+<ellipse cx="727" cy="15504" rx="110" ry="110" fill="#30b6c9" opacity="0.14" stroke="#218ca0" stroke-width="4" stroke-dasharray="12 10"/>
+<text x="617" y="15646" class="tiny">MOMO KEEP CLEAR</text>
+</g>
+<g id="scene-13-magicians-tower">
+<rect x="0" y="16580" width="1024" height="1818" fill="#e7f9df" opacity="0.18"/>
+<line x1="0" y1="16580" x2="1024" y2="16580" stroke="#50319a" stroke-width="3" stroke-dasharray="18 14" opacity="0.65"/>
+<text x="28" y="16622" class="sceneName">13. The Magician&apos;s Tower</text>
+<text x="28" y="16658" class="small">Y 16580–18399 · height 1818</text>
+<rect x="11" y="16927" width="573" height="1309" rx="28" fill="#7b5bd6" opacity="0.08" stroke="#6847a5" stroke-width="5" stroke-dasharray="22 14"/>
+<text x="35" y="16971" class="artText">map-13-magicians-tower.png</text>
+<text x="35" y="17007" class="tiny">ART SLOT · left · keep behind path/UI</text>
+<rect x="500" y="17391" width="455" height="378" rx="34" fill="#ff4fa3" opacity="0.16" stroke="#d94b92" stroke-width="5"/>
+<text x="518" y="17425" class="keep">KEEP CLEAR</text>
+<ellipse cx="512" cy="17006" rx="110" ry="110" fill="#30b6c9" opacity="0.14" stroke="#218ca0" stroke-width="4" stroke-dasharray="12 10"/>
+<text x="402" y="17148" class="tiny">MOMO KEEP CLEAR</text>
+</g>
+<g id="scene-14-arcane-library">
+<rect x="0" y="18399" width="1024" height="1483" fill="#fff1c7" opacity="0.18"/>
+<line x1="0" y1="18399" x2="1024" y2="18399" stroke="#50319a" stroke-width="3" stroke-dasharray="18 14" opacity="0.65"/>
+<text x="28" y="18441" class="sceneName">14. The Arcane Library</text>
+<text x="28" y="18477" class="small">Y 18399–19882 · height 1483</text>
+<rect x="123" y="18757" width="778" height="890" rx="28" fill="#7b5bd6" opacity="0.08" stroke="#6847a5" stroke-width="5" stroke-dasharray="22 14"/>
+<text x="147" y="18801" class="artText">map-14-arcane-library.png</text>
+<text x="147" y="18837" class="tiny">ART SLOT · center · keep behind path/UI</text>
+<rect x="70" y="19042" width="455" height="340" rx="34" fill="#ff4fa3" opacity="0.16" stroke="#d94b92" stroke-width="5"/>
+<text x="88" y="19076" class="keep">KEEP CLEAR</text>
+<ellipse cx="727" cy="18757" rx="110" ry="110" fill="#30b6c9" opacity="0.14" stroke="#218ca0" stroke-width="4" stroke-dasharray="12 10"/>
+<text x="617" y="18899" class="tiny">MOMO KEEP CLEAR</text>
+</g>
+<g id="scene-15-heart-of-matemostri">
+<rect x="0" y="19882" width="1024" height="2010" fill="#eadfff" opacity="0.18"/>
+<line x1="0" y1="19882" x2="1024" y2="19882" stroke="#50319a" stroke-width="3" stroke-dasharray="18 14" opacity="0.65"/>
+<text x="28" y="19924" class="sceneName">15. The Heart of Matemostri</text>
+<text x="28" y="19960" class="small">Y 19882–21892 · height 2010</text>
+<rect x="51" y="20396" width="922" height="1367" rx="28" fill="#7b5bd6" opacity="0.08" stroke="#6847a5" stroke-width="5" stroke-dasharray="22 14"/>
+<text x="75" y="20440" class="artText">map-15-heart-of-matemostri.png</text>
+<text x="75" y="20476" class="tiny">ART SLOT · center · keep behind path/UI</text>
+<rect x="285" y="20793" width="455" height="378" rx="34" fill="#ff4fa3" opacity="0.16" stroke="#d94b92" stroke-width="5"/>
+<text x="303" y="20827" class="keep">KEEP CLEAR</text>
+<ellipse cx="727" cy="20360" rx="110" ry="110" fill="#30b6c9" opacity="0.14" stroke="#218ca0" stroke-width="4" stroke-dasharray="12 10"/>
+<text x="617" y="20502" class="tiny">MOMO KEEP CLEAR</text>
+</g>
+<path d="M 512 682 C 512 1245, 297 1399, 297 1962 C 297 2515, 727 2665, 727 3218 C 727 3792, 512 3948, 512 4522 C 512 5192, 727 5419, 727 6089 C 727 6749, 297 6929, 297 7589 C 297 8176, 727 8337, 727 8924 C 727 9498, 512 9654, 512 10228 C 512 10802, 297 10958, 297 11532 C 297 12202, 727 12405, 727 13075 C 727 13731, 512 13910, 512 14566 C 512 15168, 297 15332, 297 15934 C 297 16604, 727 16910, 727 17580 C 727 18250, 297 18542, 297 19212 C 297 19882, 512 20312, 512 20982" fill="none" stroke="#2e156f" stroke-width="57" stroke-linecap="round" stroke-linejoin="round" opacity="0.20"/>
+<path d="M 512 682 C 512 1245, 297 1399, 297 1962 C 297 2515, 727 2665, 727 3218 C 727 3792, 512 3948, 512 4522 C 512 5192, 727 5419, 727 6089 C 727 6749, 297 6929, 297 7589 C 297 8176, 727 8337, 727 8924 C 727 9498, 512 9654, 512 10228 C 512 10802, 297 10958, 297 11532 C 297 12202, 727 12405, 727 13075 C 727 13731, 512 13910, 512 14566 C 512 15168, 297 15332, 297 15934 C 297 16604, 727 16910, 727 17580 C 727 18250, 297 18542, 297 19212 C 297 19882, 512 20312, 512 20982" fill="none" stroke="#f2b93b" stroke-width="26" stroke-linecap="round" stroke-linejoin="round"/>
+<g id="node-01-mysterious-egg">
+<circle cx="512" cy="682" r="77" fill="#fff" stroke="#50319a" stroke-width="8"/>
+<circle cx="512" cy="682" r="33" fill="#d94b92"/>
+<text x="24" y="640" class="nodeLabel" text-anchor="start">1</text>
+<text x="24" y="678" class="nodeLabel" text-anchor="start">THE MYSTERIOUS EGG</text>
+<text x="24" y="716" class="small" text-anchor="start">→ STAGE 3</text>
+</g>
+<g id="node-02-whispering-woods">
+<circle cx="297" cy="1962" r="77" fill="#fff" stroke="#50319a" stroke-width="8"/>
+<circle cx="297" cy="1962" r="33" fill="#d94b92"/>
+<text x="553" y="1920" class="nodeLabel" text-anchor="start">2</text>
+<text x="553" y="1958" class="nodeLabel" text-anchor="start">WHISPERING WOODS</text>
+<text x="553" y="1996" class="small" text-anchor="start">→ STAGE 4</text>
+</g>
+<g id="node-03-starlight-trail">
+<circle cx="727" cy="3218" r="77" fill="#fff" stroke="#50319a" stroke-width="8"/>
+<circle cx="727" cy="3218" r="33" fill="#d94b92"/>
+<text x="149" y="3176" class="nodeLabel" text-anchor="start">3</text>
+<text x="149" y="3214" class="nodeLabel" text-anchor="start">STARLIGHT TRAIL</text>
+<text x="149" y="3252" class="small" text-anchor="start">→ STAGE 5</text>
+</g>
+<g id="node-04-windy-cliffs">
+<circle cx="512" cy="4522" r="77" fill="#fff" stroke="#50319a" stroke-width="8"/>
+<circle cx="512" cy="4522" r="33" fill="#d94b92"/>
+<text x="24" y="4480" class="nodeLabel" text-anchor="start">4</text>
+<text x="24" y="4518" class="nodeLabel" text-anchor="start">WINDY CLIFFS</text>
+<text x="24" y="4556" class="small" text-anchor="start">→ STAGE 6</text>
+</g>
+<g id="node-05-great-chasm">
+<circle cx="727" cy="6089" r="77" fill="#fff" stroke="#50319a" stroke-width="8"/>
+<circle cx="727" cy="6089" r="33" fill="#d94b92"/>
+<text x="149" y="6047" class="nodeLabel" text-anchor="start">5</text>
+<text x="149" y="6085" class="nodeLabel" text-anchor="start">THE GREAT CHASM</text>
+<text x="149" y="6123" class="small" text-anchor="start">→ STAGE 7</text>
+</g>
+<g id="node-06-explorers-valley">
+<circle cx="297" cy="7589" r="77" fill="#fff" stroke="#50319a" stroke-width="8"/>
+<circle cx="297" cy="7589" r="33" fill="#d94b92"/>
+<text x="553" y="7547" class="nodeLabel" text-anchor="start">6</text>
+<text x="553" y="7585" class="nodeLabel" text-anchor="start">EXPLORER&apos;S VALLEY</text>
+<text x="553" y="7623" class="small" text-anchor="start">→ STAGE 8</text>
+</g>
+<g id="node-07-crystal-caves">
+<circle cx="727" cy="8924" r="77" fill="#fff" stroke="#50319a" stroke-width="8"/>
+<circle cx="727" cy="8924" r="33" fill="#d94b92"/>
+<text x="149" y="8882" class="nodeLabel" text-anchor="start">7</text>
+<text x="149" y="8920" class="nodeLabel" text-anchor="start">CRYSTAL CAVES</text>
+<text x="149" y="8958" class="small" text-anchor="start">→ STAGE 9</text>
+</g>
+<g id="node-08-rune-ruins">
+<circle cx="512" cy="10228" r="77" fill="#fff" stroke="#50319a" stroke-width="8"/>
+<circle cx="512" cy="10228" r="33" fill="#d94b92"/>
+<text x="24" y="10186" class="nodeLabel" text-anchor="start">8</text>
+<text x="24" y="10224" class="nodeLabel" text-anchor="start">THE RUNE RUINS</text>
+<text x="24" y="10262" class="small" text-anchor="start">→ STAGE 10</text>
+</g>
+<g id="node-09-enchanted-garden">
+<circle cx="297" cy="11532" r="77" fill="#fff" stroke="#50319a" stroke-width="8"/>
+<circle cx="297" cy="11532" r="33" fill="#d94b92"/>
+<text x="553" y="11490" class="nodeLabel" text-anchor="start">9</text>
+<text x="553" y="11528" class="nodeLabel" text-anchor="start">THE ENCHANTED GARDEN</text>
+<text x="553" y="11566" class="small" text-anchor="start">→ STAGE 11</text>
+</g>
+<g id="node-10-guardian-gate">
+<circle cx="727" cy="13075" r="77" fill="#fff" stroke="#50319a" stroke-width="8"/>
+<circle cx="727" cy="13075" r="33" fill="#d94b92"/>
+<text x="149" y="13033" class="nodeLabel" text-anchor="start">10</text>
+<text x="149" y="13071" class="nodeLabel" text-anchor="start">THE GUARDIAN GATE</text>
+<text x="149" y="13109" class="small" text-anchor="start">→ STAGE 12</text>
+</g>
+<g id="node-11-star-fields">
+<circle cx="512" cy="14566" r="77" fill="#fff" stroke="#50319a" stroke-width="8"/>
+<circle cx="512" cy="14566" r="33" fill="#d94b92"/>
+<text x="24" y="14524" class="nodeLabel" text-anchor="start">11</text>
+<text x="24" y="14562" class="nodeLabel" text-anchor="start">THE STAR FIELDS</text>
+<text x="24" y="14600" class="small" text-anchor="start">→ STAGE 13</text>
+</g>
+<g id="node-12-celestial-heights">
+<circle cx="297" cy="15934" r="77" fill="#fff" stroke="#50319a" stroke-width="8"/>
+<circle cx="297" cy="15934" r="33" fill="#d94b92"/>
+<text x="553" y="15892" class="nodeLabel" text-anchor="start">12</text>
+<text x="553" y="15930" class="nodeLabel" text-anchor="start">THE CELESTIAL HEIGHTS</text>
+<text x="553" y="15968" class="small" text-anchor="start">→ STAGE 14</text>
+</g>
+<g id="node-13-magicians-tower">
+<circle cx="727" cy="17580" r="77" fill="#fff" stroke="#50319a" stroke-width="8"/>
+<circle cx="727" cy="17580" r="33" fill="#d94b92"/>
+<text x="149" y="17538" class="nodeLabel" text-anchor="start">13</text>
+<text x="149" y="17576" class="nodeLabel" text-anchor="start">THE MAGICIAN&apos;S TOWER</text>
+<text x="149" y="17614" class="small" text-anchor="start">→ STAGE 15</text>
+</g>
+<g id="node-14-arcane-library">
+<circle cx="297" cy="19212" r="77" fill="#fff" stroke="#50319a" stroke-width="8"/>
+<circle cx="297" cy="19212" r="33" fill="#d94b92"/>
+<text x="553" y="19170" class="nodeLabel" text-anchor="start">14</text>
+<text x="553" y="19208" class="nodeLabel" text-anchor="start">THE ARCANE LIBRARY</text>
+<text x="553" y="19246" class="small" text-anchor="start">→ STAGE 16</text>
+</g>
+<g id="node-15-heart-of-matemostri">
+<circle cx="512" cy="20982" r="77" fill="#fff" stroke="#50319a" stroke-width="8"/>
+<circle cx="512" cy="20982" r="33" fill="#d94b92"/>
+<text x="24" y="20940" class="nodeLabel" text-anchor="start">15</text>
+<text x="24" y="20978" class="nodeLabel" text-anchor="start">THE HEART OF MATEMOSTRI</text>
+<text x="24" y="21016" class="small" text-anchor="start">→ STAGE 17</text>
+</g>
+<line x1="0" y1="21891" x2="1024" y2="21891" stroke="#50319a" stroke-width="3" stroke-dasharray="18 14" opacity="0.65"/>
+</svg>

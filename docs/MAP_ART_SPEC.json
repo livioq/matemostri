@@ -1,0 +1,887 @@
+{
+  "generatedFrom": "index.html PROGRESSION_NODES/mapSceneLayout/mapPathD geometry",
+  "coordinateSystem": {
+    "canvasWidth": 1024,
+    "canvasHeight": 21892,
+    "productionCssMapWidth": 428,
+    "productionCssMapHeight": 9150,
+    "scale": 2.392523364485981,
+    "note": "Coordinates are uniformly scaled from the current production mobile map content box. Use x/y/width/height values directly in a 1024px-wide art file."
+  },
+  "path": {
+    "d": "M 512 682 C 512 1245, 297 1399, 297 1962 C 297 2515, 727 2665, 727 3218 C 727 3792, 512 3948, 512 4522 C 512 5192, 727 5419, 727 6089 C 727 6749, 297 6929, 297 7589 C 297 8176, 727 8337, 727 8924 C 727 9498, 512 9654, 512 10228 C 512 10802, 297 10958, 297 11532 C 297 12202, 727 12405, 727 13075 C 727 13731, 512 13910, 512 14566 C 512 15168, 297 15332, 297 15934 C 297 16604, 727 16910, 727 17580 C 727 18250, 297 18542, 297 19212 C 297 19882, 512 20312, 512 20982",
+    "strokeWidth": 26
+  },
+  "scenes": [
+    {
+      "order": 1,
+      "id": "mysterious-egg",
+      "slug": "mysterious-egg",
+      "name": "The Mysterious Egg",
+      "region": "Awakening",
+      "lessonId": "add_1digit",
+      "completionStage": 3,
+      "majorEvolution": false,
+      "yStart": 0,
+      "yEnd": 1244,
+      "height": 1244,
+      "node": {
+        "x": 512,
+        "y": 682,
+        "cssSide": "center",
+        "safeWidth": 455,
+        "safeHeight": 340,
+        "safeRadius": 227
+      },
+      "momo": {
+        "x": 727,
+        "y": 282,
+        "safeWidth": 220,
+        "safeHeight": 220
+      },
+      "artwork": {
+        "filename": "map-01-mysterious-egg.png",
+        "src": null,
+        "position": "center",
+        "x": 512,
+        "y": 306,
+        "width": 737,
+        "height": 523,
+        "offsetX": 0,
+        "offsetY": 306
+      },
+      "artDirectionNotes": [
+        "Glowing leaves and soft nest energy should frame the egg discovery.",
+        "Keep the central node clear and avoid busy detail behind the first interaction.",
+        "Use gentle magical atmosphere rather than a destination landmark."
+      ],
+      "clearSpace": {
+        "nodeFootprint": "No important scenery beneath the lesson button footprint.",
+        "keepClearRect": {
+          "x": 285,
+          "y": 512,
+          "width": 455,
+          "height": 340
+        },
+        "momoKeepClearRect": {
+          "x": 617,
+          "y": 172,
+          "width": 220,
+          "height": 220
+        }
+      }
+    },
+    {
+      "order": 2,
+      "id": "whispering-woods",
+      "slug": "whispering-woods",
+      "name": "Whispering Woods",
+      "region": "Addition",
+      "lessonId": "add_2column",
+      "completionStage": 4,
+      "majorEvolution": false,
+      "yStart": 1244,
+      "yEnd": 2536,
+      "height": 1292,
+      "node": {
+        "x": 297,
+        "y": 1962,
+        "cssSide": "left",
+        "safeWidth": 455,
+        "safeHeight": 340,
+        "safeRadius": 227
+      },
+      "momo": {
+        "x": 512,
+        "y": 1519,
+        "safeWidth": 220,
+        "safeHeight": 220
+      },
+      "artwork": {
+        "filename": "map-02-whispering-woods.png",
+        "src": null,
+        "position": "right",
+        "x": 727,
+        "y": 1555,
+        "width": 594,
+        "height": 672,
+        "offsetX": 0,
+        "offsetY": 311
+      },
+      "artDirectionNotes": [
+        "Tree forms and listening/whisper motifs should occupy the right-side reserved art area.",
+        "Keep trunks and foliage away from the lesson node safe zone.",
+        "The path should feel like it slips into the woods."
+      ],
+      "clearSpace": {
+        "nodeFootprint": "No important scenery beneath the lesson button footprint.",
+        "keepClearRect": {
+          "x": 70,
+          "y": 1792,
+          "width": 455,
+          "height": 340
+        },
+        "momoKeepClearRect": {
+          "x": 402,
+          "y": 1409,
+          "width": 220,
+          "height": 220
+        }
+      }
+    },
+    {
+      "order": 3,
+      "id": "starlight-trail",
+      "slug": "starlight-trail",
+      "name": "Starlight Trail",
+      "region": "Addition",
+      "lessonId": "add_2mental",
+      "completionStage": 5,
+      "majorEvolution": false,
+      "yStart": 2536,
+      "yEnd": 3780,
+      "height": 1244,
+      "node": {
+        "x": 727,
+        "y": 3218,
+        "cssSide": "right",
+        "safeWidth": 455,
+        "safeHeight": 340,
+        "safeRadius": 227
+      },
+      "momo": {
+        "x": 297,
+        "y": 2842,
+        "safeWidth": 220,
+        "safeHeight": 220
+      },
+      "artwork": {
+        "filename": "map-03-starlight-trail.png",
+        "src": null,
+        "position": "left",
+        "x": 297,
+        "y": 2818,
+        "width": 635,
+        "height": 597,
+        "offsetX": 0,
+        "offsetY": 282
+      },
+      "artDirectionNotes": [
+        "Starlight, fireflies, and glowing trail details should live mainly in the left reserved art area.",
+        "Leave the right-side lesson node readable.",
+        "The path should be visibly illuminated but not visually noisy under UI."
+      ],
+      "clearSpace": {
+        "nodeFootprint": "No important scenery beneath the lesson button footprint.",
+        "keepClearRect": {
+          "x": 500,
+          "y": 3048,
+          "width": 455,
+          "height": 340
+        },
+        "momoKeepClearRect": {
+          "x": 187,
+          "y": 2732,
+          "width": 220,
+          "height": 220
+        }
+      }
+    },
+    {
+      "order": 4,
+      "id": "windy-cliffs",
+      "slug": "windy-cliffs",
+      "name": "Windy Cliffs",
+      "region": "Addition",
+      "lessonId": "add_3column",
+      "completionStage": 6,
+      "majorEvolution": false,
+      "yStart": 3780,
+      "yEnd": 5120,
+      "height": 1340,
+      "node": {
+        "x": 512,
+        "y": 4522,
+        "cssSide": "center",
+        "safeWidth": 455,
+        "safeHeight": 340,
+        "safeRadius": 227
+      },
+      "momo": {
+        "x": 727,
+        "y": 4127,
+        "safeWidth": 220,
+        "safeHeight": 220
+      },
+      "artwork": {
+        "filename": "map-04-windy-cliffs.png",
+        "src": null,
+        "position": "left",
+        "x": 297,
+        "y": 4072,
+        "width": 614,
+        "height": 777,
+        "offsetX": 0,
+        "offsetY": 292
+      },
+      "artDirectionNotes": [
+        "Cliff edges, clouds, and wind strokes should fill the left reserved zone.",
+        "Reserve open air around the node and Momo safe areas.",
+        "Suggest height and movement without covering the path."
+      ],
+      "clearSpace": {
+        "nodeFootprint": "No important scenery beneath the lesson button footprint.",
+        "keepClearRect": {
+          "x": 285,
+          "y": 4352,
+          "width": 455,
+          "height": 340
+        },
+        "momoKeepClearRect": {
+          "x": 617,
+          "y": 4017,
+          "width": 220,
+          "height": 220
+        }
+      }
+    },
+    {
+      "order": 5,
+      "id": "great-chasm",
+      "slug": "great-chasm",
+      "name": "The Great Chasm",
+      "region": "Addition Finale",
+      "lessonId": "add_4column",
+      "completionStage": 7,
+      "majorEvolution": true,
+      "yStart": 5120,
+      "yEnd": 6890,
+      "height": 1770,
+      "node": {
+        "x": 727,
+        "y": 6089,
+        "cssSide": "right",
+        "safeWidth": 455,
+        "safeHeight": 378,
+        "safeRadius": 227
+      },
+      "momo": {
+        "x": 512,
+        "y": 5527,
+        "safeWidth": 220,
+        "safeHeight": 220
+      },
+      "artwork": {
+        "filename": "map-05-great-chasm.png",
+        "src": null,
+        "position": "center",
+        "x": 512,
+        "y": 5622,
+        "width": 901,
+        "height": 956,
+        "offsetX": 0,
+        "offsetY": 502
+      },
+      "artDirectionNotes": [
+        "Cliffs should dominate left and right edges.",
+        "Open chasm/cloud space should run through the central reserved zone.",
+        "Preserve the lesson-node safe zone and make the path visibly reach one cliff edge before continuing beyond the gap."
+      ],
+      "clearSpace": {
+        "nodeFootprint": "No important scenery beneath the lesson button footprint.",
+        "keepClearRect": {
+          "x": 500,
+          "y": 5900,
+          "width": 455,
+          "height": 378
+        },
+        "momoKeepClearRect": {
+          "x": 402,
+          "y": 5417,
+          "width": 220,
+          "height": 220
+        }
+      }
+    },
+    {
+      "order": 6,
+      "id": "explorers-valley",
+      "slug": "explorers-valley",
+      "name": "Explorer's Valley",
+      "region": "Subtraction",
+      "lessonId": "sub_1digit",
+      "completionStage": 8,
+      "majorEvolution": false,
+      "yStart": 6890,
+      "yEnd": 8159,
+      "height": 1268,
+      "node": {
+        "x": 297,
+        "y": 7589,
+        "cssSide": "left",
+        "safeWidth": 455,
+        "safeHeight": 340,
+        "safeRadius": 227
+      },
+      "momo": {
+        "x": 727,
+        "y": 7192,
+        "safeWidth": 220,
+        "safeHeight": 220
+      },
+      "artwork": {
+        "filename": "map-06-explorers-valley.png",
+        "src": null,
+        "position": "right",
+        "x": 727,
+        "y": 7201,
+        "width": 614,
+        "height": 609,
+        "offsetX": 0,
+        "offsetY": 311
+      },
+      "artDirectionNotes": [
+        "Rolling valley shapes, tracks, and explorer details should sit opposite the node.",
+        "Keep the node and Momo areas clean.",
+        "The path can feel adventurous but readable."
+      ],
+      "clearSpace": {
+        "nodeFootprint": "No important scenery beneath the lesson button footprint.",
+        "keepClearRect": {
+          "x": 70,
+          "y": 7419,
+          "width": 455,
+          "height": 340
+        },
+        "momoKeepClearRect": {
+          "x": 617,
+          "y": 7082,
+          "width": 220,
+          "height": 220
+        }
+      }
+    },
+    {
+      "order": 7,
+      "id": "crystal-caves",
+      "slug": "crystal-caves",
+      "name": "Crystal Caves",
+      "region": "Subtraction",
+      "lessonId": "sub_2column",
+      "completionStage": 9,
+      "majorEvolution": false,
+      "yStart": 8159,
+      "yEnd": 9546,
+      "height": 1388,
+      "node": {
+        "x": 727,
+        "y": 8924,
+        "cssSide": "right",
+        "safeWidth": 455,
+        "safeHeight": 340,
+        "safeRadius": 227
+      },
+      "momo": {
+        "x": 512,
+        "y": 8481,
+        "safeWidth": 220,
+        "safeHeight": 220
+      },
+      "artwork": {
+        "filename": "map-07-crystal-caves.png",
+        "src": null,
+        "position": "left",
+        "x": 297,
+        "y": 8441,
+        "width": 717,
+        "height": 805,
+        "offsetX": 0,
+        "offsetY": 282
+      },
+      "artDirectionNotes": [
+        "Crystals should surround the path and concentrate in the reserved art slot.",
+        "Avoid placing bright crystal points under the lesson button.",
+        "Use cave depth around the edges while keeping UI clear."
+      ],
+      "clearSpace": {
+        "nodeFootprint": "No important scenery beneath the lesson button footprint.",
+        "keepClearRect": {
+          "x": 500,
+          "y": 8754,
+          "width": 455,
+          "height": 340
+        },
+        "momoKeepClearRect": {
+          "x": 402,
+          "y": 8371,
+          "width": 220,
+          "height": 220
+        }
+      }
+    },
+    {
+      "order": 8,
+      "id": "rune-ruins",
+      "slug": "rune-ruins",
+      "name": "The Rune Ruins",
+      "region": "Subtraction",
+      "lessonId": "sub_2mental",
+      "completionStage": 10,
+      "majorEvolution": false,
+      "yStart": 9546,
+      "yEnd": 10790,
+      "height": 1244,
+      "node": {
+        "x": 512,
+        "y": 10228,
+        "cssSide": "center",
+        "safeWidth": 455,
+        "safeHeight": 340,
+        "safeRadius": 227
+      },
+      "momo": {
+        "x": 297,
+        "y": 9838,
+        "safeWidth": 220,
+        "safeHeight": 220
+      },
+      "artwork": {
+        "filename": "map-08-rune-ruins.png",
+        "src": null,
+        "position": "right",
+        "x": 727,
+        "y": 9848,
+        "width": 614,
+        "height": 622,
+        "offsetX": 0,
+        "offsetY": 301
+      },
+      "artDirectionNotes": [
+        "Ancient stones and rune markings should occupy the right reserved area.",
+        "Keep runes out from under node text so they do not fight the labels.",
+        "The path should look like it passes through ruins."
+      ],
+      "clearSpace": {
+        "nodeFootprint": "No important scenery beneath the lesson button footprint.",
+        "keepClearRect": {
+          "x": 285,
+          "y": 10058,
+          "width": 455,
+          "height": 340
+        },
+        "momoKeepClearRect": {
+          "x": 187,
+          "y": 9728,
+          "width": 220,
+          "height": 220
+        }
+      }
+    },
+    {
+      "order": 9,
+      "id": "enchanted-garden",
+      "slug": "enchanted-garden",
+      "name": "The Enchanted Garden",
+      "region": "Subtraction",
+      "lessonId": "sub_3column",
+      "completionStage": 11,
+      "majorEvolution": false,
+      "yStart": 10790,
+      "yEnd": 12130,
+      "height": 1340,
+      "node": {
+        "x": 297,
+        "y": 11532,
+        "cssSide": "left",
+        "safeWidth": 455,
+        "safeHeight": 340,
+        "safeRadius": 227
+      },
+      "momo": {
+        "x": 727,
+        "y": 11101,
+        "safeWidth": 220,
+        "safeHeight": 220
+      },
+      "artwork": {
+        "filename": "map-09-enchanted-garden.png",
+        "src": null,
+        "position": "center",
+        "x": 512,
+        "y": 11097,
+        "width": 799,
+        "height": 670,
+        "offsetX": 0,
+        "offsetY": 306
+      },
+      "artDirectionNotes": [
+        "Flowers, vines, and garden magic should frame the centre reserved art space.",
+        "Keep the left lesson node and right Momo zone clear.",
+        "The scene should feel safe, blooming, and celebratory."
+      ],
+      "clearSpace": {
+        "nodeFootprint": "No important scenery beneath the lesson button footprint.",
+        "keepClearRect": {
+          "x": 70,
+          "y": 11362,
+          "width": 455,
+          "height": 340
+        },
+        "momoKeepClearRect": {
+          "x": 617,
+          "y": 10991,
+          "width": 220,
+          "height": 220
+        }
+      }
+    },
+    {
+      "order": 10,
+      "id": "guardian-gate",
+      "slug": "guardian-gate",
+      "name": "The Guardian Gate",
+      "region": "Subtraction Finale",
+      "lessonId": "sub_4column",
+      "completionStage": 12,
+      "majorEvolution": true,
+      "yStart": 12130,
+      "yEnd": 13853,
+      "height": 1723,
+      "node": {
+        "x": 727,
+        "y": 13075,
+        "cssSide": "right",
+        "safeWidth": 455,
+        "safeHeight": 378,
+        "safeRadius": 227
+      },
+      "momo": {
+        "x": 512,
+        "y": 12513,
+        "safeWidth": 220,
+        "safeHeight": 220
+      },
+      "artwork": {
+        "filename": "map-10-guardian-gate.png",
+        "src": null,
+        "position": "center",
+        "x": 512,
+        "y": 12573,
+        "width": 778,
+        "height": 1068,
+        "offsetX": 0,
+        "offsetY": 443
+      },
+      "artDirectionNotes": [
+        "The gate should dominate the central reserved area.",
+        "Leave the right lesson node and central Momo/evolution area readable.",
+        "Path should visibly arrive at a sealed threshold."
+      ],
+      "clearSpace": {
+        "nodeFootprint": "No important scenery beneath the lesson button footprint.",
+        "keepClearRect": {
+          "x": 500,
+          "y": 12886,
+          "width": 455,
+          "height": 378
+        },
+        "momoKeepClearRect": {
+          "x": 402,
+          "y": 12403,
+          "width": 220,
+          "height": 220
+        }
+      }
+    },
+    {
+      "order": 11,
+      "id": "star-fields",
+      "slug": "star-fields",
+      "name": "The Star Fields",
+      "region": "Multiplication",
+      "lessonId": "mul_1x1",
+      "completionStage": 13,
+      "majorEvolution": false,
+      "yStart": 13853,
+      "yEnd": 15145,
+      "height": 1292,
+      "node": {
+        "x": 512,
+        "y": 14566,
+        "cssSide": "center",
+        "safeWidth": 455,
+        "safeHeight": 340,
+        "safeRadius": 227
+      },
+      "momo": {
+        "x": 297,
+        "y": 14169,
+        "safeWidth": 220,
+        "safeHeight": 220
+      },
+      "artwork": {
+        "filename": "map-11-star-fields.png",
+        "src": null,
+        "position": "right",
+        "x": 727,
+        "y": 14149,
+        "width": 655,
+        "height": 646,
+        "offsetX": 0,
+        "offsetY": 297
+      },
+      "artDirectionNotes": [
+        "Grouped stars and constellation clusters should fill the right reserved zone.",
+        "Keep the central node clear.",
+        "Visual groups can echo multiplication, but avoid clutter near UI."
+      ],
+      "clearSpace": {
+        "nodeFootprint": "No important scenery beneath the lesson button footprint.",
+        "keepClearRect": {
+          "x": 285,
+          "y": 14396,
+          "width": 455,
+          "height": 340
+        },
+        "momoKeepClearRect": {
+          "x": 187,
+          "y": 14059,
+          "width": 220,
+          "height": 220
+        }
+      }
+    },
+    {
+      "order": 12,
+      "id": "celestial-heights",
+      "slug": "celestial-heights",
+      "name": "The Celestial Heights",
+      "region": "Multiplication",
+      "lessonId": "mul_1x2",
+      "completionStage": 14,
+      "majorEvolution": false,
+      "yStart": 15145,
+      "yEnd": 16580,
+      "height": 1436,
+      "node": {
+        "x": 297,
+        "y": 15934,
+        "cssSide": "left",
+        "safeWidth": 455,
+        "safeHeight": 340,
+        "safeRadius": 227
+      },
+      "momo": {
+        "x": 727,
+        "y": 15504,
+        "safeWidth": 220,
+        "safeHeight": 220
+      },
+      "artwork": {
+        "filename": "map-12-celestial-heights.png",
+        "src": null,
+        "position": "center",
+        "x": 512,
+        "y": 15499,
+        "width": 840,
+        "height": 775,
+        "offsetX": 0,
+        "offsetY": 354
+      },
+      "artDirectionNotes": [
+        "Cloud terraces and celestial sky elements should occupy the central reserved zone.",
+        "Keep the left node zone open.",
+        "The route should feel like it climbs."
+      ],
+      "clearSpace": {
+        "nodeFootprint": "No important scenery beneath the lesson button footprint.",
+        "keepClearRect": {
+          "x": 70,
+          "y": 15764,
+          "width": 455,
+          "height": 340
+        },
+        "momoKeepClearRect": {
+          "x": 617,
+          "y": 15394,
+          "width": 220,
+          "height": 220
+        }
+      }
+    },
+    {
+      "order": 13,
+      "id": "magicians-tower",
+      "slug": "magicians-tower",
+      "name": "The Magician's Tower",
+      "region": "Multiplication Finale",
+      "lessonId": "mul_2x2",
+      "completionStage": 15,
+      "majorEvolution": true,
+      "yStart": 16580,
+      "yEnd": 18399,
+      "height": 1818,
+      "node": {
+        "x": 727,
+        "y": 17580,
+        "cssSide": "right",
+        "safeWidth": 455,
+        "safeHeight": 378,
+        "safeRadius": 227
+      },
+      "momo": {
+        "x": 512,
+        "y": 17006,
+        "safeWidth": 220,
+        "safeHeight": 220
+      },
+      "artwork": {
+        "filename": "map-13-magicians-tower.png",
+        "src": null,
+        "position": "left",
+        "x": 297,
+        "y": 16927,
+        "width": 573,
+        "height": 1309,
+        "offsetX": 0,
+        "offsetY": 347
+      },
+      "artDirectionNotes": [
+        "Tower should occupy the tall reserved area opposite the lesson node.",
+        "Tower must be visually unmistakable.",
+        "Leave the node and Momo zones clear and keep path access obvious."
+      ],
+      "clearSpace": {
+        "nodeFootprint": "No important scenery beneath the lesson button footprint.",
+        "keepClearRect": {
+          "x": 500,
+          "y": 17391,
+          "width": 455,
+          "height": 378
+        },
+        "momoKeepClearRect": {
+          "x": 402,
+          "y": 16896,
+          "width": 220,
+          "height": 220
+        }
+      }
+    },
+    {
+      "order": 14,
+      "id": "arcane-library",
+      "slug": "arcane-library",
+      "name": "The Arcane Library",
+      "region": "Division",
+      "lessonId": "div_simple",
+      "completionStage": 16,
+      "majorEvolution": false,
+      "yStart": 18399,
+      "yEnd": 19882,
+      "height": 1483,
+      "node": {
+        "x": 297,
+        "y": 19212,
+        "cssSide": "left",
+        "safeWidth": 455,
+        "safeHeight": 340,
+        "safeRadius": 227
+      },
+      "momo": {
+        "x": 727,
+        "y": 18757,
+        "safeWidth": 220,
+        "safeHeight": 220
+      },
+      "artwork": {
+        "filename": "map-14-arcane-library.png",
+        "src": null,
+        "position": "center",
+        "x": 512,
+        "y": 18757,
+        "width": 778,
+        "height": 890,
+        "offsetX": 0,
+        "offsetY": 359
+      },
+      "artDirectionNotes": [
+        "Library, tower interior, shelves, or floating-book scenery should sit in the central reserved zone.",
+        "Leave the left node and right Momo zone clear.",
+        "Use warm magical reading light without overpowering UI."
+      ],
+      "clearSpace": {
+        "nodeFootprint": "No important scenery beneath the lesson button footprint.",
+        "keepClearRect": {
+          "x": 70,
+          "y": 19042,
+          "width": 455,
+          "height": 340
+        },
+        "momoKeepClearRect": {
+          "x": 617,
+          "y": 18647,
+          "width": 220,
+          "height": 220
+        }
+      }
+    },
+    {
+      "order": 15,
+      "id": "heart-of-matemostri",
+      "slug": "heart-of-matemostri",
+      "name": "The Heart of Matemostri",
+      "region": "Division Finale",
+      "lessonId": "div_long",
+      "completionStage": 17,
+      "majorEvolution": true,
+      "yStart": 19882,
+      "yEnd": 21892,
+      "height": 2010,
+      "node": {
+        "x": 512,
+        "y": 20982,
+        "cssSide": "center",
+        "safeWidth": 455,
+        "safeHeight": 378,
+        "safeRadius": 227
+      },
+      "momo": {
+        "x": 727,
+        "y": 20360,
+        "safeWidth": 220,
+        "safeHeight": 220
+      },
+      "artwork": {
+        "filename": "map-15-heart-of-matemostri.png",
+        "src": null,
+        "position": "center",
+        "x": 512,
+        "y": 20396,
+        "width": 922,
+        "height": 1367,
+        "offsetX": 0,
+        "offsetY": 514
+      },
+      "artDirectionNotes": [
+        "Largest and most spectacular scene.",
+        "Final destination should sit beyond and around the final path.",
+        "Keep the central final lesson interaction legible and avoid important detail beneath the node."
+      ],
+      "clearSpace": {
+        "nodeFootprint": "No important scenery beneath the lesson button footprint.",
+        "keepClearRect": {
+          "x": 285,
+          "y": 20793,
+          "width": 455,
+          "height": 378
+        },
+        "momoKeepClearRect": {
+          "x": 617,
+          "y": 20250,
+          "width": 220,
+          "height": 220
+        }
+      }
+    }
+  ]
+}

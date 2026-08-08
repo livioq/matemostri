@@ -84,3 +84,27 @@ Major moments use the larger transition presentation with previous and new Momo 
 8. Practise Again replays the same lesson without advancing story.
 
 Completed map nodes stay replayable for collectibles.
+
+## Production Artwork Geometry
+
+The production artwork blueprint is exported in `docs/MAP_ART_GUIDE.svg` and `docs/MAP_ART_SPEC.json`.
+
+Coordinates below use the canonical 1024px-wide artwork canvas. The full guide is 21892px tall and is scaled directly from the current mobile production map content box without vertical compression.
+
+| Scene | Y start | Y end | Node X/Y | Artwork X/Y | Artwork width/height | Clear-space requirements | Filename |
+|---|---:|---:|---:|---:|---:|---|---|
+| 1. The Mysterious Egg | 0 | 1244 | 512/682 | 512/306 | 737×523 | Node KEEP CLEAR 285/512 455×340; Momo 617/172 220×220 | map-01-mysterious-egg.png |
+| 2. Whispering Woods | 1244 | 2536 | 297/1962 | 727/1555 | 594×672 | Node KEEP CLEAR 70/1792 455×340; Momo 402/1409 220×220 | map-02-whispering-woods.png |
+| 3. Starlight Trail | 2536 | 3780 | 727/3218 | 297/2818 | 635×597 | Node KEEP CLEAR 500/3048 455×340; Momo 187/2732 220×220 | map-03-starlight-trail.png |
+| 4. Windy Cliffs | 3780 | 5120 | 512/4522 | 297/4072 | 614×777 | Node KEEP CLEAR 285/4352 455×340; Momo 617/4017 220×220 | map-04-windy-cliffs.png |
+| 5. The Great Chasm | 5120 | 6890 | 727/6089 | 512/5622 | 901×956 | Node KEEP CLEAR 500/5900 455×378; Momo 402/5417 220×220 | map-05-great-chasm.png |
+| 6. Explorer's Valley | 6890 | 8159 | 297/7589 | 727/7201 | 614×609 | Node KEEP CLEAR 70/7419 455×340; Momo 617/7082 220×220 | map-06-explorers-valley.png |
+| 7. Crystal Caves | 8159 | 9546 | 727/8924 | 297/8441 | 717×805 | Node KEEP CLEAR 500/8754 455×340; Momo 402/8371 220×220 | map-07-crystal-caves.png |
+| 8. The Rune Ruins | 9546 | 10790 | 512/10228 | 727/9848 | 614×622 | Node KEEP CLEAR 285/10058 455×340; Momo 187/9728 220×220 | map-08-rune-ruins.png |
+| 9. The Enchanted Garden | 10790 | 12130 | 297/11532 | 512/11097 | 799×670 | Node KEEP CLEAR 70/11362 455×340; Momo 617/10991 220×220 | map-09-enchanted-garden.png |
+| 10. The Guardian Gate | 12130 | 13853 | 727/13075 | 512/12573 | 778×1068 | Node KEEP CLEAR 500/12886 455×378; Momo 402/12403 220×220 | map-10-guardian-gate.png |
+| 11. The Star Fields | 13853 | 15145 | 512/14566 | 727/14149 | 655×646 | Node KEEP CLEAR 285/14396 455×340; Momo 187/14059 220×220 | map-11-star-fields.png |
+| 12. The Celestial Heights | 15145 | 16580 | 297/15934 | 512/15499 | 840×775 | Node KEEP CLEAR 70/15764 455×340; Momo 617/15394 220×220 | map-12-celestial-heights.png |
+| 13. The Magician's Tower | 16580 | 18399 | 727/17580 | 297/16927 | 573×1309 | Node KEEP CLEAR 500/17391 455×378; Momo 402/16896 220×220 | map-13-magicians-tower.png |
+| 14. The Arcane Library | 18399 | 19882 | 297/19212 | 512/18757 | 778×890 | Node KEEP CLEAR 70/19042 455×340; Momo 617/18647 220×220 | map-14-arcane-library.png |
+| 15. The Heart of Matemostri | 19882 | 21892 | 512/20982 | 512/20396 | 922×1367 | Node KEEP CLEAR 285/20793 455×378; Momo 617/20250 220×220 | map-15-heart-of-matemostri.png |
