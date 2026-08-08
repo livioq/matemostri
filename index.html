@@ -207,11 +207,12 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
 .silhouette::before,.silhouette::after{content:"";position:absolute;top:-12px;width:22px;height:30px;background:#28304a;border-radius:70% 20% 60% 30%}.silhouette::before{left:4px;transform:rotate(-25deg)}.silhouette::after{right:4px;transform:rotate(25deg)}
 .accessory-list{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px}.accessory-chip{font-size:10px;font-weight:800;background:#fff4c9;color:#785800;border-radius:999px;padding:3px 7px}
 .journey-stage .badge{display:inline-block;margin:5px 5px 0 0;padding:3px 7px;border-radius:999px;background:#e6e9ff;color:#493aa1;font-size:10px;font-weight:900}
-/* Painted map sections stack from the top of the adventure map, each one drawn at full
-   width so the path and nodes sit on top of it. map-panel-1a covers scenes 1 and 2 of
-   the 15 in docs/MAP_ART_SPEC.json; the gradient still shows through below it until
-   later sections arrive. */
-.adventure-map{position:relative;min-height:var(--map-height,8400px);margin:10px 0 18px;padding:0;background:url('assets/map/map-panel-1a.webp') top center/100% auto no-repeat,linear-gradient(180deg,#fff8ff 0%,#f2fbff 18%,#f5fff3 34%,#eef7ff 50%,#fff7dc 68%,#f4ecff 84%,#fff7fb 100%);border:2px solid rgba(80,49,154,.22);border-radius:30px;overflow:hidden;box-shadow:inset 0 0 0 6px rgba(255,255,255,.45)}
+.adventure-map{position:relative;min-height:var(--map-height,8400px);margin:10px 0 18px;padding:0;background:linear-gradient(180deg,#fff8ff 0%,#f2fbff 18%,#f5fff3 34%,#eef7ff 50%,#fff7dc 68%,#f4ecff 84%,#fff7fb 100%);border:2px solid rgba(80,49,154,.22);border-radius:30px;overflow:hidden;box-shadow:inset 0 0 0 6px rgba(255,255,255,.45)}
+/* Painted map sections stack down the map, each drawn at full width, one after the other,
+   so adding the next panel is one more entry in MAP_ART_PANELS. They sit under the path,
+   the scenes and the nodes. The gradient shows through below the last panel. */
+.map-art{position:absolute;left:0;right:0;top:0;z-index:0;pointer-events:none;user-select:none}
+.map-art img{display:block;width:100%;height:auto}
 .adventure-map::before{content:"";position:absolute;inset:0;z-index:1;background:radial-gradient(circle at 25% 7%,rgba(145,215,177,.3),transparent 6%),radial-gradient(circle at 78% 19%,rgba(255,218,94,.22),transparent 8%),radial-gradient(circle at 21% 37%,rgba(139,219,255,.26),transparent 7%),radial-gradient(circle at 72% 55%,rgba(180,151,255,.22),transparent 9%),radial-gradient(circle at 24% 73%,rgba(255,184,221,.25),transparent 8%),radial-gradient(circle at 72% 91%,rgba(255,212,113,.3),transparent 9%);pointer-events:none}
 .map-scene{position:absolute;left:0;right:0;height:var(--scene-height);top:var(--scene-top);z-index:2;pointer-events:none}
 .map-scene::before{content:"";position:absolute;inset:18px 12px;border-radius:34px;background:linear-gradient(180deg,rgba(255,255,255,.16),rgba(255,255,255,0));box-shadow:inset 0 0 34px rgba(255,255,255,.22)}
@@ -582,6 +583,13 @@ const PROGRESSION_NODES=[
   {id:'magicians-tower',slug:'magicians-tower',title:"The Magician's Tower",region:'Multiplication Finale',lessonId:'mul_2x2',stage:15,asset:'stage-15-multiplication-mage.png',majorEvolution:true,mapPosition:{side:'right',sceneHeight:760,nodeOffset:418,momo:{side:'center',offsetY:178},artwork:{src:null,position:'left',width:56,height:72,offsetX:0,offsetY:145,label:"Magician's Tower Art"}},storyBefore:'An ancient tower waits in the clouds. Inside, every room is built from groups within groups.',storyAfter:"{name} emerges in a mage's hat and shining cloak. Multiplication has become magic she can wear.",unlocks:'arcane-library'},
   {id:'arcane-library',slug:'arcane-library',title:'The Arcane Library',region:'Division',lessonId:'div_simple',stage:16,asset:'stage-16-arcane-master.png',mapPosition:{side:'left',sceneHeight:620,nodeOffset:340,momo:{side:'right',offsetY:150},artwork:{src:null,position:'center',width:76,height:60,offsetX:0,offsetY:150,label:'Arcane Library Art'}},storyBefore:'A floating spellbook opens by itself. Its pages ask how stars can be shared fairly.',storyAfter:'The spellbook floats beside {name}. She has learned that dividing can be generous magic.',unlocks:'heart-of-matemostri'},
   {id:'heart-of-matemostri',slug:'heart-of-matemostri',title:'The Heart of Matemostri',region:'Division Finale',lessonId:'div_long',stage:17,asset:'stage-17-guardian-of-maths.png',majorEvolution:true,mapPosition:{side:'center',sceneHeight:840,nodeOffset:460,momo:{side:'right',offsetY:200},artwork:{src:null,position:'center',width:90,height:68,offsetX:0,offsetY:215,label:'Heart of Matemostri Art'}},storyBefore:'At the centre of Matemostri, every path glows at once. {name} opens the spellbook for the final lesson.',storyAfter:'The whole world lights up. {name} rises as the Guardian of Maths, and every lesson you shared shines inside her heart.'}
+];
+/* The painted map, in sections, top to bottom. Each panel is 1024 wide on the canvas in
+   docs/MAP_ART_SPEC.json and is cut on a scene boundary, so they stack with no seam and
+   no gaps. Add the next one here and it appears under the next stretch of the path. */
+const MAP_ART_PANELS=[
+  {src:'assets/map/map-panel-1a.webp',scenes:'The Mysterious Egg, Whispering Woods',canvasHeight:2536},
+  {src:'assets/map/map-panel-1b.webp',scenes:'Starlight Trail, Windy Cliffs',canvasHeight:2584}
 ];
 const NODE_BY_LESSON=id=>PROGRESSION_NODES.find(n=>n.lessonId===id);
 const EVOLUTIONS=[
@@ -1216,7 +1224,8 @@ function renderMenu(){
   const layouts=mapSceneLayout(),mapHeight=layouts.reduce((n,l)=>n+l.height,0);
   L.style.setProperty('--map-height',mapHeight+'px');
   L.classList.toggle('show-art-debug',!!DB.mapArtDebug);
-  L.innerHTML='<svg class="adventure-path" aria-hidden="true" viewBox="0 0 100 '+mapHeight+'" preserveAspectRatio="none"><path class="path-glow" d="'+mapPathD(layouts)+'"></path><path d="'+mapPathD(layouts)+'"></path></svg>';
+  L.innerHTML='<div class="map-art" aria-hidden="true">'+MAP_ART_PANELS.map(p=>'<img src="'+p.src+'" alt="" loading="lazy">').join('')+'</div>'+
+    '<svg class="adventure-path" aria-hidden="true" viewBox="0 0 100 '+mapHeight+'" preserveAspectRatio="none"><path class="path-glow" d="'+mapPathD(layouts)+'"></path><path d="'+mapPathD(layouts)+'"></path></svg>';
   const currentIndex=Math.min(count,PROGRESSION_NODES.length-1);
   layouts.forEach((layout,i)=>{
     const node=layout.node,pos=layout.pos,artwork=pos.artwork||{};
