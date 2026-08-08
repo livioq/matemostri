@@ -15,7 +15,7 @@
   {"level":14,"id":"explorer","image":"stage-14-explorer.png","ready":true},
   {"level":15,"id":"guardian-light","image":"stage-15-guardian-light.png","ready":true},
   {"level":16,"id":"star-cape","image":"stage-16-star-cape.png","ready":true},
-  {"level":17,"id":"guardian-of-maths","image":"stage-17-guardian-of-maths.webp","ready":false},
+  {"level":17,"id":"guardian-of-maths","image":"stage-17-guardian-of-maths.png","ready":true},
   {"level":18,"id":"apprentice-guardian","image":"stage-18-apprentice-guardian.webp","ready":false},
   {"level":19,"id":"young-guardian","image":"stage-19-young-guardian.webp","ready":false},
   {"level":20,"id":"royal-guardian","image":"stage-20-royal-guardian.webp","ready":false}
