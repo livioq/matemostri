@@ -11,8 +11,12 @@ public release.
 - It runs on an Android phone. Check layouts at ~360px wide.
 - Run `node tests/arithmetic-model.test.js` before every commit. Add
   tests for any change to arithmetic or question generation.
-- The five production Momo images in assets/monsters are final art. Do
-  not redesign or regenerate them. Later stages may use SVG fallback art.
+- The seventeen Momo images in assets/monsters and the eight painted map
+  sections in assets/map are final art. Do not redesign or regenerate
+  them. Re-encoding to another format is not redesigning.
+- Ship images as WebP. Nothing in assets is a PNG and a test fails if one
+  appears. The art arrives as PNG and is converted on the way in: the map
+  went from 36.6 MB to 3.4 MB, the whole assets folder from 40 MB to 8.8.
 - Never break saved player progress. Any change to the save format needs
   a migration and a test for it.
 

@@ -633,8 +633,8 @@ assert.equal(/\bGROUPS\b/.test(source.replace(/STAGE_GROUPS/g, '')), false,
 
 // the old lesson tabs have been replaced by the adventure map
 const menuSource = functionSource('renderMenu');
-assert.match(menuSource, /mapSceneLayout\(\)/,
-  'the journey menu is driven by calculated story-map scene layouts');
+assert.match(menuSource, /mapSceneLayout\(L\.clientWidth\)/,
+  'the journey menu is driven by scene layouts measured from the width of the map, so the\n   painted panels and the path scale together');
 assert.match(menuSource, /map-location/,
   'the journey menu renders adventure map locations rather than tab-like lesson rows');
 assert.match(menuSource, /scene-art-slot/,
@@ -642,8 +642,15 @@ assert.match(menuSource, /scene-art-slot/,
 assert.match(menuSource, /map-momo/,
   'the current Momo sprite is placed on the map layer near the current scene');
 assert.match(source,
-  /\$\('againBtn'\)\.onclick=\(\)=>\{ renderMenu\(\); show\('s-menu'\); \};/,
+  /\$\('againBtn'\)\.onclick=\(\)=>\{ show\('s-menu'\); renderMenu\(\); \};/,
   'Continue Adventure returns to the map after the result screen');
+// the map has to be on screen before it is laid out, or clientWidth is 0 and every scene
+// falls back to full-width heights while the art scales down
+[/\$\('playBtn'\)\.onclick/, /\$\('nodeBack'\)\.onclick/, /\$\('againBtn'\)\.onclick/].forEach(re => {
+  const line = source.split('\n').find(l => re.test(l));
+  assert.ok(line.indexOf("show('s-menu')") < line.indexOf('renderMenu()'),
+    `the map is shown before it is measured: ${line.trim()}`);
+});
 assert.doesNotMatch(source,
   /\$\('unlockOk'\)\.onclick=[\s\S]*startSession\(next\.id\)/,
   'the evolution overlay no longer auto-starts the next lesson');
@@ -736,47 +743,28 @@ assert.deepEqual(plain(saveContext.evolutions.filter(step => step.majorEvolution
   [15, 'Multiplication Mage'],
   [17, 'Guardian of Maths']
 ], 'the four major story evolutions are marked in data');
-[
-  'stage-01-magical-egg.png',
-  'stage-02-first-crack.png',
-  'stage-03-hatched-friend.png',
-  'stage-04-fluffy-ears.png',
-  'stage-05-bright-tail.png',
-  'stage-06-wide-wings.png',
-  'stage-07-addition-flight.png',
-  'stage-08-backpack-explorer.png',
-  'stage-09-explorer-goggles.png',
-  'stage-10-magic-marks.png',
-  'stage-11-flower-crown.png',
-  'stage-12-subtraction-guardian-light.png',
-  'stage-13-star-cape.png',
-  'stage-14-celestial-wings.png',
-  'stage-15-multiplication-mage.png',
-  'stage-16-arcane-master.png',
-  'stage-17-guardian-of-maths.png'
-].forEach(file => {
+// every stage's art must exist, whatever the file format is, and the names come from the
+// data rather than a second hand-kept list that can drift out of step with it
+const stageImages = plain(saveContext.stageData.map(stage => stage.image));
+assert.equal(stageImages.length, 17, 'seventeen monster stages carry art');
+stageImages.forEach(file => {
   assert.equal(fs.existsSync(path.join(__dirname, '..', 'assets', 'monsters', file)), true,
     `${file} exists for the ready monster art path`);
 });
-assert.deepEqual(plain(saveContext.stageData.map(stage => stage.image)), [
-  'stage-01-magical-egg.png',
-  'stage-02-first-crack.png',
-  'stage-03-hatched-friend.png',
-  'stage-04-fluffy-ears.png',
-  'stage-05-bright-tail.png',
-  'stage-06-wide-wings.png',
-  'stage-07-addition-flight.png',
-  'stage-08-backpack-explorer.png',
-  'stage-09-explorer-goggles.png',
-  'stage-10-magic-marks.png',
-  'stage-11-flower-crown.png',
-  'stage-12-subtraction-guardian-light.png',
-  'stage-13-star-cape.png',
-  'stage-14-celestial-wings.png',
-  'stage-15-multiplication-mage.png',
-  'stage-16-arcane-master.png',
-  'stage-17-guardian-of-maths.png'
-], 'canonical stage data points at the renamed production artwork');
+stageImages.forEach((file, i) => {
+  assert.match(file, new RegExp(`^stage-${String(i + 1).padStart(2, '0')}-[a-z-]+\\.webp$`),
+    `${file} is numbered in order and shipped as webp`);
+});
+
+// nothing anywhere still points at a png
+assert.equal(/\.png\b/.test(source), false, 'index.html references no png files');
+const strayPngs = fs.readdirSync(path.join(__dirname, '..', 'assets'), {recursive: true})
+  .filter(f => String(f).endsWith('.png'));
+assert.deepEqual(strayPngs, [], 'no png files are left in assets');
+assert.deepEqual(stageImages.slice(0, 3),
+  ['stage-01-magical-egg.webp', 'stage-02-first-crack.webp', 'stage-03-hatched-friend.webp'],
+  'canonical stage data points at the renamed production artwork');
+assert.equal(stageImages.at(-1), 'stage-17-guardian-of-maths.webp');
 plain(saveContext.evolutions).forEach(step => {
   assert.ok(step.completed <= lessonTotal, `the ${step.title} milestone is reachable`);
 });

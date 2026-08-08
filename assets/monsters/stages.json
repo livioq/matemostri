@@ -1,19 +1,109 @@
 [
-  {"level":1,"id":"magical-egg","image":"stage-01-magical-egg.png","ready":true},
-  {"level":2,"id":"first-crack","image":"stage-02-first-crack.png","ready":true,"intermediate":true},
-  {"level":3,"id":"hatched-friend","image":"stage-03-hatched-friend.png","ready":true},
-  {"level":4,"id":"fluffy-ears","image":"stage-04-fluffy-ears.png","ready":true},
-  {"level":5,"id":"bright-tail","image":"stage-05-bright-tail.png","ready":true},
-  {"level":6,"id":"wide-wings","image":"stage-06-wide-wings.png","ready":true},
-  {"level":7,"id":"addition-flight","image":"stage-07-addition-flight.png","ready":true,"majorEvolution":true},
-  {"level":8,"id":"backpack-explorer","image":"stage-08-backpack-explorer.png","ready":true},
-  {"level":9,"id":"explorer-goggles","image":"stage-09-explorer-goggles.png","ready":true},
-  {"level":10,"id":"magic-marks","image":"stage-10-magic-marks.png","ready":true},
-  {"level":11,"id":"flower-crown","image":"stage-11-flower-crown.png","ready":true},
-  {"level":12,"id":"subtraction-guardian-light","image":"stage-12-subtraction-guardian-light.png","ready":true,"majorEvolution":true},
-  {"level":13,"id":"star-cape","image":"stage-13-star-cape.png","ready":true},
-  {"level":14,"id":"celestial-wings","image":"stage-14-celestial-wings.png","ready":true},
-  {"level":15,"id":"multiplication-mage","image":"stage-15-multiplication-mage.png","ready":true,"majorEvolution":true},
-  {"level":16,"id":"arcane-master","image":"stage-16-arcane-master.png","ready":true},
-  {"level":17,"id":"guardian-of-maths","image":"stage-17-guardian-of-maths.png","ready":true,"majorEvolution":true}
+  {
+    "level": 1,
+    "id": "magical-egg",
+    "image": "stage-01-magical-egg.webp",
+    "ready": true
+  },
+  {
+    "level": 2,
+    "id": "first-crack",
+    "image": "stage-02-first-crack.webp",
+    "ready": true,
+    "intermediate": true
+  },
+  {
+    "level": 3,
+    "id": "hatched-friend",
+    "image": "stage-03-hatched-friend.webp",
+    "ready": true
+  },
+  {
+    "level": 4,
+    "id": "fluffy-ears",
+    "image": "stage-04-fluffy-ears.webp",
+    "ready": true
+  },
+  {
+    "level": 5,
+    "id": "bright-tail",
+    "image": "stage-05-bright-tail.webp",
+    "ready": true
+  },
+  {
+    "level": 6,
+    "id": "wide-wings",
+    "image": "stage-06-wide-wings.webp",
+    "ready": true
+  },
+  {
+    "level": 7,
+    "id": "addition-flight",
+    "image": "stage-07-addition-flight.webp",
+    "ready": true,
+    "majorEvolution": true
+  },
+  {
+    "level": 8,
+    "id": "backpack-explorer",
+    "image": "stage-08-backpack-explorer.webp",
+    "ready": true
+  },
+  {
+    "level": 9,
+    "id": "explorer-goggles",
+    "image": "stage-09-explorer-goggles.webp",
+    "ready": true
+  },
+  {
+    "level": 10,
+    "id": "magic-marks",
+    "image": "stage-10-magic-marks.webp",
+    "ready": true
+  },
+  {
+    "level": 11,
+    "id": "flower-crown",
+    "image": "stage-11-flower-crown.webp",
+    "ready": true
+  },
+  {
+    "level": 12,
+    "id": "subtraction-guardian-light",
+    "image": "stage-12-subtraction-guardian-light.webp",
+    "ready": true,
+    "majorEvolution": true
+  },
+  {
+    "level": 13,
+    "id": "star-cape",
+    "image": "stage-13-star-cape.webp",
+    "ready": true
+  },
+  {
+    "level": 14,
+    "id": "celestial-wings",
+    "image": "stage-14-celestial-wings.webp",
+    "ready": true
+  },
+  {
+    "level": 15,
+    "id": "multiplication-mage",
+    "image": "stage-15-multiplication-mage.webp",
+    "ready": true,
+    "majorEvolution": true
+  },
+  {
+    "level": 16,
+    "id": "arcane-master",
+    "image": "stage-16-arcane-master.webp",
+    "ready": true
+  },
+  {
+    "level": 17,
+    "id": "guardian-of-maths",
+    "image": "stage-17-guardian-of-maths.webp",
+    "ready": true,
+    "majorEvolution": true
+  }
 ]
