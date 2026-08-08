@@ -37,7 +37,12 @@ The adventure map is intentionally tall on mobile. It should feel like travellin
 Each `PROGRESSION_NODES` entry owns layout metadata:
 
 - `mapPosition.side`: places the lesson node on the left, centre, or right of the winding path.
-- `mapPosition.sceneHeight`: reserves vertical room for the scene.
+- `mapPosition.sceneHeight`: reserves vertical room for the scene, in the units the
+  painted map was drawn in. These are the numbers in `docs/MAP_ART_SPEC.json`, measured
+  against a 428px content box. At any other width every scene height, node offset and
+  Momo offset is multiplied by `mapWidth / 428`, so the painting and the path stay
+  locked together on a narrow phone as well as a wide one. Without that scaling the two
+  drift apart by a quarter of the map's length at 360px.
 - `mapPosition.nodeOffset`: places the lesson node within that scene.
 - `mapPosition.momo`: reserves a nearby position for the current Momo sprite.
 - `mapPosition.artwork`: reserves a future scenery-art slot with `src`, `position`, `width`, `height`, `offsetX`, `offsetY`, and `label`.
@@ -88,6 +93,25 @@ Completed map nodes stay replayable for collectibles.
 ## Production Artwork Geometry
 
 The production artwork blueprint is exported in `docs/MAP_ART_GUIDE.svg` and `docs/MAP_ART_SPEC.json`.
+
+The painted map is delivered in eight sections in `assets/map`, listed in `MAP_ART_PANELS`
+in order. Each is 1024 canvas px wide and cut on a scene boundary, so they stack edge to
+edge with no gap and together they are exactly the 21892px canvas:
+
+| Panel | Canvas y | Scenes |
+|---|---|---|
+| map-panel-1a | 0-2536 | The Mysterious Egg, Whispering Woods |
+| map-panel-1b | 2536-5120 | Starlight Trail, Windy Cliffs |
+| map-panel-2a | 5120-8159 | The Great Chasm, Explorer's Valley |
+| map-panel-2b | 8159-10790 | Crystal Caves, The Rune Ruins |
+| map-panel-3a | 10790-13853 | The Enchanted Garden, The Guardian Gate |
+| map-panel-3b | 13853-16580 | The Star Fields, The Celestial Heights |
+| map-panel-4a | 16580-19882 | The Magician's Tower, The Arcane Library |
+| map-panel-4b | 19882-21892 | The Heart of Matemostri |
+
+They are a full-bleed background layer under the path and the nodes. The per-scene
+`mapPosition.artwork` slots are a different thing: positioned cut-out scenery, still
+unused.
 
 Coordinates below use the canonical 1024px-wide artwork canvas. The full guide is 21892px tall and is scaled directly from the current mobile production map content box without vertical compression.
 

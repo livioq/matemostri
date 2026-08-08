@@ -190,7 +190,7 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
 @keyframes monsterGlow{0%,100%{filter:drop-shadow(0 8px 8px rgba(27,58,140,.16)) drop-shadow(0 0 4px rgba(255,207,83,.16))}50%{filter:drop-shadow(0 10px 10px rgba(27,58,140,.2)) drop-shadow(0 0 12px rgba(255,207,83,.34))}}
 
 /* opening story + maths journey */
-.story-card,.journey-hero{background:#fff url('assets/ui/magic-glow.png') center/cover;border:2px solid var(--ink);border-radius:20px;padding:12px;box-shadow:3px 3px 0 rgba(27,58,140,.16)}
+.story-card,.journey-hero{background:#fff url('assets/ui/magic-glow.webp') center/cover;border:2px solid var(--ink);border-radius:20px;padding:12px;box-shadow:3px 3px 0 rgba(27,58,140,.16)}
 .story-card img{display:block;width:100%;border-radius:14px;aspect-ratio:1.18;object-fit:cover;background:linear-gradient(145deg,#f8ddff,#dff8ff)}
 .story-copy{text-align:center;min-height:64px;padding:10px 5px 2px}
 .story-copy h2{font-size:24px;margin-bottom:4px}.story-copy p{margin:0;font-weight:700;line-height:1.35}
@@ -208,6 +208,11 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
 .accessory-list{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px}.accessory-chip{font-size:10px;font-weight:800;background:#fff4c9;color:#785800;border-radius:999px;padding:3px 7px}
 .journey-stage .badge{display:inline-block;margin:5px 5px 0 0;padding:3px 7px;border-radius:999px;background:#e6e9ff;color:#493aa1;font-size:10px;font-weight:900}
 .adventure-map{position:relative;min-height:var(--map-height,8400px);margin:10px 0 18px;padding:0;background:linear-gradient(180deg,#fff8ff 0%,#f2fbff 18%,#f5fff3 34%,#eef7ff 50%,#fff7dc 68%,#f4ecff 84%,#fff7fb 100%);border:2px solid rgba(80,49,154,.22);border-radius:30px;overflow:hidden;box-shadow:inset 0 0 0 6px rgba(255,255,255,.45)}
+/* Painted map sections stack down the map, each drawn at full width, one after the other,
+   so adding the next panel is one more entry in MAP_ART_PANELS. They sit under the path,
+   the scenes and the nodes. The gradient shows through below the last panel. */
+.map-art{position:absolute;left:0;right:0;top:0;z-index:0;pointer-events:none;user-select:none}
+.map-art img{display:block;width:100%;height:auto}
 .adventure-map::before{content:"";position:absolute;inset:0;z-index:1;background:radial-gradient(circle at 25% 7%,rgba(145,215,177,.3),transparent 6%),radial-gradient(circle at 78% 19%,rgba(255,218,94,.22),transparent 8%),radial-gradient(circle at 21% 37%,rgba(139,219,255,.26),transparent 7%),radial-gradient(circle at 72% 55%,rgba(180,151,255,.22),transparent 9%),radial-gradient(circle at 24% 73%,rgba(255,184,221,.25),transparent 8%),radial-gradient(circle at 72% 91%,rgba(255,212,113,.3),transparent 9%);pointer-events:none}
 .map-scene{position:absolute;left:0;right:0;height:var(--scene-height);top:var(--scene-top);z-index:2;pointer-events:none}
 .map-scene::before{content:"";position:absolute;inset:18px 12px;border-radius:34px;background:linear-gradient(180deg,rgba(255,255,255,.16),rgba(255,255,255,0));box-shadow:inset 0 0 34px rgba(255,255,255,.22)}
@@ -241,7 +246,7 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
 .map-momo img,.map-momo svg{max-width:92px;max-height:92px;object-fit:contain}
 .map-momo::after{content:"";position:absolute;left:20%;right:20%;bottom:6px;height:18px;border-radius:50%;background:radial-gradient(ellipse at center,rgba(80,49,154,.22),transparent 70%);z-index:-1}
 .story-node-card{text-align:center}.story-node-card .pet-stage{min-height:230px}.story-node-card p{font-weight:780;line-height:1.35;color:var(--graphite);white-space:pre-line}
-.major-transition{background:linear-gradient(rgba(40,23,96,.9),rgba(104,39,126,.92)),url('assets/ui/magic-glow.png') center/cover}
+.major-transition{background:linear-gradient(rgba(40,23,96,.9),rgba(104,39,126,.92)),url('assets/ui/magic-glow.webp') center/cover}
 .major-transition .unlock-card{width:min(420px,94vw);border-color:#ffe38a;box-shadow:0 0 0 5px rgba(255,227,138,.22),0 16px 0 rgba(0,0,0,.18)}
 .evolution-pair{display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:center;margin:8px 0}.evolution-pair .pet-stage{min-height:150px}.evolution-pair .pet-stage::before{width:110px}.evolution-pair-wrap .arrow{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:28px;color:var(--gold);font-weight:900;text-shadow:0 2px 0 var(--ink)}
 .evolution-pair-wrap{position:relative}
@@ -280,7 +285,7 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
 .unlock{
   position:fixed;
   inset:0;
-  background:linear-gradient(rgba(49,28,112,.78),rgba(89,37,136,.88)),url('assets/ui/magic-glow.png') center/cover;
+  background:linear-gradient(rgba(49,28,112,.78),rgba(89,37,136,.88)),url('assets/ui/magic-glow.webp') center/cover;
   display:none;
   align-items:center;
   justify-content:center;
@@ -311,7 +316,7 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
     <div class="eyebrow" id="storyEyebrow">A magical friend's story</div>
     <h1 style="font-size:30px;margin:3px 0 10px">A magical maths friend</h1>
     <div class="story-card">
-      <img id="storyImg" src="assets/story/find-egg.png" alt="A child discovers a glowing magical egg" onerror="this.style.display='none'">
+      <img id="storyImg" src="assets/story/find-egg.webp" alt="A child discovers a glowing magical egg" onerror="this.style.display='none'">
       <div class="story-copy"><h2 id="storyTitle">A magical egg!</h2><p id="storyText"></p></div>
       <div id="friendNameBox" style="padding:0 8px 10px">
         <label for="friendName" style="display:block;text-align:center;font-weight:850;color:var(--ink);margin-bottom:7px">What would you like to call your new friend?</label>
@@ -544,41 +549,60 @@ const MATH_STAGES=[
 ];
 const STAGE_BY_ID=id=>MATH_STAGES.find(s=>s.id===id);
 const MONSTER_STAGE_DATA=[
-  {stage:1,slug:'magical-egg',name:'Magical Egg',image:'stage-01-magical-egg.png',ready:true},
-  {stage:2,slug:'first-crack',name:'First Crack',image:'stage-02-first-crack.png',ready:true,intermediate:true},
-  {stage:3,slug:'hatched-friend',name:'Hatched Friend',image:'stage-03-hatched-friend.png',ready:true},
-  {stage:4,slug:'fluffy-ears',name:'Fluffy Ears',image:'stage-04-fluffy-ears.png',ready:true},
-  {stage:5,slug:'bright-tail',name:'Bright Tail',image:'stage-05-bright-tail.png',ready:true},
-  {stage:6,slug:'wide-wings',name:'Wide Wings',image:'stage-06-wide-wings.png',ready:true},
-  {stage:7,slug:'addition-flight',name:'Addition Flight',image:'stage-07-addition-flight.png',ready:true,majorEvolution:true},
-  {stage:8,slug:'backpack-explorer',name:'Backpack Explorer',image:'stage-08-backpack-explorer.png',ready:true},
-  {stage:9,slug:'explorer-goggles',name:'Explorer Goggles',image:'stage-09-explorer-goggles.png',ready:true},
-  {stage:10,slug:'magic-marks',name:'Magic Marks',image:'stage-10-magic-marks.png',ready:true},
-  {stage:11,slug:'flower-crown',name:'Flower Crown',image:'stage-11-flower-crown.png',ready:true},
-  {stage:12,slug:'subtraction-guardian-light',name:'Subtraction Guardian Light',image:'stage-12-subtraction-guardian-light.png',ready:true,majorEvolution:true},
-  {stage:13,slug:'star-cape',name:'Star Cape',image:'stage-13-star-cape.png',ready:true},
-  {stage:14,slug:'celestial-wings',name:'Celestial Wings',image:'stage-14-celestial-wings.png',ready:true},
-  {stage:15,slug:'multiplication-mage',name:'Multiplication Mage',image:'stage-15-multiplication-mage.png',ready:true,majorEvolution:true},
-  {stage:16,slug:'arcane-master',name:'Arcane Master',image:'stage-16-arcane-master.png',ready:true},
-  {stage:17,slug:'guardian-of-maths',name:'Guardian of Maths',image:'stage-17-guardian-of-maths.png',ready:true,majorEvolution:true}
+  {stage:1,slug:'magical-egg',name:'Magical Egg',image:'stage-01-magical-egg.webp',ready:true},
+  {stage:2,slug:'first-crack',name:'First Crack',image:'stage-02-first-crack.webp',ready:true,intermediate:true},
+  {stage:3,slug:'hatched-friend',name:'Hatched Friend',image:'stage-03-hatched-friend.webp',ready:true},
+  {stage:4,slug:'fluffy-ears',name:'Fluffy Ears',image:'stage-04-fluffy-ears.webp',ready:true},
+  {stage:5,slug:'bright-tail',name:'Bright Tail',image:'stage-05-bright-tail.webp',ready:true},
+  {stage:6,slug:'wide-wings',name:'Wide Wings',image:'stage-06-wide-wings.webp',ready:true},
+  {stage:7,slug:'addition-flight',name:'Addition Flight',image:'stage-07-addition-flight.webp',ready:true,majorEvolution:true},
+  {stage:8,slug:'backpack-explorer',name:'Backpack Explorer',image:'stage-08-backpack-explorer.webp',ready:true},
+  {stage:9,slug:'explorer-goggles',name:'Explorer Goggles',image:'stage-09-explorer-goggles.webp',ready:true},
+  {stage:10,slug:'magic-marks',name:'Magic Marks',image:'stage-10-magic-marks.webp',ready:true},
+  {stage:11,slug:'flower-crown',name:'Flower Crown',image:'stage-11-flower-crown.webp',ready:true},
+  {stage:12,slug:'subtraction-guardian-light',name:'Subtraction Guardian Light',image:'stage-12-subtraction-guardian-light.webp',ready:true,majorEvolution:true},
+  {stage:13,slug:'star-cape',name:'Star Cape',image:'stage-13-star-cape.webp',ready:true},
+  {stage:14,slug:'celestial-wings',name:'Celestial Wings',image:'stage-14-celestial-wings.webp',ready:true},
+  {stage:15,slug:'multiplication-mage',name:'Multiplication Mage',image:'stage-15-multiplication-mage.webp',ready:true,majorEvolution:true},
+  {stage:16,slug:'arcane-master',name:'Arcane Master',image:'stage-16-arcane-master.webp',ready:true},
+  {stage:17,slug:'guardian-of-maths',name:'Guardian of Maths',image:'stage-17-guardian-of-maths.webp',ready:true,majorEvolution:true}
 ];
 const PROGRESSION_NODES=[
-  {id:'mysterious-egg',slug:'mysterious-egg',title:'The Mysterious Egg',region:'Awakening',lessonId:'add_1digit',stage:3,asset:'stage-03-hatched-friend.png',mapPosition:{side:'center',sceneHeight:520,nodeOffset:285,momo:{side:'right',offsetY:118},artwork:{src:null,position:'center',width:72,height:42,offsetX:0,offsetY:128,label:'Mysterious Egg Art'}},storyBefore:'The egg glows when you come close. Its golden heart flickers, as if it knows your voice.',storyAfter:'The shell tumbles open. {name} blinks up at you, then gives a tiny happy squeak. Your journey has a friend now.',unlocks:'whispering-woods'},
-  {id:'whispering-woods',slug:'whispering-woods',title:'Whispering Woods',region:'Addition',lessonId:'add_2column',stage:4,asset:'stage-04-fluffy-ears.png',mapPosition:{side:'left',sceneHeight:540,nodeOffset:300,momo:{side:'center',offsetY:115},artwork:{src:null,position:'right',width:58,height:52,offsetX:0,offsetY:130,label:'Whispering Woods Art'}},storyBefore:'The trees whisper in soft little sums. {name} tilts those huge ears and hears a hidden path.',storyAfter:"{name}'s ears fluff wide and bright. The woods are not confusing anymore; they are calling you onward.",unlocks:'starlight-trail'},
-  {id:'starlight-trail',slug:'starlight-trail',title:'Starlight Trail',region:'Addition',lessonId:'add_2mental',stage:5,asset:'stage-05-bright-tail.png',mapPosition:{side:'right',sceneHeight:520,nodeOffset:285,momo:{side:'left',offsetY:128},artwork:{src:null,position:'left',width:62,height:48,offsetX:0,offsetY:118,label:'Starlight Trail Art'}},storyBefore:'The path grows dim, but little numbers sparkle under the leaves. {name} curls close, ready to light the way.',storyAfter:'A bright magical tail swishes behind {name}. Every step leaves a tiny trail of starlight.',unlocks:'windy-cliffs'},
-  {id:'windy-cliffs',slug:'windy-cliffs',title:'Windy Cliffs',region:'Addition',lessonId:'add_3column',stage:6,asset:'stage-06-wide-wings.png',mapPosition:{side:'center',sceneHeight:560,nodeOffset:310,momo:{side:'right',offsetY:145},artwork:{src:null,position:'left',width:60,height:58,offsetX:0,offsetY:122,label:'Windy Cliffs Art'}},storyBefore:'Wind rushes around the cliffs. {name} spreads small wings and tries a brave little glide.',storyAfter:"{name}'s wings grow wide. They cannot cross the whole sky yet, but they can catch the wind.",unlocks:'great-chasm'},
-  {id:'great-chasm',slug:'great-chasm',title:'The Great Chasm',region:'Addition Finale',lessonId:'add_4column',stage:7,asset:'stage-07-addition-flight.png',majorEvolution:true,mapPosition:{side:'right',sceneHeight:740,nodeOffset:405,momo:{side:'center',offsetY:170},artwork:{src:null,position:'center',width:88,height:54,offsetX:0,offsetY:210,label:'Great Chasm Art'}},storyBefore:'The path suddenly ends. Far below, clouds twist through an enormous chasm. {name} looks at you, then at those wings.',storyAfter:"{name} takes one tiny step forward. Then she jumps. Her wings open wide. She's flying!",unlocks:'explorers-valley'},
-  {id:'explorers-valley',slug:'explorers-valley',title:"Explorer's Valley",region:'Subtraction',lessonId:'sub_1digit',stage:8,asset:'stage-08-backpack-explorer.png',mapPosition:{side:'left',sceneHeight:530,nodeOffset:292,momo:{side:'right',offsetY:126},artwork:{src:null,position:'right',width:60,height:48,offsetX:0,offsetY:130,label:"Explorer's Valley Art"}},storyBefore:'Across the chasm lies a valley full of winding tracks. {name} packs carefully, ready to explore with you.',storyAfter:'A brave explorer pack appears. {name} is learning how to carry courage.',unlocks:'crystal-caves'},
-  {id:'crystal-caves',slug:'crystal-caves',title:'Crystal Caves',region:'Subtraction',lessonId:'sub_2column',stage:9,asset:'stage-09-explorer-goggles.png',mapPosition:{side:'right',sceneHeight:580,nodeOffset:320,momo:{side:'center',offsetY:135},artwork:{src:null,position:'left',width:70,height:58,offsetX:0,offsetY:118,label:'Crystal Caves Art'}},storyBefore:'Crystal light bounces in every direction. {name} lowers her goggles and searches for the true path.',storyAfter:'The explorer goggles shine. Now {name} can spot the answer even when the cave sparkles try to trick her.',unlocks:'rune-ruins'},
-  {id:'rune-ruins',slug:'rune-ruins',title:'The Rune Ruins',region:'Subtraction',lessonId:'sub_2mental',stage:10,asset:'stage-10-magic-marks.png',mapPosition:{side:'center',sceneHeight:520,nodeOffset:285,momo:{side:'left',offsetY:122},artwork:{src:null,position:'right',width:60,height:50,offsetX:0,offsetY:126,label:'Rune Ruins Art'}},storyBefore:"Ancient runes hum in the stones. Some marks fade away; some marks wake up on {name}'s fur.",storyAfter:'Soft magic markings glow across {name}. The old ruins recognise your careful thinking.',unlocks:'enchanted-garden'},
-  {id:'enchanted-garden',slug:'enchanted-garden',title:'The Enchanted Garden',region:'Subtraction',lessonId:'sub_3column',stage:11,asset:'stage-11-flower-crown.png',mapPosition:{side:'left',sceneHeight:560,nodeOffset:310,momo:{side:'right',offsetY:130},artwork:{src:null,position:'center',width:78,height:50,offsetX:0,offsetY:128,label:'Enchanted Garden Art'}},storyBefore:'A garden blooms where every petal hides a missing number. {name} sniffs the flowers and smiles.',storyAfter:"A flower crown blossoms around {name}'s ears. The garden has chosen its little guardian.",unlocks:'guardian-gate'},
-  {id:'guardian-gate',slug:'guardian-gate',title:'The Guardian Gate',region:'Subtraction Finale',lessonId:'sub_4column',stage:12,asset:'stage-12-subtraction-guardian-light.png',majorEvolution:true,mapPosition:{side:'right',sceneHeight:720,nodeOffset:395,momo:{side:'center',offsetY:160},artwork:{src:null,position:'center',width:76,height:62,offsetX:0,offsetY:185,label:'Guardian Gate Art'}},storyBefore:"A sealed gate blocks the road. Explorer magic is not enough. {name}'s heart begins to glow.",storyAfter:"Guardian light bursts from {name}'s heart. The gate opens because you learned how to take away with care.",unlocks:'star-fields'},
-  {id:'star-fields',slug:'star-fields',title:'The Star Fields',region:'Multiplication',lessonId:'mul_1x1',stage:13,asset:'stage-13-star-cape.png',mapPosition:{side:'center',sceneHeight:540,nodeOffset:298,momo:{side:'left',offsetY:132},artwork:{src:null,position:'right',width:64,height:50,offsetX:0,offsetY:124,label:'Star Fields Art'}},storyBefore:'Beyond the gate, stars gather in neat little groups. {name} counts the groups with a thoughtful swish of her tail.',storyAfter:'A starry cape begins to shimmer. {name} can feel patterns forming in the sky.',unlocks:'celestial-heights'},
-  {id:'celestial-heights',slug:'celestial-heights',title:'The Celestial Heights',region:'Multiplication',lessonId:'mul_1x2',stage:14,asset:'stage-14-celestial-wings.png',mapPosition:{side:'left',sceneHeight:600,nodeOffset:330,momo:{side:'right',offsetY:150},artwork:{src:null,position:'center',width:82,height:54,offsetX:0,offsetY:148,label:'Celestial Heights Art'}},storyBefore:"The path rises into golden clouds. {name}'s wings stretch toward the bright heights above.",storyAfter:"Celestial armour gleams along {name}'s wings. She is ready for higher magic.",unlocks:'magicians-tower'},
-  {id:'magicians-tower',slug:'magicians-tower',title:"The Magician's Tower",region:'Multiplication Finale',lessonId:'mul_2x2',stage:15,asset:'stage-15-multiplication-mage.png',majorEvolution:true,mapPosition:{side:'right',sceneHeight:760,nodeOffset:418,momo:{side:'center',offsetY:178},artwork:{src:null,position:'left',width:56,height:72,offsetX:0,offsetY:145,label:"Magician's Tower Art"}},storyBefore:'An ancient tower waits in the clouds. Inside, every room is built from groups within groups.',storyAfter:"{name} emerges in a mage's hat and shining cloak. Multiplication has become magic she can wear.",unlocks:'arcane-library'},
-  {id:'arcane-library',slug:'arcane-library',title:'The Arcane Library',region:'Division',lessonId:'div_simple',stage:16,asset:'stage-16-arcane-master.png',mapPosition:{side:'left',sceneHeight:620,nodeOffset:340,momo:{side:'right',offsetY:150},artwork:{src:null,position:'center',width:76,height:60,offsetX:0,offsetY:150,label:'Arcane Library Art'}},storyBefore:'A floating spellbook opens by itself. Its pages ask how stars can be shared fairly.',storyAfter:'The spellbook floats beside {name}. She has learned that dividing can be generous magic.',unlocks:'heart-of-matemostri'},
-  {id:'heart-of-matemostri',slug:'heart-of-matemostri',title:'The Heart of Matemostri',region:'Division Finale',lessonId:'div_long',stage:17,asset:'stage-17-guardian-of-maths.png',majorEvolution:true,mapPosition:{side:'center',sceneHeight:840,nodeOffset:460,momo:{side:'right',offsetY:200},artwork:{src:null,position:'center',width:90,height:68,offsetX:0,offsetY:215,label:'Heart of Matemostri Art'}},storyBefore:'At the centre of Matemostri, every path glows at once. {name} opens the spellbook for the final lesson.',storyAfter:'The whole world lights up. {name} rises as the Guardian of Maths, and every lesson you shared shines inside her heart.'}
+  {id:'mysterious-egg',slug:'mysterious-egg',title:'The Mysterious Egg',region:'Awakening',lessonId:'add_1digit',stage:3,asset:'stage-03-hatched-friend.webp',mapPosition:{side:'center',sceneHeight:520,nodeOffset:285,momo:{side:'right',offsetY:118},artwork:{src:null,position:'center',width:72,height:42,offsetX:0,offsetY:128,label:'Mysterious Egg Art'}},storyBefore:'The egg glows when you come close. Its golden heart flickers, as if it knows your voice.',storyAfter:'The shell tumbles open. {name} blinks up at you, then gives a tiny happy squeak. Your journey has a friend now.',unlocks:'whispering-woods'},
+  {id:'whispering-woods',slug:'whispering-woods',title:'Whispering Woods',region:'Addition',lessonId:'add_2column',stage:4,asset:'stage-04-fluffy-ears.webp',mapPosition:{side:'left',sceneHeight:540,nodeOffset:300,momo:{side:'center',offsetY:115},artwork:{src:null,position:'right',width:58,height:52,offsetX:0,offsetY:130,label:'Whispering Woods Art'}},storyBefore:'The trees whisper in soft little sums. {name} tilts those huge ears and hears a hidden path.',storyAfter:"{name}'s ears fluff wide and bright. The woods are not confusing anymore; they are calling you onward.",unlocks:'starlight-trail'},
+  {id:'starlight-trail',slug:'starlight-trail',title:'Starlight Trail',region:'Addition',lessonId:'add_2mental',stage:5,asset:'stage-05-bright-tail.webp',mapPosition:{side:'right',sceneHeight:520,nodeOffset:285,momo:{side:'left',offsetY:128},artwork:{src:null,position:'left',width:62,height:48,offsetX:0,offsetY:118,label:'Starlight Trail Art'}},storyBefore:'The path grows dim, but little numbers sparkle under the leaves. {name} curls close, ready to light the way.',storyAfter:'A bright magical tail swishes behind {name}. Every step leaves a tiny trail of starlight.',unlocks:'windy-cliffs'},
+  {id:'windy-cliffs',slug:'windy-cliffs',title:'Windy Cliffs',region:'Addition',lessonId:'add_3column',stage:6,asset:'stage-06-wide-wings.webp',mapPosition:{side:'center',sceneHeight:560,nodeOffset:310,momo:{side:'right',offsetY:145},artwork:{src:null,position:'left',width:60,height:58,offsetX:0,offsetY:122,label:'Windy Cliffs Art'}},storyBefore:'Wind rushes around the cliffs. {name} spreads small wings and tries a brave little glide.',storyAfter:"{name}'s wings grow wide. They cannot cross the whole sky yet, but they can catch the wind.",unlocks:'great-chasm'},
+  {id:'great-chasm',slug:'great-chasm',title:'The Great Chasm',region:'Addition Finale',lessonId:'add_4column',stage:7,asset:'stage-07-addition-flight.webp',majorEvolution:true,mapPosition:{side:'right',sceneHeight:740,nodeOffset:405,momo:{side:'center',offsetY:170},artwork:{src:null,position:'center',width:88,height:54,offsetX:0,offsetY:210,label:'Great Chasm Art'}},storyBefore:'The path suddenly ends. Far below, clouds twist through an enormous chasm. {name} looks at you, then at those wings.',storyAfter:"{name} takes one tiny step forward. Then she jumps. Her wings open wide. She's flying!",unlocks:'explorers-valley'},
+  {id:'explorers-valley',slug:'explorers-valley',title:"Explorer's Valley",region:'Subtraction',lessonId:'sub_1digit',stage:8,asset:'stage-08-backpack-explorer.webp',mapPosition:{side:'left',sceneHeight:530,nodeOffset:292,momo:{side:'right',offsetY:126},artwork:{src:null,position:'right',width:60,height:48,offsetX:0,offsetY:130,label:"Explorer's Valley Art"}},storyBefore:'Across the chasm lies a valley full of winding tracks. {name} packs carefully, ready to explore with you.',storyAfter:'A brave explorer pack appears. {name} is learning how to carry courage.',unlocks:'crystal-caves'},
+  {id:'crystal-caves',slug:'crystal-caves',title:'Crystal Caves',region:'Subtraction',lessonId:'sub_2column',stage:9,asset:'stage-09-explorer-goggles.webp',mapPosition:{side:'right',sceneHeight:580,nodeOffset:320,momo:{side:'center',offsetY:135},artwork:{src:null,position:'left',width:70,height:58,offsetX:0,offsetY:118,label:'Crystal Caves Art'}},storyBefore:'Crystal light bounces in every direction. {name} lowers her goggles and searches for the true path.',storyAfter:'The explorer goggles shine. Now {name} can spot the answer even when the cave sparkles try to trick her.',unlocks:'rune-ruins'},
+  {id:'rune-ruins',slug:'rune-ruins',title:'The Rune Ruins',region:'Subtraction',lessonId:'sub_2mental',stage:10,asset:'stage-10-magic-marks.webp',mapPosition:{side:'center',sceneHeight:520,nodeOffset:285,momo:{side:'left',offsetY:122},artwork:{src:null,position:'right',width:60,height:50,offsetX:0,offsetY:126,label:'Rune Ruins Art'}},storyBefore:"Ancient runes hum in the stones. Some marks fade away; some marks wake up on {name}'s fur.",storyAfter:'Soft magic markings glow across {name}. The old ruins recognise your careful thinking.',unlocks:'enchanted-garden'},
+  {id:'enchanted-garden',slug:'enchanted-garden',title:'The Enchanted Garden',region:'Subtraction',lessonId:'sub_3column',stage:11,asset:'stage-11-flower-crown.webp',mapPosition:{side:'left',sceneHeight:560,nodeOffset:310,momo:{side:'right',offsetY:130},artwork:{src:null,position:'center',width:78,height:50,offsetX:0,offsetY:128,label:'Enchanted Garden Art'}},storyBefore:'A garden blooms where every petal hides a missing number. {name} sniffs the flowers and smiles.',storyAfter:"A flower crown blossoms around {name}'s ears. The garden has chosen its little guardian.",unlocks:'guardian-gate'},
+  {id:'guardian-gate',slug:'guardian-gate',title:'The Guardian Gate',region:'Subtraction Finale',lessonId:'sub_4column',stage:12,asset:'stage-12-subtraction-guardian-light.webp',majorEvolution:true,mapPosition:{side:'right',sceneHeight:720,nodeOffset:395,momo:{side:'center',offsetY:160},artwork:{src:null,position:'center',width:76,height:62,offsetX:0,offsetY:185,label:'Guardian Gate Art'}},storyBefore:"A sealed gate blocks the road. Explorer magic is not enough. {name}'s heart begins to glow.",storyAfter:"Guardian light bursts from {name}'s heart. The gate opens because you learned how to take away with care.",unlocks:'star-fields'},
+  {id:'star-fields',slug:'star-fields',title:'The Star Fields',region:'Multiplication',lessonId:'mul_1x1',stage:13,asset:'stage-13-star-cape.webp',mapPosition:{side:'center',sceneHeight:540,nodeOffset:298,momo:{side:'left',offsetY:132},artwork:{src:null,position:'right',width:64,height:50,offsetX:0,offsetY:124,label:'Star Fields Art'}},storyBefore:'Beyond the gate, stars gather in neat little groups. {name} counts the groups with a thoughtful swish of her tail.',storyAfter:'A starry cape begins to shimmer. {name} can feel patterns forming in the sky.',unlocks:'celestial-heights'},
+  {id:'celestial-heights',slug:'celestial-heights',title:'The Celestial Heights',region:'Multiplication',lessonId:'mul_1x2',stage:14,asset:'stage-14-celestial-wings.webp',mapPosition:{side:'left',sceneHeight:600,nodeOffset:330,momo:{side:'right',offsetY:150},artwork:{src:null,position:'center',width:82,height:54,offsetX:0,offsetY:148,label:'Celestial Heights Art'}},storyBefore:"The path rises into golden clouds. {name}'s wings stretch toward the bright heights above.",storyAfter:"Celestial armour gleams along {name}'s wings. She is ready for higher magic.",unlocks:'magicians-tower'},
+  {id:'magicians-tower',slug:'magicians-tower',title:"The Magician's Tower",region:'Multiplication Finale',lessonId:'mul_2x2',stage:15,asset:'stage-15-multiplication-mage.webp',majorEvolution:true,mapPosition:{side:'right',sceneHeight:760,nodeOffset:418,momo:{side:'center',offsetY:178},artwork:{src:null,position:'left',width:56,height:72,offsetX:0,offsetY:145,label:"Magician's Tower Art"}},storyBefore:'An ancient tower waits in the clouds. Inside, every room is built from groups within groups.',storyAfter:"{name} emerges in a mage's hat and shining cloak. Multiplication has become magic she can wear.",unlocks:'arcane-library'},
+  {id:'arcane-library',slug:'arcane-library',title:'The Arcane Library',region:'Division',lessonId:'div_simple',stage:16,asset:'stage-16-arcane-master.webp',mapPosition:{side:'left',sceneHeight:620,nodeOffset:340,momo:{side:'right',offsetY:150},artwork:{src:null,position:'center',width:76,height:60,offsetX:0,offsetY:150,label:'Arcane Library Art'}},storyBefore:'A floating spellbook opens by itself. Its pages ask how stars can be shared fairly.',storyAfter:'The spellbook floats beside {name}. She has learned that dividing can be generous magic.',unlocks:'heart-of-matemostri'},
+  {id:'heart-of-matemostri',slug:'heart-of-matemostri',title:'The Heart of Matemostri',region:'Division Finale',lessonId:'div_long',stage:17,asset:'stage-17-guardian-of-maths.webp',majorEvolution:true,mapPosition:{side:'center',sceneHeight:840,nodeOffset:460,momo:{side:'right',offsetY:200},artwork:{src:null,position:'center',width:90,height:68,offsetX:0,offsetY:215,label:'Heart of Matemostri Art'}},storyBefore:'At the centre of Matemostri, every path glows at once. {name} opens the spellbook for the final lesson.',storyAfter:'The whole world lights up. {name} rises as the Guardian of Maths, and every lesson you shared shines inside her heart.'}
 ];
+/* The painted map, in sections, top to bottom. Each panel is 1024 wide on the canvas in
+   docs/MAP_ART_SPEC.json and is cut on a scene boundary, so they stack with no seam and
+   no gaps. Add the next one here and it appears under the next stretch of the path. */
+const MAP_ART_PANELS=[
+  {src:'assets/map/map-panel-1a.webp',scenes:'The Mysterious Egg, Whispering Woods',canvasHeight:2536},
+  {src:'assets/map/map-panel-1b.webp',scenes:'Starlight Trail, Windy Cliffs',canvasHeight:2584},
+  {src:'assets/map/map-panel-2a.webp',scenes:"The Great Chasm, Explorer's Valley",canvasHeight:3039},
+  {src:'assets/map/map-panel-2b.webp',scenes:'Crystal Caves, The Rune Ruins',canvasHeight:2631},
+  {src:'assets/map/map-panel-3a.webp',scenes:'The Enchanted Garden, The Guardian Gate',canvasHeight:3063},
+  {src:'assets/map/map-panel-3b.webp',scenes:'The Star Fields, The Celestial Heights',canvasHeight:2727},
+  {src:'assets/map/map-panel-4a.webp',scenes:"The Magician's Tower, The Arcane Library",canvasHeight:3302},
+  {src:'assets/map/map-panel-4b.webp',scenes:'The Heart of Matemostri',canvasHeight:2010}
+];
+/* The painted map was drawn for a 428px content box: 1024 canvas px across, 21892 down,
+   which is exactly the scene heights below added up. The art scales with the width of the
+   map, so the scenes have to as well, or the path and the painting drift apart on any
+   narrower screen. Everything the map lays out is measured in these scaled pixels. */
+const MAP_ART_CSS_WIDTH=428;
+const mapArtScale=width=>(width>0?width:MAP_ART_CSS_WIDTH)/MAP_ART_CSS_WIDTH;
 const NODE_BY_LESSON=id=>PROGRESSION_NODES.find(n=>n.lessonId===id);
 const EVOLUTIONS=[
   {completed:0,art:1,title:'Magical Egg',message:'A warm golden heart glows inside the egg.'},
@@ -633,11 +657,13 @@ const artForCount=count=>evolutionForCount(count).art;
 function storyProgressOf(p){ if(!p.storyProgress||typeof p.storyProgress!=='object') p.storyProgress={}; if(p.storyProgress.firstCrackSeen===undefined) p.storyProgress.firstCrackSeen=false; if(!p.storyProgress.mapSeen||typeof p.storyProgress.mapSeen!=='object') p.storyProgress.mapSeen={}; return p.storyProgress; }
 function artForPlayer(p){ const count=completedCount(p); return count===0&&storyProgressOf(p).firstCrackSeen?2:artForCount(count); }
 function mapSideX(side){ return side==='left'?29:side==='right'?71:50; }
-function mapSceneLayout(){
+function mapSceneLayout(mapWidth){
+  const scale=mapArtScale(mapWidth);
   let top=0;
   return PROGRESSION_NODES.map(node=>{
-    const pos=node.mapPosition||{},height=pos.sceneHeight||660,y=top+(pos.nodeOffset||Math.round(height*.55));
-    const layout={node:node,top:top,height:height,y:y,x:mapSideX(pos.side),pos:pos};
+    const pos=node.mapPosition||{},height=Math.round((pos.sceneHeight||660)*scale);
+    const y=top+Math.round((pos.nodeOffset||Math.round((pos.sceneHeight||660)*.55))*scale);
+    const layout={node:node,top:top,height:height,y:y,x:mapSideX(pos.side),pos:pos,scale:scale};
     top+=height;
     return layout;
   });
@@ -1154,9 +1180,9 @@ const esc=s=>String(s).replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[
 function show(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on')); $(id).classList.add('on'); try{window.scrollTo(0,0)}catch(e){} }
 
 const STORY_SCENES=[
-  {image:'assets/story/find-egg.png',alt:'A child discovers a glowing magical egg in the woods',title:'A magical egg!',text:'While walking through the woods, you find a mysterious egg glowing beneath the leaves.'},
-  {image:'assets/story/take-home.png',alt:'A child makes a warm, cosy nest for a magical egg',title:'A new friend',text:'You take the egg home and make it warm and cosy. {name} gives a tiny, happy wiggle.'},
-  {image:'assets/story/magic-maths.png',alt:'A magical friend glows beside a child solving a maths problem',title:'Magic maths',text:'{name} has magic inside. Every maths lesson will help your new friend grow.'}
+  {image:'assets/story/find-egg.webp',alt:'A child discovers a glowing magical egg in the woods',title:'A magical egg!',text:'While walking through the woods, you find a mysterious egg glowing beneath the leaves.'},
+  {image:'assets/story/take-home.webp',alt:'A child makes a warm, cosy nest for a magical egg',title:'A new friend',text:'You take the egg home and make it warm and cosy. {name} gives a tiny, happy wiggle.'},
+  {image:'assets/story/magic-maths.webp',alt:'A magical friend glows beside a child solving a maths problem',title:'Magic maths',text:'{name} has magic inside. Every maths lesson will help your new friend grow.'}
 ];
 let storyStep=0;
 function captureFriendName(){ if(!P) return; const value=$('friendName').value.trim(); P.momoName=value||'Momo'; $('friendName').value=P.momoName; }
@@ -1209,10 +1235,11 @@ function renderMenu(){
   $('menuTitle').textContent=petName()+"'s enchanted journey";
   $('menuProgress').textContent=count+' of '+MATH_STAGES.length+' lessons lit';
   $('mapIntro').textContent=count===MATH_STAGES.length?'Every path is glowing. Practise any stop to find treasures.':'Where are '+petName()+' and you going next?';
-  const layouts=mapSceneLayout(),mapHeight=layouts.reduce((n,l)=>n+l.height,0);
+  const layouts=mapSceneLayout(L.clientWidth),mapHeight=layouts.reduce((n,l)=>n+l.height,0);
   L.style.setProperty('--map-height',mapHeight+'px');
   L.classList.toggle('show-art-debug',!!DB.mapArtDebug);
-  L.innerHTML='<svg class="adventure-path" aria-hidden="true" viewBox="0 0 100 '+mapHeight+'" preserveAspectRatio="none"><path class="path-glow" d="'+mapPathD(layouts)+'"></path><path d="'+mapPathD(layouts)+'"></path></svg>';
+  L.innerHTML='<div class="map-art" aria-hidden="true">'+MAP_ART_PANELS.map(p=>'<img src="'+p.src+'" alt="" loading="lazy">').join('')+'</div>'+
+    '<svg class="adventure-path" aria-hidden="true" viewBox="0 0 100 '+mapHeight+'" preserveAspectRatio="none"><path class="path-glow" d="'+mapPathD(layouts)+'"></path><path d="'+mapPathD(layouts)+'"></path></svg>';
   const currentIndex=Math.min(count,PROGRESSION_NODES.length-1);
   layouts.forEach((layout,i)=>{
     const node=layout.node,pos=layout.pos,artwork=pos.artwork||{};
@@ -1224,7 +1251,7 @@ function renderMenu(){
     const slot=document.createElement('div'),artX=mapSideX(artwork.position||'center')+(Number(artwork.offsetX)||0);
     slot.className='scene-art-slot'+(artwork.src?' has-art':'');
     slot.style.setProperty('--art-left',artX+'%');
-    slot.style.setProperty('--art-top',(Number(artwork.offsetY)||120)+'px');
+    slot.style.setProperty('--art-top',Math.round((Number(artwork.offsetY)||120)*layout.scale)+'px');
     slot.style.setProperty('--art-width',(Number(artwork.width)||62)+'%');
     slot.style.setProperty('--art-height',Math.round(layout.height*((Number(artwork.height)||50)/100))+'px');
     slot.style.transform='translateX(-50%)';
@@ -1248,7 +1275,7 @@ function renderMenu(){
     const marker=document.createElement('div');
     marker.className='map-momo';
     marker.style.left=mapSideX(momo.side||'center')+'%';
-    marker.style.top=(current.top+(Number(momo.offsetY)||120))+'px';
+    marker.style.top=(current.top+Math.round((Number(momo.offsetY)||120)*current.scale))+'px';
     marker.innerHTML=monsterMarkup(P.monsterStage,'curious','bob',petName()+' travelling');
     L.appendChild(marker);
   }
@@ -1870,16 +1897,24 @@ $('saveNew').onclick=()=>{
   renderPlayers(); openStory();
 };
 $('switchPlayer').onclick=()=>{ renderPlayers(); show('s-players'); };
-$('playBtn').onclick=()=>{ renderMenu(); show('s-menu'); };
+$('playBtn').onclick=()=>{ show('s-menu'); renderMenu(); };
 $('menuBack').onclick=()=>{ renderHome(); show('s-home'); };
-$('nodeBack').onclick=()=>{ renderMenu(); show('s-menu'); };
+/* scene heights follow the width of the map now, so a turned phone needs a fresh layout
+   or the path would sit where the painting used to be */
+let mapResizeTimer=null;
+window.addEventListener('resize',()=>{
+  if(!P||!$('s-menu').classList.contains('on')) return;
+  clearTimeout(mapResizeTimer);
+  mapResizeTimer=setTimeout(renderMenu,150);
+});
+$('nodeBack').onclick=()=>{ show('s-menu'); renderMenu(); };
 $('nodeStart').onclick=()=>{ if(selectedMapNode) startSession(selectedMapNode.lessonId); };
 $('setBtn').onclick=()=>{ renderSettings(); show('s-set'); };
 $('setFriendName').onchange=()=>{ captureSettingsName(); renderSettings(); };
 $('setBack').onclick=()=>{ captureSettingsName(); renderHome(); show('s-home'); };
 $('quitPlay').onclick=()=>{ save(); renderHome(); show('s-home'); };
 $('crackContinue').onclick=()=>{ sTap(); show('s-play'); nextQuestion(); };
-$('againBtn').onclick=()=>{ renderMenu(); show('s-menu'); };
+$('againBtn').onclick=()=>{ show('s-menu'); renderMenu(); };
 $('endHome').onclick=()=>{ if(lastSessionStageId) startSession(lastSessionStageId); };
 $('luOk').onclick=()=>{ $('lvUp').classList.remove('on'); };
 $('unlockOk').onclick=()=>{
@@ -1908,7 +1943,7 @@ let devTaps=0,devTapTimer=null;
 $('homeWho').onclick=()=>{ clearTimeout(devTapTimer); devTaps++; if(devTaps>=7){ devTaps=0; openDeveloper(); return; } devTapTimer=setTimeout(()=>devTaps=0,2200); };
 $('devBack').onclick=()=>{ renderHome(); show('s-home'); };
 $('devJump').onclick=()=>{
-  const index=Number($('devLesson').value); P.stageProgress=progressFromCount(index); delete P.devMonsterOverride; P.monsterStage=artForPlayer(P); save(); renderMenu(); show('s-menu');
+  const index=Number($('devLesson').value); P.stageProgress=progressFromCount(index); delete P.devMonsterOverride; P.monsterStage=artForPlayer(P); save(); show('s-menu'); renderMenu();
 };
 $('devUnlockLessons').onclick=()=>{ P.stageProgress=progressFromCount(MATH_STAGES.length); delete P.devMonsterOverride; P.monsterStage=artForPlayer(P); save(); renderDeveloper(); sLvl(); };
 $('devUnlockCollectibles').onclick=()=>{ COLLECTIBLES.forEach(c=>P.collectibles[c.id]=5); P.accessories=COSMETIC_REWARDS.map(a=>a.id); save(); renderDeveloper(); sLvl(); };
