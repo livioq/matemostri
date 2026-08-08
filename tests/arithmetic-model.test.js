@@ -633,10 +633,14 @@ assert.equal(/\bGROUPS\b/.test(source.replace(/STAGE_GROUPS/g, '')), false,
 
 // the old lesson tabs have been replaced by the adventure map
 const menuSource = functionSource('renderMenu');
-assert.match(menuSource, /PROGRESSION_NODES\.forEach/,
-  'the journey menu is driven by the canonical story map nodes');
+assert.match(menuSource, /mapSceneLayout\(\)/,
+  'the journey menu is driven by calculated story-map scene layouts');
 assert.match(menuSource, /map-location/,
   'the journey menu renders adventure map locations rather than tab-like lesson rows');
+assert.match(menuSource, /scene-art-slot/,
+  'the map reserves configurable artwork slots for future illustrated scenery');
+assert.match(menuSource, /map-momo/,
+  'the current Momo sprite is placed on the map layer near the current scene');
 assert.match(source,
   /\$\('againBtn'\)\.onclick=\(\)=>\{ renderMenu\(\); show\('s-menu'\); \};/,
   'Continue Adventure returns to the map after the result screen');
@@ -685,6 +689,16 @@ assert.equal(saveContext.nodes.length, lessonTotal,
   'every maths lesson has one adventure map node');
 assert.deepEqual(plain(saveContext.nodes.map(node => node.lessonId)), plain(saveContext.stages.map(stage => stage.id)),
   'map nodes preserve the exact maths lesson order');
+saveContext.nodes.forEach(node => {
+  assert.ok(node.mapPosition.sceneHeight >= 500, `${node.title} has its own large vertical scene`);
+  assert.ok(['left', 'center', 'right'].includes(node.mapPosition.side), `${node.title} has a configured path side`);
+  assert.ok(node.mapPosition.artwork && node.mapPosition.artwork.src === null, `${node.title} reserves a future art slot`);
+});
+saveContext.nodes.filter(node => node.majorEvolution).forEach(node => {
+  assert.ok(node.mapPosition.sceneHeight >= 720, `${node.title} has extra space as a major landmark`);
+});
+assert.ok(saveContext.nodes.reduce((sum, node) => sum + node.mapPosition.sceneHeight, 0) > 9000,
+  'the adventure map is intentionally tall enough to explore by scrolling');
 const finalEvolution = plain(saveContext.evolutions).at(-1);
 assert.equal(finalEvolution.completed, lessonTotal,
   'becoming a Guardian of Maths needs every lesson, not all but one');

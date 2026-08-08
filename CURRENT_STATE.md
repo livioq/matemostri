@@ -110,6 +110,11 @@ Map behaviour:
 - Completed locations are bright/visited and replayable.
 - The current location pulses with a clear “Continue here” affordance.
 - Future locations remain visible but dimmed/locked.
+- Map layout is scene-based. Each `PROGRESSION_NODES` entry owns a large vertical scene through `mapPosition.sceneHeight`, `mapPosition.nodeOffset`, `mapPosition.side`, and reserved `mapPosition.artwork` metadata.
+- Ordinary scenes are at least 500px tall; major landmarks are at least 720px tall. The current total map height is over 9,000px, so the journey is meant to be explored by scrolling.
+- The winding path is drawn as an SVG curve through calculated node coordinates rather than stretched as a single vertical line.
+- Future scenery is reserved through invisible/subtle art slots. Placeholder labels are only shown when `DB.mapArtDebug` is enabled from the hidden developer spellbook.
+- The current Momo sprite is placed on a separate configurable map layer near the current scene.
 - Tapping an unlocked node opens a short story card, then starts the existing maths lesson.
 - Completing a lesson shows the result/evolution, then `Continue Adventure` returns to the map.
 - `Practise Again` replays the same lesson and does not advance story.

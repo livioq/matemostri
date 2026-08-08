@@ -30,6 +30,27 @@ Stage 2, First Crack, is not a map location. It is an intermediate story state d
 | 14 | The Arcane Library | Simple division | Stage 16, Arcane Master | Division begins with a floating spellbook and fair sharing. |
 | 15 | The Heart of Matemostri | Long division | Stage 17, Guardian of Maths | Final major evolution: the whole journey pays off. |
 
+## Layout Contract
+
+The adventure map is intentionally tall on mobile. It should feel like travelling through large scenes, not tapping a compressed list of lessons.
+
+Each `PROGRESSION_NODES` entry owns layout metadata:
+
+- `mapPosition.side`: places the lesson node on the left, centre, or right of the winding path.
+- `mapPosition.sceneHeight`: reserves vertical room for the scene.
+- `mapPosition.nodeOffset`: places the lesson node within that scene.
+- `mapPosition.momo`: reserves a nearby position for the current Momo sprite.
+- `mapPosition.artwork`: reserves a future scenery-art slot with `src`, `position`, `width`, `height`, `offsetX`, `offsetY`, and `label`.
+
+Production currently keeps empty art slots subtle. The hidden developer spellbook has a “Show map art slots” toggle that displays labels like `[GREAT CHASM ART]` for layout debugging.
+
+Current major landmarks receive extra space:
+
+- The Great Chasm
+- The Guardian Gate
+- The Magician's Tower
+- The Heart of Matemostri
+
 ## Stage 2 Special Beat
 
 During the first lesson, after question 5:
