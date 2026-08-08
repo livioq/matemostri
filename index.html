@@ -532,8 +532,8 @@ const MONSTER_PALETTES=[
 const MONSTER_SLUGS=['egg','cracked-egg','hatchling','fluffy-ears','pink-cheeks','bright-tail','tiny-wings','scarf','backpack','goggles','pencil-wand','magic-marks','flower-crown','explorer','guardian-light','star-cape','guardian-of-maths','apprentice-guardian','young-guardian','royal-guardian'];
 const MONSTER_STAGES=MONSTER_SLUGS.map((slug,i)=>({
   id:'stage-'+String(i+1).padStart(2,'0'),minLevel:i+1,maxLevel:i+1,name:PET_NAMES[i],
-  group:i<2?'Egg & hatchling':i<6?'Toddler':i<12?'Explorer':i<18?'Companion':'Guardian',image:'assets/monsters/stage-'+String(i+1).padStart(2,'0')+'-'+slug+(i<15?'.png':'.webp'),
-  palette:MONSTER_PALETTES[i],fallback:i===0?'egg':'momo',assetReady:i<15
+  group:i<2?'Egg & hatchling':i<6?'Toddler':i<12?'Explorer':i<18?'Companion':'Guardian',image:'assets/monsters/stage-'+String(i+1).padStart(2,'0')+'-'+slug+(i<16?'.png':'.webp'),
+  palette:MONSTER_PALETTES[i],fallback:i===0?'egg':'momo',assetReady:i<16
 }));
 const MONSTER_EXPRESSIONS={idle:'happy',beforeQuestion:'curious',correct:'excited',streak:'proud',hint:'thinking',wrong:'surprised',inactive:'sleepy',levelUp:'love'};
 const PRAISE=['Correct!','Nice one.',"Yes, that's it.",'Spot on.','Exactly.','Well worked out.'];
