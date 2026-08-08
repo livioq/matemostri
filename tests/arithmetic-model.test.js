@@ -699,9 +699,17 @@ assert.deepEqual(plain(saveContext.evolutions).map(step => [step.completed, step
   [14, 16, 'Star Cape'],
   [15, 17, 'Guardian of Maths']
 ], 'the visible evolution path matches the lesson milestones');
-['stage-05-pink-cheeks.png', 'stage-06-bright-tail.png'].forEach(file => {
+[
+  'stage-05-pink-cheeks.png',
+  'stage-06-bright-tail.png',
+  'stage-07-tiny-wings.png',
+  'stage-08-scarf.png',
+  'stage-09-backpack.png',
+  'stage-10-goggles.png',
+  'stage-11-pencil-wand.png'
+].forEach(file => {
   assert.equal(fs.existsSync(path.join(__dirname, '..', 'assets', 'monsters', file)), true,
-    `${file} exists for the early addition path`);
+    `${file} exists for the ready monster art path`);
 });
 plain(saveContext.evolutions).forEach(step => {
   assert.ok(step.completed <= lessonTotal, `the ${step.title} milestone is reachable`);
