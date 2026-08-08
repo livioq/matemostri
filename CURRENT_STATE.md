@@ -7,10 +7,13 @@ This is the authoritative current-state document for this working tree. It is ba
 ## Repository State
 
 - Repository: `livioq/matemostri`
-- Working branch: `fix/cracked-egg-visual`
-- Current implementation: full single-file game in `index.html`
-- Important repository issue verified: older history contains a placeholder `index.html` on `origin/main`; this branch contains the complete working game build and is the correct source for progression changes.
-- Stable engine preserved: arithmetic generation, column-working UI, long multiplication, long division, profiles, saves, custom Momo names, collectibles, settings, hints, sounds, and developer tools remain in the same app.
+- Current implementation: full single-file game in `index.html`, ~1969 lines
+- `origin/main` carries the complete working game. The older note in this
+  document about `main` holding only a placeholder no longer applies; the
+  adventure-map work and everything since has been merged there.
+- Stable engine preserved: arithmetic generation, column-working UI, long
+  multiplication, long division, profiles, saves, custom Momo names,
+  collectibles, settings, hints, sounds, and developer tools.
 
 ## Current Maths Progression
 
@@ -45,29 +48,37 @@ Long division uses a single-digit divisor into a multi-digit dividend. The divid
 
 ## Evolution and Story Audit
 
-The intended production progression is now 17 stages. Stage 2 is a special intermediate state during the first lesson, not a normal map destination. The artwork was audited before renaming; several old filenames/slugs no longer matched what the art actually showed.
+The production progression is 17 stages. Stage 2 is a special intermediate
+state during the first lesson, not a map destination.
 
-| Stage | Previous code ID / slug | Previous display name | Previous image | Actual visual content | Trigger | Type | Major? | Previous name matched art? | Final canonical ID | Final canonical filename |
-|---:|---|---|---|---|---|---|---|---|---|---|
-| 1 | `stage-01` / `egg` | Magical Egg | `stage-01-egg.png` | Glowing purple-pink magical egg with golden heart | New player / 0 lessons | Starting state | No | Mostly | `magical-egg` | `stage-01-magical-egg.png` |
-| 2 | `stage-02` / `cracked-egg` | First Crack | `stage-02-cracked-egg.png` | Cracked magical egg | 4 mastered answers after first 5 questions in `add_1digit` | Intermediate | No | Yes | `first-crack` | `stage-02-first-crack.png` |
-| 3 | `stage-03` / `hatchling` | Hatched Friend | `stage-03-hatchling.png` | Hatchling just out of shell | Complete `add_1digit` | Lesson completion | No | Mostly | `hatched-friend` | `stage-03-hatched-friend.png` |
-| 4 | `stage-04` / `fluffy-ears` | Fluffy Ears | `stage-04-fluffy-ears.png` | Young Momo with large fluffy ears | Complete `add_2column` | Lesson completion | No | Yes | `fluffy-ears` | `stage-04-fluffy-ears.png` |
-| 5 | `stage-05` / `pink-cheeks` | Bright Tail | `stage-05-pink-cheeks.png` | Momo with bright magical tail and small wings | Complete `add_2mental` | Lesson completion | No | No | `bright-tail` | `stage-05-bright-tail.png` |
-| 6 | `stage-06` / `bright-tail` | Wide Wings | `stage-06-bright-tail.png` | Momo with much wider wings and glowing tail | Complete `add_3column` | Lesson completion | No | No | `wide-wings` | `stage-06-wide-wings.png` |
-| 7 | `stage-07` / `tiny-wings` | Addition Flight | `stage-07-tiny-wings.png` | Flying Momo with large wings | Complete `add_4column` / Addition finale | Lesson completion | Yes | No | `addition-flight` | `stage-07-addition-flight.png` |
-| 8 | `stage-08` / `scarf` | Backpack Explorer | `stage-08-scarf.png` | Explorer Momo with backpack, magnifier, coins | Complete `sub_1digit` | Lesson completion | No | No | `backpack-explorer` | `stage-08-backpack-explorer.png` |
-| 9 | `stage-09` / `backpack` | Explorer Goggles | `stage-09-backpack.png` | Explorer Momo with goggles, backpack, pencil | Complete `sub_2column` | Lesson completion | No | No | `explorer-goggles` | `stage-09-explorer-goggles.png` |
-| 10 | `stage-10` / `goggles` | Magic Marks | `stage-10-goggles.png` | Momo with goggles, staff, backpack and glowing body marks | Complete `sub_2mental` | Lesson completion | No | No | `magic-marks` | `stage-10-magic-marks.png` |
-| 11 | `stage-11` / `pencil-wand` | Flower Crown | `stage-11-pencil-wand.png` | Momo with flower crown, goggles, satchel and star wand | Complete `sub_3column` | Lesson completion | No | No | `flower-crown` | `stage-11-flower-crown.png` |
-| 12 | `stage-12` / `magic-marks` | Subtraction Guardian Light | `stage-12-magic-marks.png` | Armoured/light guardian form with cloak, staff and celestial wings | Complete `sub_4column` / Subtraction finale | Lesson completion | Yes | No | `subtraction-guardian-light` | `stage-12-subtraction-guardian-light.png` |
-| 13 | `stage-13` / `flower-crown` | Star Cape | `stage-13-flower-crown.png` | Starry caped Momo with wand and explorer satchel | Complete `mul_1x1` | Lesson completion | No | No | `star-cape` | `stage-13-star-cape.png` |
-| 14 | `stage-14` / `explorer` | Celestial Wings | `stage-14-explorer.png` | Larger celestial/armoured wings with purple-gold cape and staff | Complete `mul_1x2` | Lesson completion | No | No | `celestial-wings` | `stage-14-celestial-wings.png` |
-| 15 | `stage-15` / `guardian-light` | Multiplication Mage | `stage-15-guardian-light.png` | Wizard/mage Momo with hat, cloak, staff and large wings | Complete `mul_2x2` / Multiplication finale | Lesson completion | Yes | No | `multiplication-mage` | `stage-15-multiplication-mage.png` |
-| 16 | `stage-16` / `star-cape` | Arcane Master | `stage-16-star-cape.png` | Mage Momo with floating spellbook | Complete `div_simple` | Lesson completion | No | No | `arcane-master` | `stage-16-arcane-master.png` |
-| 17 | `stage-17` / `guardian-of-maths` | Guardian of Maths | `stage-17-guardian-of-maths.png` | Final grand mage/guardian form with book, staff, vast wings and flowing magic | Complete `div_long` / Division finale | Lesson completion | Yes | Yes | `guardian-of-maths` | `stage-17-guardian-of-maths.png` |
+The artwork was audited and renamed once, because several old filenames and
+slugs described art they no longer matched: the file called `bright-tail`
+showed wide wings, `goggles` showed glowing body marks, and so on. Every id,
+slug and filename now describes what the picture actually shows. The old
+names are in git history and are not repeated here.
 
-Final major evolutions are stages 7, 12, 15, and 17.
+| Stage | Momo | Trigger | Major? | File in `assets/monsters` |
+|---:|---|---|---|---|
+| 1 | Magical Egg | New player, 0 lessons | No | `stage-01-magical-egg.webp` |
+| 2 | First Crack | 4 mastered in the first 5 questions of `add_1digit` | No | `stage-02-first-crack.webp` |
+| 3 | Hatched Friend | Complete `add_1digit` | No | `stage-03-hatched-friend.webp` |
+| 4 | Fluffy Ears | Complete `add_2column` | No | `stage-04-fluffy-ears.webp` |
+| 5 | Bright Tail | Complete `add_2mental` | No | `stage-05-bright-tail.webp` |
+| 6 | Wide Wings | Complete `add_3column` | No | `stage-06-wide-wings.webp` |
+| 7 | Addition Flight | Complete `add_4column`, addition finale | **Yes** | `stage-07-addition-flight.webp` |
+| 8 | Backpack Explorer | Complete `sub_1digit` | No | `stage-08-backpack-explorer.webp` |
+| 9 | Explorer Goggles | Complete `sub_2column` | No | `stage-09-explorer-goggles.webp` |
+| 10 | Magic Marks | Complete `sub_2mental` | No | `stage-10-magic-marks.webp` |
+| 11 | Flower Crown | Complete `sub_3column` | No | `stage-11-flower-crown.webp` |
+| 12 | Subtraction Guardian Light | Complete `sub_4column`, subtraction finale | **Yes** | `stage-12-subtraction-guardian-light.webp` |
+| 13 | Star Cape | Complete `mul_1x1` | No | `stage-13-star-cape.webp` |
+| 14 | Celestial Wings | Complete `mul_1x2` | No | `stage-14-celestial-wings.webp` |
+| 15 | Multiplication Mage | Complete `mul_2x2`, multiplication finale | **Yes** | `stage-15-multiplication-mage.webp` |
+| 16 | Arcane Master | Complete `div_simple` | No | `stage-16-arcane-master.webp` |
+| 17 | Guardian of Maths | Complete `div_long`, division finale | **Yes** | `stage-17-guardian-of-maths.webp` |
+
+Major evolutions are stages 7, 12, 15 and 17. `EVOLUTION_ROADMAP.md` carries
+the same table generated straight from the data.
 
 ## First Crack Milestone
 
@@ -110,10 +121,13 @@ Map behaviour:
 - Completed locations are bright/visited and replayable.
 - The current location pulses with a clear “Continue here” affordance.
 - Future locations remain visible but dimmed/locked.
-- Map layout is scene-based. Each `PROGRESSION_NODES` entry owns a large vertical scene through `mapPosition.sceneHeight`, `mapPosition.nodeOffset`, `mapPosition.side`, and reserved `mapPosition.artwork` metadata.
-- Ordinary scenes are at least 500px tall; major landmarks are at least 720px tall. The current total map height is over 9,000px, so the journey is meant to be explored by scrolling.
+- Map layout is scene-based. Each `PROGRESSION_NODES` entry owns a large vertical scene through `mapPosition.sceneHeight`, `mapPosition.nodeOffset`, `mapPosition.side`, and `mapPosition.artwork` metadata.
+- Scene sizes are written in the units the painted map was drawn in, which are measured against a 428px content box: 520px for an ordinary scene up to 840px for the largest landmark, 9150px for the whole map. Every one of them, plus node and Momo offsets, is multiplied by `mapWidth / 428` at layout time, so the map is 6798px tall on a 360px phone and the painting and the path stay locked together. Without that scaling they drift apart by a quarter of the map's length.
+- `renderMenu` must therefore run after `show('s-menu')`. A hidden element measures 0, which silently collapses the layout back to unscaled heights while the art scales down.
+- A resize listener re-lays the map out, so turning the phone does not leave the path where the painting used to be.
 - The winding path is drawn as an SVG curve through calculated node coordinates rather than stretched as a single vertical line.
-- Future scenery is reserved through invisible/subtle art slots. Placeholder labels are only shown when `DB.mapArtDebug` is enabled from the hidden developer spellbook.
+- The map is painted. Eight sections in `assets/map`, listed in `MAP_ART_PANELS`, stack as a full-bleed layer under the path and nodes. Each is 1024 canvas px wide and cut on a scene boundary, and together they are exactly the 21892px canvas in `docs/MAP_ART_SPEC.json`, covering all 15 scenes.
+- The per-scene `mapPosition.artwork` slots are a separate, still-unused mechanism for positioned cut-out scenery. Their placeholder labels show only when `DB.mapArtDebug` is enabled from the hidden developer spellbook.
 - The current Momo sprite is placed on a separate configurable map layer near the current scene.
 - Tapping an unlocked node opens a short story card, then starts the existing maths lesson.
 - Completing a lesson shows the result/evolution, then `Continue Adventure` returns to the map.
@@ -133,27 +147,60 @@ Map behaviour:
 
 ## Asset State
 
-Production monster artwork now exists for all 17 intended stages and is preferred over SVG fallback. `monsterMarkup` still keeps the inline SVG fallback if an image fails to load.
+Everything in `assets` is WebP. No PNG remains, and a test fails if one
+appears there or is referenced from `index.html`. Art arrives as PNG and is
+converted on the way in; a re-encode is not a redesign, and the pictures
+themselves are untouched.
 
-Known dimensions from current files:
+| Group | Files | Size |
+|---|---:|---:|
+| `assets/monsters` — the 17 stages | 17 | 5.2 MB |
+| `assets/map` — the 8 painted sections | 8 | 3.4 MB |
+| `assets/story` + `assets/ui` | 4 | 180 KB |
+| **total** | | **8.8 MB**, from 40 MB of PNG |
 
-- Stages 1-17 are PNG production assets.
-- Stages 1 and 3-17 are 1024×1024 PNGs after the recent replacements/additions.
-- Stage 2 is also 1024×1024 PNG.
-- Current ready artwork uses alpha where available; the image fallback path remains safe.
-
-`assets/monsters/stages.json` now lists only the intended 17 stages.
+- Monster art is 1024×1024 RGBA, converted at quality 90 to keep alpha and detail.
+- Map sections are 1024 wide by 2010-3302 tall, converted at quality 80.
+- `monsterMarkup` still keeps the inline SVG fallback if an image fails to load.
+- `assets/monsters/stages.json` lists the 17 stages and their WebP filenames.
 
 ## Tests
 
-`tests/arithmetic-model.test.js` verifies:
+`tests/arithmetic-model.test.js` runs with `node tests/arithmetic-model.test.js`.
+It text-extracts functions from `index.html` and runs them in a sandbox, and
+runs the whole `model` section to exercise `migrate` end to end. It verifies:
 
-- First crack trigger remains 4 of first 5 mastered answers.
-- Crack state is persisted through `storyProgress.firstCrackSeen`.
-- Long division remains single-digit divisor into multi-digit dividend.
-- The old XP system is not reintroduced.
-- Existing saves migrate without losing progress, stats, custom names, collectibles, or cosmetics.
+**Story and progression**
+
+- The first crack triggers on 4 mastered in the first 5 questions, only on a
+  first run, and persists through `storyProgress.firstCrackSeen`.
 - Every maths lesson maps to one adventure map node.
-- The final evolution requires all 15 lessons.
-- Major evolutions are exactly stages 7, 12, 15, and 17.
-- Canonical renamed asset filenames exist.
+- The last evolution needs all 15 lessons, milestones climb, and the majors
+  are exactly stages 7, 12, 15 and 17.
+- The map is shown before it is laid out, at every call site.
+
+**Arithmetic**
+
+- Column answers are written right to left, one digit per step, for addition
+  and both multiplications, and no carry mark lands above a column with no
+  digits of its own.
+- Subtraction regrouping, including chained borrows across zeros.
+- Long division keeps a single-digit divisor, ramps its dividend, never grows
+  a digit and starts leaving something over in the same question, and uses no
+  jargon in anything the child reads.
+- Lesson length and pass mark move together and the pass mark is always
+  reachable; no screen hard-codes how many answers are needed.
+- The star row: one space per question, a helped star does not count towards
+  the pass mark, and the row never outgrows the lesson.
+
+**Saves**
+
+- Existing saves migrate without losing progress, stats, custom names,
+  collectibles or cosmetics; migrating twice is stable.
+- A save stopped on a renamed lesson keeps it and gains nothing free.
+- XP cannot return: no field, no property read, no award call.
+
+**Assets**
+
+- Every stage's art file exists, is numbered in order, and is WebP.
+- No PNG anywhere in `assets` or referenced from `index.html`.
