@@ -706,7 +706,10 @@ assert.deepEqual(plain(saveContext.evolutions).map(step => [step.completed, step
   'stage-08-scarf.png',
   'stage-09-backpack.png',
   'stage-10-goggles.png',
-  'stage-11-pencil-wand.png'
+  'stage-11-pencil-wand.png',
+  'stage-12-magic-marks.png',
+  'stage-13-flower-crown.png',
+  'stage-14-explorer.png'
 ].forEach(file => {
   assert.equal(fs.existsSync(path.join(__dirname, '..', 'assets', 'monsters', file)), true,
     `${file} exists for the ready monster art path`);
