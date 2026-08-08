@@ -1,1 +1,1866 @@
-PLACEHOLDER - the full content of /tmp/new_index.html is 101k characters with the new EVOLUTIONS array (completed 0-15), MONSTER_SLUGS without hovering and with magic-marks/guardian-light, and assetReady:i<15
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#1B3A8C">
+<meta name="mobile-web-app-capable" content="yes">
+<title>Matemostri</title>
+<style>
+:root{
+  --ink:#50319A; --ink-soft:#8069B5; --pen:#D94B92; --graphite:#4A4357;
+  --paper:#FFF9FE; --grid:#E9DDF3; --gold:#F2B93B; --grass:#2E9E7A;
+  --cell:clamp(26px, 10vw, 40px);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%}
+body{
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--graphite);
+  background-color:var(--paper);
+  background-image:radial-gradient(circle at 12% 8%,rgba(255,203,236,.55),transparent 24%),radial-gradient(circle at 88% 18%,rgba(199,190,255,.55),transparent 28%),linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:22px 22px;overscroll-behavior:none;
+}
+#app{max-width:470px;margin:0 auto;min-height:100%;padding:14px 14px 26px 22px;border-left:2px solid rgba(214,48,58,.35);position:relative}
+h1,h2{font-weight:800;letter-spacing:-.02em;color:var(--ink);margin:0}
+.eyebrow{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);font-weight:700}
+.mono{font-family:ui-monospace,"Roboto Mono","Courier New",monospace;font-variant-numeric:tabular-nums}
+.screen{display:none;animation:fade .18s ease}
+.screen.on{display:block}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.card{background:#fff;border:2px solid var(--ink);border-radius:16px;padding:14px;margin:12px 0;box-shadow:3px 3px 0 rgba(27,58,140,.16)}
+button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
+.btn{display:block;width:100%;padding:14px;border-radius:14px;background:linear-gradient(135deg,#6642B5,#D34A9C);color:#fff;font-weight:800;font-size:17px;box-shadow:0 4px 0 #38206f;transition:transform .06s,box-shadow .06s}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 #12275e}
+.btn.ghost{background:#fff;color:var(--ink);border:2px solid var(--ink);box-shadow:0 4px 0 rgba(27,58,140,.25)}
+.btn.small{padding:10px;font-size:15px}
+.row{display:flex;gap:10px;align-items:center}
+.row.wrap{flex-wrap:wrap}
+:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radius:12px;background:#fff;font-size:17px;font-weight:700;color:var(--ink)}
+.player-chip{display:flex;align-items:center;gap:12px;width:100%;padding:12px;border:2px solid var(--ink);border-radius:14px;background:#fff;margin-bottom:10px;text-align:left}
+.player-chip .nm{font-weight:800;color:var(--ink);font-size:18px}
+.player-chip .lv{font-size:13px;color:var(--ink-soft);font-weight:700}
+.mini-pet{width:46px;height:46px;flex:0 0 46px}
+.agebtn{flex:1;min-width:42px;padding:10px 0;border:2px solid var(--ink);border-radius:12px;background:#fff;color:var(--ink);font-weight:800;font-size:16px}
+.agebtn.sel{background:var(--ink);color:#fff}
+/* magical companion */
+.pet-stage{display:flex;justify-content:center;padding:6px 0 2px}
+.pet-stage svg{width:min(48vw,175px);height:auto}
+.bob{animation:bob 3.2s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.ink-fill{fill:#EAF1FB;stroke:var(--ink);stroke-width:3;stroke-linejoin:round}
+.ink-line{fill:none;stroke:var(--ink);stroke-width:3;stroke-linecap:round}
+.cheek{fill:rgba(214,48,58,.35);stroke:none}
+.quadretti{display:flex;gap:2px;margin:10px 0 4px}
+.quadretti i{flex:1;aspect-ratio:1;border:1px solid var(--grid);border-radius:2px;background:#fff}
+.quadretti i.f{background:var(--ink);border-color:var(--ink)}
+.lvline{display:flex;justify-content:space-between;align-items:baseline}
+.lvline b{font-size:26px;color:var(--ink)}
+.reward-line{font-size:13px;font-weight:700;color:var(--ink-soft);text-align:center;margin-top:4px}
+.magic-status{text-align:center;padding:9px 8px 3px;color:var(--ink);font-size:18px;font-weight:900;line-height:1.25}
+.magic-whisper{text-align:center;color:var(--ink-soft);font-size:13px;font-weight:750;line-height:1.35;margin-top:5px}
+.collection-shelf{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-top:12px}
+.collectible{background:linear-gradient(145deg,#fff,#fff3c9);border:1.5px solid rgba(122,82,173,.25);border-radius:999px;padding:5px 9px;font-size:12px;font-weight:850;color:#664391;box-shadow:0 2px 6px rgba(80,49,154,.1)}
+.wardrobe{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-top:8px}.wardrobe .accessory-chip{font-size:11px;padding:5px 8px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center;margin-top:8px}
+.stats div{background:#fff;border:2px solid var(--grid);border-radius:12px;padding:8px 4px}
+.stats b{display:block;font-size:20px;color:var(--ink)}
+.stats span{font-size:11px;font-weight:700;color:var(--ink-soft)}
+.link{color:var(--pen);font-weight:800;font-size:14px;text-decoration:underline;padding:8px 0}
+/* practice menu */
+.pick{display:flex;align-items:center;gap:14px;width:100%;padding:12px 14px;border:2px solid var(--ink);border-radius:16px;background:#fff;margin-bottom:11px;text-align:left;box-shadow:3px 3px 0 rgba(27,58,140,.16)}
+.pick:active{transform:translate(2px,2px);box-shadow:1px 1px 0 rgba(27,58,140,.16)}
+.pick .sign{font-family:ui-monospace,"Roboto Mono",monospace;font-size:34px;font-weight:700;color:var(--ink);width:38px;text-align:center;flex:0 0 38px}
+.pick .nm{font-weight:800;font-size:18px;color:var(--ink);display:block}
+.pick .rate{font-size:13px;font-weight:800;color:var(--pen)}
+.pick .togo{font-size:12px;font-weight:700;color:var(--ink-soft)}
+/* question */
+.qhead{display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:700;color:var(--ink-soft)}
+.question{font-size:clamp(30px,10vw,42px);font-weight:700;color:var(--ink);text-align:center;padding:14px 0 6px}
+.answer{min-height:56px;margin:0 auto;width:min(220px,70%);border-bottom:3px solid var(--pen);text-align:center;font-size:36px;font-weight:700;color:var(--pen);padding-bottom:4px}
+.answer.empty::after{content:"?";color:rgba(214,48,58,.28)}
+.stars{display:flex;gap:2px;align-items:center;justify-content:center;flex:1;margin:0 8px;line-height:1}
+.stars .star{font-size:15px;color:rgba(27,58,140,.22);transition:color .2s,transform .2s}
+.stars .star.helped{color:rgba(242,185,59,.45)}
+.stars .star.won{color:var(--gold);text-shadow:0 0 6px rgba(242,185,59,.55)}
+.stars .star.fresh{animation:starPop .45s ease-out}
+@keyframes starPop{0%{transform:scale(.4) rotate(-25deg)}60%{transform:scale(1.35) rotate(8deg)}100%{transform:scale(1) rotate(0)}}
+.tagline{text-align:center;font-size:12px;font-weight:700;color:var(--ink-soft);margin-top:8px}
+.prompt{text-align:center;font-weight:800;color:var(--ink);font-size:15px;min-height:38px;margin:2px 0 6px;line-height:1.25}
+.feedback{text-align:center;font-weight:800;font-size:18px;min-height:24px;margin-top:8px}
+.ok{color:var(--grass)}.no{color:var(--pen)}
+.stamp{display:inline-block;border:2px solid var(--gold);color:#9a6b04;border-radius:8px;padding:1px 7px;font-size:13px;font-weight:800;transform:rotate(-4deg)}
+.shake{animation:sh .3s}
+@keyframes sh{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+/* keypad */
+.pad{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:12px}
+.key{padding:15px 0;border-radius:14px;background:#fff;border:2px solid var(--ink);font-size:23px;font-weight:800;color:var(--ink);box-shadow:0 4px 0 rgba(27,58,140,.25)}
+.key:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(27,58,140,.25)}
+.key.go{background:var(--grass);border-color:#1d7845;color:#fff;box-shadow:0 4px 0 #1d7845}
+.key.del{background:#fff;color:var(--pen);border-color:var(--pen);box-shadow:0 4px 0 rgba(214,48,58,.3)}
+/* column working */
+.gridwrap{display:flex;justify-content:center;padding:6px 0 2px;overflow-x:auto}
+.wgrid{display:grid;position:relative}
+.dc{width:var(--cell);height:var(--cell);display:flex;align-items:center;justify-content:center;
+    font-family:ui-monospace,"Roboto Mono","Courier New",monospace;font-size:calc(var(--cell)*.6);font-weight:700;color:var(--ink)}
+.dc.small{font-size:calc(var(--cell)*.4);color:var(--pen);align-items:flex-end;padding-bottom:1px}
+.dc.small.wide{font-size:calc(var(--cell)*.34)}
+.dc.annotations{gap:2px;align-items:flex-end;overflow:visible;white-space:nowrap}
+.dc.annotations span{display:inline-flex;min-width:calc(var(--cell)*.38);height:calc(var(--cell)*.48);align-items:center;justify-content:center;color:var(--pen);font-size:calc(var(--cell)*.34);position:relative}
+.dc.annotations .ann-struck{color:var(--ink-soft);text-decoration:line-through;text-decoration-color:var(--pen);text-decoration-thickness:2px}
+.dc.annotations .ann-input{border:2px solid var(--gold);border-radius:5px;background:#fff7d9}
+.dc.mul-carry-note{width:auto;min-width:46px;height:auto;align-self:center;padding:3px 5px;border:1.5px solid var(--gold);border-radius:999px;background:#fff7d9;color:#9a6400;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;font-size:10px;font-weight:900;line-height:1.1}
+.dc.mul-carry-note.retired{opacity:.45;border-style:dashed}
+.dc.slot{border:2px dashed rgba(214,48,58,.5);border-radius:6px;color:var(--pen)}
+.dc.slot.act{border-style:solid;background:rgba(242,185,59,.22);animation:pulse 1.1s ease-in-out infinite}
+.dc.typed{color:var(--pen)}
+.dc.brought{color:var(--ink-soft)}
+.dc.struck{position:relative;color:var(--ink-soft)}
+.dc.struck::after{content:"";position:absolute;left:15%;right:15%;top:50%;height:2px;background:var(--pen);transform:rotate(-18deg)}
+.dc.sub{border-bottom:2.5px solid var(--ink)}
+.dc.focus{background:rgba(242,185,59,.32);border-radius:6px}
+.dc.op{color:var(--ink)}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(242,185,59,.6)}50%{box-shadow:0 0 0 6px rgba(242,185,59,0)}}
+.rule{border-top:2.5px solid var(--ink)}
+.vbar{border-left:2.5px solid var(--ink)}
+.hintstrip{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin:8px 0 2px}
+.hintstrip span{background:#FFF6DE;border:1.5px solid var(--gold);border-radius:8px;padding:5px 0;text-align:center;font-family:ui-monospace,"Roboto Mono",monospace;font-size:13px;font-weight:700;color:#8a6200}
+/* settings */
+.opt{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px dashed var(--grid)}
+.opt:last-child{border-bottom:none}
+.opt .lbl{font-weight:700;color:var(--ink);font-size:15px}
+.opt .magic{font-size:12px;color:var(--ink-soft);font-weight:700}
+.sw{width:52px;height:30px;border-radius:20px;background:#dfe4ec;position:relative;flex:0 0 52px;transition:background .15s}
+.sw::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.3);transition:left .15s}
+.sw.on{background:var(--grass)}
+.sw.on::after{left:25px}
+.levelup{position:fixed;inset:0;background:rgba(27,58,140,.92);display:none;align-items:center;justify-content:center;flex-direction:column;color:#fff;text-align:center;padding:24px;z-index:9}
+.levelup.on{display:flex}
+.levelup h2{color:#fff;font-size:34px}
+.levelup svg{width:min(58vw,200px);height:auto;margin:10px 0}
+.levelup .ink-fill{fill:#fff;stroke:#fff}
+.levelup .ink-line{stroke:#fff}
+.levelup .cheek{fill:rgba(255,255,255,.5)}
+
+.pet-stage{
+  position:relative;
+  min-height:190px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:visible;
+}
+.pet-stage::before{
+  content:"";
+  position:absolute;
+  width:170px;
+  height:55px;
+  bottom:6px;
+  border-radius:50%;
+  background:radial-gradient(ellipse at center, rgba(27,58,140,.16), rgba(27,58,140,0) 70%);
+  filter:blur(2px);
+}
+.pet-stage svg{filter:drop-shadow(0 8px 8px rgba(27,58,140,.18))}
+.sparkle{transform-origin:center;animation:twinkle 1.8s ease-in-out infinite}
+.sparkle.s2{animation-delay:.45s}
+.sparkle.s3{animation-delay:.9s}
+.ear-left{transform-origin:42px 39px;animation:earwiggle 3.4s ease-in-out infinite}
+.ear-right{transform-origin:78px 39px;animation:earwiggle2 3.4s ease-in-out infinite}
+.tail{transform-origin:91px 86px;animation:tailwag 2.2s ease-in-out infinite}
+.wing-left{transform-origin:31px 65px;animation:wingflap 1.8s ease-in-out infinite}
+.wing-right{transform-origin:89px 65px;animation:wingflap2 1.8s ease-in-out infinite}
+.heart-pop{transform-origin:center;animation:heartpop 2.6s ease-in-out infinite}
+.monster-eyes{transform-box:fill-box;transform-origin:center;animation:blink 6.4s infinite}
+.monster-heart{transform-origin:center;animation:heartglow 2.4s ease-in-out infinite}
+.monster-wrap{position:relative;display:grid;place-items:center}
+.monster-wrap.sleepy{filter:saturate(.72)}
+.monster-asset{display:grid;place-items:center;position:relative;max-width:100%;max-height:100%}.monster-asset>img{display:block;max-width:100%;max-height:100%;object-fit:contain;filter:drop-shadow(0 8px 8px rgba(27,58,140,.18))}.monster-asset.asset-image>img{animation:monsterGlow 3.8s ease-in-out infinite}.monster-asset.asset-image.bob>img{animation:bob 3.2s ease-in-out infinite,monsterGlow 3.8s ease-in-out infinite}.monster-fallback{display:grid;place-items:center;width:100%;height:100%}.monster-fallback[hidden]{display:none}
+.mood-excited{animation:evolve .55s ease-out}.mood-proud{filter:drop-shadow(0 0 8px rgba(242,185,59,.5))}.mood-thinking{transform:rotate(-2deg)}.mood-surprised{animation:sh .3s}.mood-sleepy{filter:saturate(.72)}.mood-love{filter:drop-shadow(0 0 9px rgba(255,108,168,.55))}
+.play-monster{width:48px;height:48px;display:grid;place-items:center;margin-left:auto}
+.play-monster svg{width:48px;height:48px;filter:drop-shadow(0 3px 3px rgba(27,58,140,.16))}
+@keyframes blink{0%,44%,48%,100%{transform:scaleY(1)}46%{transform:scaleY(.08)}}
+@keyframes heartglow{0%,100%{filter:drop-shadow(0 0 1px #fff);transform:scale(1)}50%{filter:drop-shadow(0 0 5px #ff81b5);transform:scale(1.08)}}
+@keyframes twinkle{0%,100%{opacity:.25;transform:scale(.65) rotate(0)}50%{opacity:1;transform:scale(1.15) rotate(20deg)}}
+@keyframes earwiggle{0%,100%{transform:rotate(0)}50%{transform:rotate(-7deg)}}
+@keyframes earwiggle2{0%,100%{transform:rotate(0)}50%{transform:rotate(7deg)}}
+@keyframes tailwag{0%,100%{transform:rotate(-5deg)}50%{transform:rotate(13deg)}}
+@keyframes wingflap{0%,100%{transform:rotate(0)}50%{transform:rotate(-12deg)}}
+@keyframes wingflap2{0%,100%{transform:rotate(0)}50%{transform:rotate(12deg)}}
+@keyframes heartpop{0%,70%,100%{opacity:0;transform:translateY(2px) scale(.5)}80%{opacity:1;transform:translateY(-4px) scale(1)}}
+@keyframes monsterGlow{0%,100%{filter:drop-shadow(0 8px 8px rgba(27,58,140,.16)) drop-shadow(0 0 4px rgba(255,207,83,.16))}50%{filter:drop-shadow(0 10px 10px rgba(27,58,140,.2)) drop-shadow(0 0 12px rgba(255,207,83,.34))}}
+
+/* opening story + maths journey */
+.story-card,.journey-hero{background:#fff url('assets/ui/magic-glow.png') center/cover;border:2px solid var(--ink);border-radius:20px;padding:12px;box-shadow:3px 3px 0 rgba(27,58,140,.16)}
+.story-card img{display:block;width:100%;border-radius:14px;aspect-ratio:1.18;object-fit:cover;background:linear-gradient(145deg,#f8ddff,#dff8ff)}
+.story-copy{text-align:center;min-height:64px;padding:10px 5px 2px}
+.story-copy h2{font-size:24px;margin-bottom:4px}.story-copy p{margin:0;font-weight:700;line-height:1.35}
+.story-dots{display:flex;justify-content:center;gap:7px;margin:10px}.story-dots i{width:9px;height:9px;border-radius:50%;background:#c8c9dd}.story-dots i.on{background:var(--pen)}
+.journey-hero{text-align:center;margin:10px 0 14px}.journey-hero p{margin:5px 0 0;font-size:13px;font-weight:700;color:var(--ink-soft)}
+.journey{display:grid;gap:10px}
+.journey-stage{display:grid;grid-template-columns:78px 1fr;gap:12px;align-items:center;min-height:98px;padding:9px 12px;background:#fff;border:2px solid var(--grid);border-radius:16px;overflow:hidden}
+.journey-stage.current{border-color:var(--gold);box-shadow:0 0 0 3px rgba(242,185,59,.2)}
+.journey-stage.locked{background:linear-gradient(145deg,#f3f1f7,#e2e5ee);border-color:#a7aec1}
+.journey-stage.available{border-color:#e477b4;box-shadow:0 0 0 3px rgba(228,119,180,.12)}.journey-stage.completed{border-color:#65b782}.journey-stage:disabled{cursor:default}
+.journey-art{width:76px;height:76px;display:grid;place-items:center}.journey-art img,.journey-art svg{max-width:76px;max-height:76px}
+.journey-stage h3{margin:0;color:var(--ink);font-size:17px}.journey-stage p{margin:3px 0 0;font-size:12px;font-weight:700;color:var(--ink-soft);line-height:1.3}
+.silhouette{width:60px;height:68px;background:#28304a;border-radius:48% 48% 42% 42%;position:relative;filter:drop-shadow(0 4px 2px rgba(0,0,0,.18))}
+.silhouette::before,.silhouette::after{content:"";position:absolute;top:-12px;width:22px;height:30px;background:#28304a;border-radius:70% 20% 60% 30%}.silhouette::before{left:4px;transform:rotate(-25deg)}.silhouette::after{right:4px;transform:rotate(25deg)}
+.accessory-list{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px}.accessory-chip{font-size:10px;font-weight:800;background:#fff4c9;color:#785800;border-radius:999px;padding:3px 7px}
+.journey-stage .badge{display:inline-block;margin:5px 5px 0 0;padding:3px 7px;border-radius:999px;background:#e6e9ff;color:#493aa1;font-size:10px;font-weight:900}
+.adventure-map{position:relative;min-height:1120px;margin:10px 0 18px;padding:18px 0;background:linear-gradient(180deg,#fff8ff 0%,#f4f2ff 24%,#eefbff 48%,#fff5dc 70%,#f5ecff 100%);border:2px solid rgba(80,49,154,.22);border-radius:28px;overflow:hidden;box-shadow:inset 0 0 0 6px rgba(255,255,255,.45)}
+.adventure-map::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 22% 11%,rgba(145,215,177,.34),transparent 13%),radial-gradient(circle at 75% 29%,rgba(166,221,255,.32),transparent 16%),radial-gradient(circle at 23% 52%,rgba(180,151,255,.25),transparent 18%),radial-gradient(circle at 70% 78%,rgba(255,212,113,.34),transparent 17%);pointer-events:none}
+.adventure-path{position:absolute;left:50%;top:36px;width:8px;height:1040px;border-radius:999px;background:linear-gradient(#f6c85b,#e97fb7,#8fdac5,#9b7df0);transform:translateX(-50%);opacity:.42;box-shadow:0 0 18px rgba(242,185,59,.35)}
+.map-location{position:absolute;width:170px;min-height:132px;padding:10px;border:2px solid rgba(80,49,154,.22);border-radius:22px;background:rgba(255,255,255,.92);box-shadow:0 6px 16px rgba(80,49,154,.13);text-align:center;transform:translate(-50%,-50%);transition:transform .12s,box-shadow .12s,opacity .12s}
+.map-location:active:not(:disabled){transform:translate(-50%,-50%) scale(.98)}
+.map-location.completed{border-color:#65b782;background:linear-gradient(145deg,#fff,#effff6)}
+.map-location.available{border-color:#e477b4;box-shadow:0 0 0 4px rgba(228,119,180,.13),0 10px 22px rgba(80,49,154,.16)}
+.map-location.locked{opacity:.66;background:linear-gradient(145deg,#f8f6fb,#e7e9f2)}
+.map-location.current{animation:mapPulse 1.9s ease-in-out infinite;border-color:var(--gold)}
+.map-location.major{border-width:3px}
+.map-location img,.map-location svg{width:64px;height:64px;object-fit:contain}
+.map-location .map-region{display:block;font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:var(--ink-soft);font-weight:900}
+.map-location h3{margin:2px 0;color:var(--ink);font-size:14px;line-height:1.08}
+.map-location p{margin:0;color:var(--ink-soft);font-size:11px;font-weight:800;line-height:1.18}
+.map-pin-status{display:inline-block;margin-top:5px;padding:3px 7px;border-radius:999px;background:#fff4c9;color:#785800;font-size:10px;font-weight:900}
+.story-node-card{text-align:center}.story-node-card .pet-stage{min-height:230px}.story-node-card p{font-weight:780;line-height:1.35;color:var(--graphite);white-space:pre-line}
+.major-transition{background:linear-gradient(rgba(40,23,96,.9),rgba(104,39,126,.92)),url('assets/ui/magic-glow.png') center/cover}
+.major-transition .unlock-card{width:min(420px,94vw);border-color:#ffe38a;box-shadow:0 0 0 5px rgba(255,227,138,.22),0 16px 0 rgba(0,0,0,.18)}
+.evolution-pair{display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:center;margin:8px 0}.evolution-pair .pet-stage{min-height:150px}.evolution-pair .pet-stage::before{width:110px}.evolution-pair-wrap .arrow{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:28px;color:var(--gold);font-weight:900;text-shadow:0 2px 0 var(--ink)}
+.evolution-pair-wrap{position:relative}
+@keyframes mapPulse{0%,100%{box-shadow:0 0 0 4px rgba(242,185,59,.18),0 8px 18px rgba(80,49,154,.14)}50%{box-shadow:0 0 0 9px rgba(242,185,59,.34),0 12px 25px rgba(80,49,154,.2)}}
+@media (max-width:380px){.map-location{width:148px;padding:8px}.map-location h3{font-size:13px}.adventure-map{min-height:1060px}.adventure-path{height:980px}.map-location img,.map-location svg{width:56px;height:56px}}
+.evolution-burst{animation:evolve 1s cubic-bezier(.2,.9,.3,1)}
+.egg-wiggle{animation:eggWiggle .75s ease-in-out 2}.egg-wiggle>img{filter:drop-shadow(0 0 18px rgba(255,193,72,.7))}
+@keyframes evolve{0%{opacity:0;transform:scale(.55) rotate(-8deg)}65%{opacity:1;transform:scale(1.08) rotate(2deg)}100%{transform:scale(1) rotate(0)}}
+@keyframes eggWiggle{0%,100%{transform:rotate(0) scale(1)}25%{transform:rotate(-4deg) scale(1.03)}75%{transform:rotate(4deg) scale(1.03)}}
+
+.dev-grid{display:grid;gap:9px}.dev-grid select{width:100%;padding:11px;border:2px solid var(--ink);border-radius:12px;background:#fff;color:var(--ink);font:inherit;font-weight:800}.dev-note{text-align:center;color:var(--ink-soft);font-size:12px;font-weight:700}
+
+
+.pick.locked{
+  opacity:.58;
+  border-color:#9AA9C5;
+  box-shadow:none;
+  cursor:default;
+}
+.pick.locked .sign,
+.pick.locked .nm{color:#7183A7}
+.pick .lock{
+  margin-left:auto;
+  font-size:22px;
+}
+.pick .badge{
+  display:inline-block;
+  margin-top:4px;
+  padding:3px 7px;
+  border-radius:999px;
+  background:#FFF1C7;
+  color:#8A6200;
+  font-size:11px;
+  font-weight:900;
+}
+.unlock{
+  position:fixed;
+  inset:0;
+  background:linear-gradient(rgba(49,28,112,.78),rgba(89,37,136,.88)),url('assets/ui/magic-glow.png') center/cover;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:10;
+  padding:22px;
+}
+.unlock.on{display:flex}
+.unlock-card{
+  width:min(360px,92vw);
+  background:#fff;
+  border:3px solid var(--ink);
+  border-radius:24px;
+  padding:22px;
+  text-align:center;
+  box-shadow:0 12px 0 rgba(0,0,0,.16);
+}
+.unlock-card h2{font-size:30px;margin:6px 0 8px}
+.unlock-card p{font-size:16px;line-height:1.35;font-weight:700;color:var(--graphite)}
+.unlock-icon{font-size:54px;line-height:1}
+
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.bob,.monster-eyes,.monster-heart{transform:none!important}}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <section id="s-story" class="screen">
+    <div class="eyebrow" id="storyEyebrow">A magical friend's story</div>
+    <h1 style="font-size:30px;margin:3px 0 10px">A magical maths friend</h1>
+    <div class="story-card">
+      <img id="storyImg" src="assets/story/find-egg.png" alt="A child discovers a glowing magical egg" onerror="this.style.display='none'">
+      <div class="story-copy"><h2 id="storyTitle">A magical egg!</h2><p id="storyText"></p></div>
+      <div id="friendNameBox" style="padding:0 8px 10px">
+        <label for="friendName" style="display:block;text-align:center;font-weight:850;color:var(--ink);margin-bottom:7px">What would you like to call your new friend?</label>
+        <input type="text" id="friendName" value="Momo" maxlength="12" autocomplete="off" aria-label="Your magical friend's name">
+      </div>
+    </div>
+    <div class="story-dots" id="storyDots" aria-hidden="true"></div>
+    <button class="btn" id="storyNext">Next</button>
+    <button class="link" id="storySkip" style="display:block;margin:5px auto 0">skip story</button>
+  </section>
+
+  <section id="s-players" class="screen on">
+    <div class="eyebrow">maths notebook</div>
+    <h1 style="font-size:34px;margin:2px 0 10px">Matemostri</h1>
+    <div id="playerList"></div>
+    <div class="card" id="newBox" style="display:none">
+      <div class="eyebrow">name</div>
+      <input type="text" id="newName" maxlength="12" autocomplete="off">
+      <div class="eyebrow" style="margin-top:12px">age</div>
+      <div class="row wrap" id="ageRow" style="margin-top:6px"></div>
+      <div class="row" style="margin-top:12px">
+        <button class="btn small ghost" id="cancelNew">Cancel</button>
+        <button class="btn small" id="saveNew">Create</button>
+      </div>
+    </div>
+    <button class="btn ghost" id="addPlayer">+ New player</button>
+  </section>
+
+  <section id="s-home" class="screen">
+    <div class="row" style="justify-content:space-between">
+      <button class="eyebrow" id="homeWho" aria-label="player name">-</button>
+      <button class="link" id="switchPlayer">change</button>
+    </div>
+    <div class="card" id="companionCard">
+      <div class="pet-stage" id="petBox"></div>
+      <div class="magic-status" id="journeyMessage">A magical friendship has begun.</div>
+      <div class="magic-whisper" id="nextReward"></div>
+      <div class="collection-shelf" id="collectionBox"></div>
+      <div class="wardrobe" id="wardrobeBox"></div>
+    </div>
+    <div class="stats" id="statBox"></div>
+    <div style="height:12px"></div>
+    <button class="btn" id="playBtn">Continue the adventure</button>
+    <div style="height:10px"></div>
+    <button class="btn ghost" id="setBtn">Settings</button>
+  </section>
+
+  <section id="s-menu" class="screen">
+    <div class="row" style="justify-content:space-between">
+      <button class="link" id="menuBack">back</button>
+      <span class="eyebrow" id="menuProgress"></span>
+    </div>
+    <div class="journey-hero"><h1 style="font-size:25px" id="menuTitle">A magical maths journey</h1><p id="mapIntro">Where are you and your friend going next?</p></div>
+    <div class="adventure-map" id="pickList"></div>
+  </section>
+
+  <section id="s-node" class="screen">
+    <div class="row" style="justify-content:space-between">
+      <button class="link" id="nodeBack">map</button>
+      <span class="eyebrow" id="nodeRegion"></span>
+    </div>
+    <div class="card story-node-card">
+      <div class="eyebrow" id="nodeLesson"></div>
+      <h1 style="font-size:29px;margin:4px 0" id="nodeTitle">The next path</h1>
+      <div class="pet-stage" id="nodePet"></div>
+      <p id="nodeStory"></p>
+    </div>
+    <button class="btn" id="nodeStart">Start lesson</button>
+  </section>
+
+  <section id="s-play" class="screen">
+    <div class="qhead">
+      <button class="link" id="quitPlay">exit</button>
+      <span id="progress" class="stars" role="img" aria-label="no stars yet"></span>
+      <div class="play-monster" id="playPet" aria-hidden="true"></div>
+    </div>
+    <div class="card" id="qcard">
+      <div id="normalQ" style="display:none">
+        <div class="question mono" id="qText">1 + 1</div>
+        <div class="answer mono empty" id="ansBox"></div>
+      </div>
+      <div id="colQ" style="display:none">
+        <div class="prompt" id="colPrompt"></div>
+        <div class="gridwrap"><div class="wgrid" id="colGrid"></div></div>
+        <div class="hintstrip" id="colHint" style="display:none"></div>
+        <button class="link" id="hintBtn" style="display:none;margin:2px auto 0">need a hint?</button>
+      </div>
+      <div class="tagline" id="qTag"></div>
+      <div class="feedback" id="fb"></div>
+    </div>
+    <div class="pad" id="pad"></div>
+  </section>
+
+  <section id="s-crack" class="screen">
+    <div class="eyebrow">the magic stirs</div>
+    <h1 style="font-size:30px;margin:4px 0" id="crackTitle">A tiny crack!</h1>
+    <div class="card">
+      <div class="pet-stage" id="crackPet"></div>
+      <div class="stats" id="crackStats"></div>
+      <div class="reward-line" id="crackReward" style="margin-top:12px"></div>
+    </div>
+    <button class="btn" id="crackContinue">Continue</button>
+  </section>
+
+  <section id="s-end" class="screen">
+    <div class="eyebrow">the magic settles</div>
+    <h1 style="font-size:30px;margin:4px 0" id="endTitle">Well done!</h1>
+    <div class="card">
+      <div class="pet-stage" id="endPet"></div>
+      <div class="stats" id="endStats"></div>
+      <div class="reward-line" id="endReward" style="margin-top:12px"></div>
+    </div>
+    <button class="btn" id="againBtn">Continue Adventure</button>
+    <div style="height:10px"></div>
+    <button class="btn ghost" id="endHome">Practise Again</button>
+  </section>
+
+  <section id="s-set" class="screen">
+    <div class="row" style="justify-content:space-between">
+      <div class="eyebrow" id="setWho">settings</div>
+      <button class="link" id="setBack">close</button>
+    </div>
+    <div class="card">
+      <label class="eyebrow" for="setFriendName">your friend's name</label>
+      <div style="height:6px"></div>
+      <input type="text" id="setFriendName" maxlength="12" autocomplete="off" aria-label="Your magical friend's name">
+    </div>
+    <div class="card">
+      <div class="eyebrow">age</div>
+      <div class="row wrap" id="setAge" style="margin:6px 0 4px"></div>
+    </div>
+    <div class="card">
+      <div class="eyebrow" style="margin-bottom:4px">glowing path</div>
+      <div id="opList"></div>
+    </div>
+    <div class="card">
+      <div class="opt"><span class="lbl">Sound</span><div class="sw" id="swSound"></div></div>
+    </div>
+    <button class="btn ghost small" id="replayStory">Replay the opening story</button>
+    <div style="height:8px"></div>
+    <button class="link" id="delPlayer">delete this player</button>
+  </section>
+
+  <div class="levelup" id="lvUp">
+    <div class="eyebrow" style="color:#d9ccff">a magical moment</div>
+    <h2 id="luTitle">Your friend has grown!</h2>
+    <div id="luPet"></div>
+    <div id="luMsg" style="font-weight:700;max-width:280px"></div>
+    <div style="height:18px"></div>
+    <button class="btn ghost" id="luOk" style="width:200px">Ok!</button>
+  </div>
+
+  <div class="unlock" id="unlockBox">
+    <div class="unlock-card">
+      <div class="unlock-icon">✨💜✨</div>
+      <div class="eyebrow" style="display:inline-block;background:#7b4bc4;color:#fff;border-radius:999px;padding:6px 12px">New magic unlocked</div>
+      <div class="evolution-pair-wrap">
+        <div class="evolution-pair" id="unlockPair" style="display:none">
+          <div class="pet-stage" id="unlockBeforePet"></div>
+          <div class="pet-stage" id="unlockAfterPet"></div>
+        </div>
+        <div class="arrow" id="unlockArrow" style="display:none">→</div>
+      </div>
+      <div class="pet-stage" id="unlockPet"></div>
+      <h2 id="unlockTitle">A new path is glowing!</h2>
+      <p id="unlockText">A new maths adventure is ready.</p>
+      <button class="btn" id="unlockOk">See your result</button>
+    </div>
+  </div>
+
+  <section id="s-dev" class="screen">
+    <div class="row" style="justify-content:space-between"><span class="eyebrow">hidden developer magic</span><button class="link" id="devBack">close</button></div>
+    <div class="journey-hero"><h1 style="font-size:24px">Developer spellbook</h1><p>Testing controls for this player only.</p></div>
+    <div class="card dev-grid">
+      <label class="eyebrow" for="devLesson">Jump to a maths level</label><select id="devLesson"></select><button class="btn small" id="devJump">Jump there</button>
+      <button class="btn small ghost" id="devUnlockLessons">Unlock all maths levels</button>
+      <button class="btn small ghost" id="devUnlockCollectibles">Unlock all collectibles</button>
+      <label class="eyebrow" for="devEvolution">Trigger an evolution</label><select id="devEvolution"></select><button class="btn small ghost" id="devEvolve">Transform</button>
+      <button class="btn small ghost" id="devStory">Replay story</button>
+      <button class="btn small ghost" id="devRename">Rename magical friend</button>
+      <button class="link" id="devReset">reset this player's progress</button>
+    </div>
+    <p class="dev-note">Open this spellbook by tapping the player name seven times.</p>
+  </section>
+
+</div>
+<script>
+/* ---------------- storage ---------------- */
+const KEY='matemostri:v2';
+const LEGACY_KEYS=['matemostri:v4'];
+const store={
+  async get(){
+    try{
+      if(window.storage){
+        const r=await window.storage.get(KEY,false); if(r&&r.value) return JSON.parse(r.value);
+        for(const oldKey of LEGACY_KEYS){ const old=await window.storage.get(oldKey,false); if(old&&old.value) return JSON.parse(old.value); }
+      }
+    }catch(e){}
+    try{
+      const v=localStorage.getItem(KEY); if(v) return JSON.parse(v);
+      for(const oldKey of LEGACY_KEYS){ const old=localStorage.getItem(oldKey); if(old) return JSON.parse(old); }
+      return null;
+    }catch(e){ return null; }
+  },
+  async set(o){
+    const s=JSON.stringify(o);
+    try{ if(window.storage){ await window.storage.set(KEY,s,false); return; } }catch(e){}
+    try{ localStorage.setItem(KEY,s); }catch(e){}
+  }
+};
+
+/* ---------------- model ---------------- */
+const MATH_STAGES=[
+  {id:'add_1digit',gid:'add',label:'One-digit addition',mode:'mental',magic:'Firefly Meadow'},
+  {id:'add_2column',gid:'add',label:'Two-digit column addition',mode:'column',digits:2,magic:'Carrying Lanterns'},
+  {id:'add_2mental',gid:'add',label:'Two-digit mental addition',mode:'mental',magic:'Moonbeam Bridge'},
+  {id:'add_3column',gid:'add',label:'Three-digit column addition',mode:'column',digits:3,magic:'Carrying Clouds'},
+  {id:'add_4column',gid:'add',label:'Four-digit column addition',mode:'column',digits:4,magic:'Starlight Tower'},
+  {id:'sub_1digit',gid:'sub',label:'One-digit subtraction',mode:'mental',magic:'Whispering Woods'},
+  {id:'sub_2column',gid:'sub',label:'Two-digit column subtraction',mode:'column',digits:2,magic:'Silver Stream'},
+  {id:'sub_2mental',gid:'sub',label:'Two-digit mental subtraction',mode:'mental',magic:'Moonlit Hollow'},
+  {id:'sub_3column',gid:'sub',label:'Three-digit column subtraction',mode:'column',digits:3,magic:'Borrowing Caves'},
+  {id:'sub_4column',gid:'sub',label:'Four-digit column subtraction',mode:'column',digits:4,magic:'Crystal Mountain'},
+  {id:'mul_1x1',gid:'mul',label:'Single digit × single digit',mode:'mental',magic:'Mushroom Grove'},
+  {id:'mul_1x2',gid:'mul',label:'Single digit × two digits',mode:'column',digits:2,magic:'Featherwind Cliffs'},
+  {id:'mul_2x2',gid:'mul',label:'Two digits × two digits',mode:'column',digits:2,long:true,magic:'Star Cape Skies'},
+  {id:'div_simple',gid:'div',label:'Simple division',mode:'mental',magic:'Shellsong Shore'},
+  {id:'div_long',gid:'div',label:'Long division',mode:'division',magic:'Guardian Castle'}
+];
+const STAGE_BY_ID=id=>MATH_STAGES.find(s=>s.id===id);
+const MONSTER_STAGE_DATA=[
+  {stage:1,slug:'magical-egg',name:'Magical Egg',image:'stage-01-magical-egg.png',ready:true},
+  {stage:2,slug:'first-crack',name:'First Crack',image:'stage-02-first-crack.png',ready:true,intermediate:true},
+  {stage:3,slug:'hatched-friend',name:'Hatched Friend',image:'stage-03-hatched-friend.png',ready:true},
+  {stage:4,slug:'fluffy-ears',name:'Fluffy Ears',image:'stage-04-fluffy-ears.png',ready:true},
+  {stage:5,slug:'bright-tail',name:'Bright Tail',image:'stage-05-bright-tail.png',ready:true},
+  {stage:6,slug:'wide-wings',name:'Wide Wings',image:'stage-06-wide-wings.png',ready:true},
+  {stage:7,slug:'addition-flight',name:'Addition Flight',image:'stage-07-addition-flight.png',ready:true,majorEvolution:true},
+  {stage:8,slug:'backpack-explorer',name:'Backpack Explorer',image:'stage-08-backpack-explorer.png',ready:true},
+  {stage:9,slug:'explorer-goggles',name:'Explorer Goggles',image:'stage-09-explorer-goggles.png',ready:true},
+  {stage:10,slug:'magic-marks',name:'Magic Marks',image:'stage-10-magic-marks.png',ready:true},
+  {stage:11,slug:'flower-crown',name:'Flower Crown',image:'stage-11-flower-crown.png',ready:true},
+  {stage:12,slug:'subtraction-guardian-light',name:'Subtraction Guardian Light',image:'stage-12-subtraction-guardian-light.png',ready:true,majorEvolution:true},
+  {stage:13,slug:'star-cape',name:'Star Cape',image:'stage-13-star-cape.png',ready:true},
+  {stage:14,slug:'celestial-wings',name:'Celestial Wings',image:'stage-14-celestial-wings.png',ready:true},
+  {stage:15,slug:'multiplication-mage',name:'Multiplication Mage',image:'stage-15-multiplication-mage.png',ready:true,majorEvolution:true},
+  {stage:16,slug:'arcane-master',name:'Arcane Master',image:'stage-16-arcane-master.png',ready:true},
+  {stage:17,slug:'guardian-of-maths',name:'Guardian of Maths',image:'stage-17-guardian-of-maths.png',ready:true,majorEvolution:true}
+];
+const PROGRESSION_NODES=[
+  {id:'mysterious-egg',slug:'mysterious-egg',title:'The Mysterious Egg',region:'Awakening',lessonId:'add_1digit',stage:3,asset:'stage-03-hatched-friend.png',mapPosition:{x:52,y:6},storyBefore:'The egg glows when you come close. Its golden heart flickers, as if it knows your voice.',storyAfter:'The shell tumbles open. {name} blinks up at you, then gives a tiny happy squeak. Your journey has a friend now.',unlocks:'whispering-woods'},
+  {id:'whispering-woods',slug:'whispering-woods',title:'Whispering Woods',region:'Addition',lessonId:'add_2column',stage:4,asset:'stage-04-fluffy-ears.png',mapPosition:{x:30,y:12},storyBefore:'The trees whisper in soft little sums. {name} tilts those huge ears and hears a hidden path.',storyAfter:"{name}'s ears fluff wide and bright. The woods are not confusing anymore; they are calling you onward.",unlocks:'starlight-trail'},
+  {id:'starlight-trail',slug:'starlight-trail',title:'Starlight Trail',region:'Addition',lessonId:'add_2mental',stage:5,asset:'stage-05-bright-tail.png',mapPosition:{x:66,y:18},storyBefore:'The path grows dim, but little numbers sparkle under the leaves. {name} curls close, ready to light the way.',storyAfter:'A bright magical tail swishes behind {name}. Every step leaves a tiny trail of starlight.',unlocks:'windy-cliffs'},
+  {id:'windy-cliffs',slug:'windy-cliffs',title:'Windy Cliffs',region:'Addition',lessonId:'add_3column',stage:6,asset:'stage-06-wide-wings.png',mapPosition:{x:38,y:24},storyBefore:'Wind rushes around the cliffs. {name} spreads small wings and tries a brave little glide.',storyAfter:"{name}'s wings grow wide. They cannot cross the whole sky yet, but they can catch the wind.",unlocks:'great-chasm'},
+  {id:'great-chasm',slug:'great-chasm',title:'The Great Chasm',region:'Addition Finale',lessonId:'add_4column',stage:7,asset:'stage-07-addition-flight.png',mapPosition:{x:72,y:30},storyBefore:'The path suddenly ends. Far below, clouds twist through an enormous chasm. {name} looks at you, then at those wings.',storyAfter:"{name} takes one tiny step forward. Then she jumps. Her wings open wide. She's flying!",majorEvolution:true,unlocks:'explorers-valley'},
+  {id:'explorers-valley',slug:'explorers-valley',title:"Explorer's Valley",region:'Subtraction',lessonId:'sub_1digit',stage:8,asset:'stage-08-backpack-explorer.png',mapPosition:{x:42,y:36},storyBefore:'Across the chasm lies a valley full of winding tracks. {name} packs carefully, ready to explore with you.',storyAfter:'A brave explorer pack appears. {name} is learning how to carry courage.',unlocks:'crystal-caves'},
+  {id:'crystal-caves',slug:'crystal-caves',title:'Crystal Caves',region:'Subtraction',lessonId:'sub_2column',stage:9,asset:'stage-09-explorer-goggles.png',mapPosition:{x:18,y:42},storyBefore:'Crystal light bounces in every direction. {name} lowers her goggles and searches for the true path.',storyAfter:'The explorer goggles shine. Now {name} can spot the answer even when the cave sparkles try to trick her.',unlocks:'rune-ruins'},
+  {id:'rune-ruins',slug:'rune-ruins',title:'The Rune Ruins',region:'Subtraction',lessonId:'sub_2mental',stage:10,asset:'stage-10-magic-marks.png',mapPosition:{x:55,y:48},storyBefore:"Ancient runes hum in the stones. Some marks fade away; some marks wake up on {name}'s fur.",storyAfter:'Soft magic markings glow across {name}. The old ruins recognise your careful thinking.',unlocks:'enchanted-garden'},
+  {id:'enchanted-garden',slug:'enchanted-garden',title:'The Enchanted Garden',region:'Subtraction',lessonId:'sub_3column',stage:11,asset:'stage-11-flower-crown.png',mapPosition:{x:30,y:54},storyBefore:'A garden blooms where every petal hides a missing number. {name} sniffs the flowers and smiles.',storyAfter:"A flower crown blossoms around {name}'s ears. The garden has chosen its little guardian.",unlocks:'guardian-gate'},
+  {id:'guardian-gate',slug:'guardian-gate',title:'The Guardian Gate',region:'Subtraction Finale',lessonId:'sub_4column',stage:12,asset:'stage-12-subtraction-guardian-light.png',mapPosition:{x:68,y:60},storyBefore:"A sealed gate blocks the road. Explorer magic is not enough. {name}'s heart begins to glow.",storyAfter:"Guardian light bursts from {name}'s heart. The gate opens because you learned how to take away with care.",majorEvolution:true,unlocks:'star-fields'},
+  {id:'star-fields',slug:'star-fields',title:'The Star Fields',region:'Multiplication',lessonId:'mul_1x1',stage:13,asset:'stage-13-star-cape.png',mapPosition:{x:44,y:66},storyBefore:'Beyond the gate, stars gather in neat little groups. {name} counts the groups with a thoughtful swish of her tail.',storyAfter:'A starry cape begins to shimmer. {name} can feel patterns forming in the sky.',unlocks:'celestial-heights'},
+  {id:'celestial-heights',slug:'celestial-heights',title:'The Celestial Heights',region:'Multiplication',lessonId:'mul_1x2',stage:14,asset:'stage-14-celestial-wings.png',mapPosition:{x:20,y:72},storyBefore:"The path rises into golden clouds. {name}'s wings stretch toward the bright heights above.",storyAfter:"Celestial armour gleams along {name}'s wings. She is ready for higher magic.",unlocks:'magicians-tower'},
+  {id:'magicians-tower',slug:'magicians-tower',title:"The Magician's Tower",region:'Multiplication Finale',lessonId:'mul_2x2',stage:15,asset:'stage-15-multiplication-mage.png',mapPosition:{x:62,y:78},storyBefore:'An ancient tower waits in the clouds. Inside, every room is built from groups within groups.',storyAfter:"{name} emerges in a mage's hat and shining cloak. Multiplication has become magic she can wear.",majorEvolution:true,unlocks:'arcane-library'},
+  {id:'arcane-library',slug:'arcane-library',title:'The Arcane Library',region:'Division',lessonId:'div_simple',stage:16,asset:'stage-16-arcane-master.png',mapPosition:{x:36,y:86},storyBefore:'A floating spellbook opens by itself. Its pages ask how stars can be shared fairly.',storyAfter:'The spellbook floats beside {name}. She has learned that dividing can be generous magic.',unlocks:'heart-of-matemostri'},
+  {id:'heart-of-matemostri',slug:'heart-of-matemostri',title:'The Heart of Matemostri',region:'Division Finale',lessonId:'div_long',stage:17,asset:'stage-17-guardian-of-maths.png',mapPosition:{x:58,y:94},storyBefore:'At the centre of Matemostri, every path glows at once. {name} opens the spellbook for the final lesson.',storyAfter:'The whole world lights up. {name} rises as the Guardian of Maths, and every lesson you shared shines inside her heart.',majorEvolution:true}
+];
+const NODE_BY_LESSON=id=>PROGRESSION_NODES.find(n=>n.lessonId===id);
+const EVOLUTIONS=[
+  {completed:0,art:1,title:'Magical Egg',message:'A warm golden heart glows inside the egg.'},
+  {completed:0.5,art:2,title:'First Crack',message:'A crack has started to appear. Keep going and see if it hatches.',intermediate:true},
+  ...PROGRESSION_NODES.map((node,i)=>({completed:i+1,art:node.stage,title:MONSTER_STAGE_DATA[node.stage-1].name,message:node.storyAfter,majorEvolution:!!node.majorEvolution,nodeId:node.id}))
+];
+const EVOLUTION_LEVELS=EVOLUTIONS.map(e=>e.art);
+const ACC=[
+  {lvl:8,id:'scarf',name:'scarf'}, {lvl:9,id:'backpack',name:'backpack'},
+  {lvl:10,id:'goggles',name:'goggles'}, {lvl:11,id:'pencilWand',name:'pencil wand'},
+  {lvl:12,id:'map',name:'map'}, {lvl:14,id:'flowerCrown',name:'flower crown'},
+  {lvl:15,id:'headphones',name:'headphones'}, {lvl:15,id:'book',name:'book'},
+  {lvl:16,id:'starCape',name:'star cape'}, {lvl:17,id:'magicStaff',name:'magic staff'}
+];
+const COLLECTIBLES=[
+  {id:'stars',emoji:'⭐',name:'Magic Stars'},{id:'flowers',emoji:'🌸',name:'Flowers'},
+  {id:'berries',emoji:'🍓',name:'Magic Berries'},{id:'feathers',emoji:'🪶',name:'Feathers'},
+  {id:'mushrooms',emoji:'🍄',name:'Mushrooms'},{id:'crystals',emoji:'💎',name:'Crystals'},
+  {id:'leaves',emoji:'🍀',name:'Lucky Leaves'},{id:'shells',emoji:'🐚',name:'Forest Shells'}
+];
+const COSMETIC_REWARDS=[
+  {total:3,id:'flowerCrown',name:'Flower Crown',emoji:'🌸'},{total:6,id:'scarf',name:'Scarf',emoji:'🧣'},
+  {total:10,id:'backpack',name:'Backpack',emoji:'🎒'},{total:15,id:'starCape',name:'Star Cape',emoji:'🌟'},
+  {total:22,id:'magicPencil',name:'Magic Pencil',emoji:'✏️'},{total:30,id:'crystalCrown',name:'Crystal Crown',emoji:'💎'},
+  {total:40,id:'guardianStaff',name:'Guardian Staff',emoji:'🪄'}
+];
+const STAGE_GROUPS=[{from:1,to:2,name:'Egg & hatchling'},{from:3,to:6,name:'Toddler'},{from:7,to:12,name:'Explorer'},{from:13,to:16,name:'Mage'},{from:17,to:17,name:'Guardian'}];
+const MONSTER_PALETTES=[
+  ['#F9D9F0','#FFF5FC','#D98AD3'],['#E8D5FA','#FFF5FC','#A66DD4'],['#D9CBFA','#F8F4FF','#8762D9'],['#C9CDFB','#F3F6FF','#667BE0'],
+  ['#B9D9FB','#F1FAFF','#4D96DF'],['#A9E7F2','#EFFDFF','#3AAEC4'],['#A5EBD8','#F1FFF9','#36B78B'],['#B7EBCB','#F5FFF8','#49B66E'],
+  ['#D7EAB0','#FFFDEE','#8DB74B'],['#F2D98E','#FFF8E1','#D49D32'],['#F4C98F','#FFF4DF','#D88942'],['#F2B7B4','#FFF0F2','#D97083'],
+  ['#EAA9D0','#FFF0F8','#C35AA3'],['#D79DDD','#FFF1FE','#A85FC3'],['#BE92E3','#F9F0FF','#8758C5'],['#A47DDF','#F7F1FF','#704DC1'],
+  ['#8D6AD8','#F4EEFF','#5D3EB5'],['#D887C8','#FFF0F8','#A83F97'],['#F1B458','#FFF3D0','#7B43B8'],['#F5C64F','#FFF5CE','#6738A8']
+];
+const MONSTER_STAGES=MONSTER_STAGE_DATA.map((stage,i)=>({
+  id:'stage-'+String(stage.stage).padStart(2,'0'),minLevel:stage.stage,maxLevel:stage.stage,name:stage.name,
+  slug:stage.slug,group:stage.stage<3?'Egg & hatchling':stage.stage<7?'Toddler':stage.stage<13?'Explorer':'Guardian',
+  image:'assets/monsters/'+stage.image,palette:MONSTER_PALETTES[i],fallback:stage.stage===1?'egg':'momo',
+  assetReady:!!stage.ready,majorEvolution:!!stage.majorEvolution,intermediate:!!stage.intermediate
+}));
+const MONSTER_EXPRESSIONS={idle:'happy',beforeQuestion:'curious',correct:'excited',streak:'proud',hint:'thinking',wrong:'surprised',inactive:'sleepy',levelUp:'love'};
+const PRAISE=['Correct!','Nice one.',"Yes, that's it.",'Spot on.','Exactly.','Well worked out.'];
+
+const stageOf = lvl => Math.max(1,Math.min(MONSTER_STAGES.length,Math.floor(Number(lvl)||1)));
+const artLevelOf = lvl => { let art=1; EVOLUTION_LEVELS.forEach(L=>{ if(stageOf(lvl)>=L) art=L; }); return art; };
+const stageGroup = lvl => STAGE_GROUPS.find(g=>stageOf(lvl)>=g.from&&stageOf(lvl)<=g.to);
+const accsOf  = lvl => { const o={}; ACC.forEach(a=>{ if(stageOf(lvl)>=a.lvl) o[a.id]=true; }); return o; };
+const monsterStage = lvl => MONSTER_STAGES[stageOf(lvl)-1];
+const completedCount=p=>MATH_STAGES.filter(s=>p.stageProgress&&p.stageProgress.completed&&p.stageProgress.completed[s.id]).length;
+function evolutionForCount(count){ let found=EVOLUTIONS[0]; EVOLUTIONS.forEach(e=>{ if(count>=e.completed) found=e; }); return found; }
+const artForCount=count=>evolutionForCount(count).art;
+function storyProgressOf(p){ if(!p.storyProgress||typeof p.storyProgress!=='object') p.storyProgress={}; if(p.storyProgress.firstCrackSeen===undefined) p.storyProgress.firstCrackSeen=false; if(!p.storyProgress.mapSeen||typeof p.storyProgress.mapSeen!=='object') p.storyProgress.mapSeen={}; return p.storyProgress; }
+function artForPlayer(p){ const count=completedCount(p); return count===0&&storyProgressOf(p).firstCrackSeen?2:artForCount(count); }
+const petName=()=>P&&P.momoName?P.momoName:'Momo';
+const collectibleTotal=p=>COLLECTIBLES.reduce((n,c)=>n+Number((p.collectibles&&p.collectibles[c.id])||0),0);
+const bandOf  = age => age<=7?0 : age<=9?1 : age<=10?2 : 3;
+function tierFor(vid){ const b=bandOf(P.age||9), e=(P.ease&&P.ease[vid])||0; return Math.max(0,Math.min(3,b+Math.round(e))); }
+function ease(vid,d){ if(!P.ease) P.ease={}; P.ease[vid]=Math.max(-1,Math.min(1,((P.ease[vid]||0)+d))); }
+const HARD_P=[0.35,0.65,0.85,0.95];
+
+let DB={players:[],current:null,sound:true};
+let P=null;
+const save=()=>store.set(DB);
+
+function blankStageProgress(){
+  const available={},completed={};
+  MATH_STAGES.forEach((s,i)=>{ available[s.id]=i===0; completed[s.id]=false; });
+  return {available,completed};
+}
+function progressFromCount(count){
+  const progress=blankStageProgress(),safe=Math.max(0,Math.min(MATH_STAGES.length,Number(count)||0));
+  MATH_STAGES.forEach((s,i)=>{ progress.completed[s.id]=i<safe; progress.available[s.id]=i<=safe; });
+  return progress;
+}
+function normalizeStageProgress(progress){
+  const clean=blankStageProgress();
+  if(progress&&progress.available) MATH_STAGES.forEach(s=>clean.available[s.id]=!!progress.available[s.id]);
+  if(progress&&progress.completed) MATH_STAGES.forEach(s=>clean.completed[s.id]=!!progress.completed[s.id]);
+  clean.available[MATH_STAGES[0].id]=true;
+  let furthest=-1;
+  MATH_STAGES.forEach((s,i)=>{ if(clean.completed[s.id]) furthest=Math.max(furthest,i); });
+  for(let i=0;i<=furthest;i++){ clean.completed[MATH_STAGES[i].id]=true; clean.available[MATH_STAGES[i].id]=true; }
+  if(furthest+1<MATH_STAGES.length) clean.available[MATH_STAGES[furthest+1].id]=true;
+  MATH_STAGES.forEach((s,i)=>{ if(i>furthest+1&&!clean.completed[s.id]) clean.available[s.id]=false; });
+  return clean;
+}
+function legacyCompletedCount(p){
+  const oldIds=['add_simple','add_complex','sub_simple','sub_complex','mul_simple','mul_complex','div_simple','div_complex'];
+  const mapped=[1,5,6,10,11,13,14,15];
+  let best=0;
+  if(p.stageProgress&&p.stageProgress.completed) oldIds.forEach((id,i)=>{ if(p.stageProgress.completed[id]) best=Math.max(best,mapped[i]); });
+  const old=p.unlocked||{};
+  if(old.add2||old.add) best=Math.max(best,1);
+  if(old.sub2||old.sub) best=Math.max(best,6);
+  if(old.mul2||old.mul) best=Math.max(best,11);
+  if(old.div2||old.div) best=Math.max(best,14);
+  if(Number(p.level)>1) best=Math.max(best,Math.floor((Math.min(17,Number(p.level))-1)/16*MATH_STAGES.length));
+  return best;
+}
+function migrateV3StageProgress(progress){
+  const oldIds=['add_1digit','add_2digit','add_3column','add_4column','sub_1digit','sub_2digit','sub_3column','sub_4column','mul_1x1','mul_1x2','mul_2x2','div_simple','div_long'];
+  const completed=progress&&progress.completed?progress.completed:{};
+  let oldCount=0;
+  oldIds.forEach((id,i)=>{ if(completed[id]) oldCount=Math.max(oldCount,i+1); });
+  // Two lessons have been inserted since: column addition at position 2 and mental
+  // subtraction at position 8. A learner who had finished the mental lesson each one
+  // sits beside keeps that achievement and receives credit for the new lesson too.
+  const newCount=oldCount+(oldCount>=2?1:0)+(oldCount>=6?1:0);
+  return progressFromCount(newCount);
+}
+/* Lessons that were renamed keep their old save key working, so a child who had
+   finished one never has to sit through it again. */
+const RETIRED_STAGE_IDS={sub_2digit:'sub_2column'};
+function migrateV4StageProgress(progress){
+  const moved={available:{},completed:{}};
+  ['available','completed'].forEach(field=>{
+    const saved=(progress&&progress[field])||{};
+    Object.keys(saved).forEach(id=>{ if(saved[id]) moved[field][RETIRED_STAGE_IDS[id]||id]=true; });
+  });
+  return normalizeStageProgress(moved);
+}
+/* XP and the level it fed are gone. An old save is read for its legacy progress first,
+   in migrate, and only then are the fields dropped — so nothing is lost on the way out. */
+const RETIRED_PLAYER_FIELDS=['xp','level'];
+function dropRetiredPlayerFields(p){
+  RETIRED_PLAYER_FIELDS.forEach(field=>{ delete p[field]; });
+  return p;
+}
+function stageStatus(p,id){ return p.stageProgress.completed[id]?'completed':p.stageProgress.available[id]?'available':'locked'; }
+function completeMathStage(p,id){
+  const i=MATH_STAGES.findIndex(s=>s.id===id); if(i<0||!p.stageProgress.available[id]) return null;
+  p.stageProgress.completed[id]=true; p.stageProgress.available[id]=true;
+  const next=MATH_STAGES[i+1]; if(next) p.stageProgress.available[next.id]=true;
+  p.stageProgress=normalizeStageProgress(p.stageProgress);
+  return next||null;
+}
+
+function newPlayer(name,age){
+  const young=age<=7;
+  return {id:'p'+Date.now(),name:name,age:age,total:0,ease:{},right:0,best:0,
+          groups:{add:true,sub:true,mul:true,div:!young},
+          unlocked:{add2:false,sub2:false,mul2:false,div2:false},
+          stageProgress:blankStageProgress(),monsterStage:1,momoName:'Momo',collectibles:{},accessories:[],storySeen:false,storyProgress:{firstCrackSeen:false,mapSeen:{}},migrationVersion:7};
+}
+function migrate(p){
+  const version=Number(p.migrationVersion)||0,wasLegacy=version<3;
+  if(!p.groups) p.groups={add:true,sub:true,mul:true,div:(p.age||9)>=8};
+  if(!p.ease) p.ease={};
+  if(!p.unlocked) p.unlocked={add2:false,sub2:false,mul2:false,div2:false};
+  if(p.unlocked.add!==undefined){ p.unlocked.add2=!!p.unlocked.add; p.unlocked.sub2=!!p.unlocked.sub; p.unlocked.mul2=!!p.unlocked.mul; p.unlocked.div2=!!p.unlocked.div; }
+  ['add2','sub2','mul2','div2'].forEach(k=>{ if(p.unlocked[k]===undefined) p.unlocked[k]=false; });
+  if(p.age===undefined) p.age=9;
+  if(wasLegacy){
+    const legacyCount=legacyCompletedCount(p);
+    const hasNewProgress=p.stageProgress&&p.stageProgress.completed&&Object.prototype.hasOwnProperty.call(p.stageProgress.completed,'add_1digit');
+    p.stageProgress=hasNewProgress?migrateV4StageProgress(p.stageProgress):progressFromCount(legacyCount);
+  }else if(version===3) p.stageProgress=migrateV3StageProgress(p.stageProgress);
+  else if(version===4) p.stageProgress=migrateV4StageProgress(p.stageProgress);
+  else p.stageProgress=normalizeStageProgress(p.stageProgress);
+  if(!p.momoName) p.momoName='Momo';
+  if(!p.collectibles||typeof p.collectibles!=='object') p.collectibles={};
+  COLLECTIBLES.forEach(c=>{ p.collectibles[c.id]=Math.max(0,Number(p.collectibles[c.id])||0); });
+  if(!Array.isArray(p.accessories)) p.accessories=[];
+  if(wasLegacy){
+    const aliases={pencilWand:'magicPencil',magicStaff:'guardianStaff'};
+    p.accessories=p.accessories.map(id=>aliases[id]||id);
+    const legacyLevel=Number(p.level)||1;
+    [[5,'flowerCrown'],[8,'scarf'],[9,'backpack'],[11,'magicPencil'],[16,'starCape'],[17,'crystalCrown'],[17,'guardianStaff']].forEach(([level,id])=>{ if(legacyLevel>=level&&!p.accessories.includes(id)) p.accessories.push(id); });
+  }
+  COSMETIC_REWARDS.forEach(a=>{ if(collectibleTotal(p)>=a.total&&!p.accessories.includes(a.id)) p.accessories.push(a.id); });
+  storyProgressOf(p);
+  p.monsterStage=p.devMonsterOverride||artForPlayer(p);
+  if(p.storySeen===undefined) p.storySeen=true;
+  dropRetiredPlayerFields(p);
+  p.migrationVersion=7;
+  return p;
+}
+
+/* ---------------- pet ---------------- */
+
+function petSVG(lvl,cls,accessories){
+  const st=stageOf(lvl),unlocked=Array.isArray(accessories)?accessories:[],a={
+    scarf:unlocked.includes('scarf'),star:unlocked.includes('starCape'),
+    crown:unlocked.includes('flowerCrown')||unlocked.includes('crystalCrown')
+  },p=[];
+  const palettes=[
+    {body:'#FFF1A8',belly:'#FFF8D8',accent:'#F7B84B',ear:'#FFD9E7'},
+    {body:'#FFDDEB',belly:'#FFF4F8',accent:'#FF7FA8',ear:'#FFEAF2'},
+    {body:'#D9F7E8',belly:'#F4FFF9',accent:'#63C79A',ear:'#FFE1EA'},
+    {body:'#DDEBFF',belly:'#F6FAFF',accent:'#7AA7F7',ear:'#FFE3EF'},
+    {body:'#EADFFF',belly:'#FBF8FF',accent:'#A884F6',ear:'#FFDDEA'},
+    {body:'#FFE1C8',belly:'#FFF8F0',accent:'#FF9C62',ear:'#FFE0EA'},
+    {body:'#D6F7FA',belly:'#F3FFFF',accent:'#56C6D2',ear:'#FFE2EC'},
+    {body:'#FFE0F6',belly:'#FFF7FD',accent:'#F177C6',ear:'#FFE8F7'}
+  ];
+  const c=palettes[Math.min(st-1,palettes.length-1)];
+
+  // ambient sparkles
+  p.push('<g opacity=".95"><path class="sparkle" d="M18 29 l2.4 5.6 5.6 2.4 -5.6 2.4 -2.4 5.6 -2.4 -5.6 -5.6 -2.4 5.6 -2.4 Z" fill="#FFD84D"/>');
+  p.push('<path class="sparkle s2" d="M103 24 l1.7 4 4 1.7 -4 1.7 -1.7 4 -1.7 -4 -4 -1.7 4 -1.7 Z" fill="#FF9BC4"/>');
+  p.push('<circle class="sparkle s3" cx="109" cy="62" r="3.2" fill="#8ED8FF"/></g>');
+
+  if(st===1){
+    p.push('<ellipse cx="60" cy="73" rx="33" ry="38" fill="'+c.body+'" stroke="var(--ink)" stroke-width="3"/>');
+    p.push('<path d="M42 50 q18 -16 36 0" fill="none" stroke="'+c.accent+'" stroke-width="4" stroke-linecap="round"/>');
+    p.push('<circle cx="50" cy="68" r="5" fill="var(--ink)"/><circle cx="70" cy="68" r="5" fill="var(--ink)"/>');
+    p.push('<circle cx="48.5" cy="66.5" r="1.5" fill="#fff"/><circle cx="68.5" cy="66.5" r="1.5" fill="#fff"/>');
+    p.push('<circle cx="42" cy="79" r="5" fill="#FFB6C9"/><circle cx="78" cy="79" r="5" fill="#FFB6C9"/>');
+    p.push('<path d="M54 82 q6 7 12 0" fill="none" stroke="var(--ink)" stroke-width="3" stroke-linecap="round"/>');
+    p.push('<path d="M32 45 q8 -10 15 0" fill="none" stroke="var(--ink)" stroke-width="3"/>');
+  } else {
+    // tail behind body
+    if(st>=5) p.push('<path class="tail" d="M89 83 q24 -2 16 16 q-5 10 -15 2" fill="none" stroke="'+c.accent+'" stroke-width="9" stroke-linecap="round"/>');
+
+    // wings behind body
+    if(st>=7){
+      p.push('<path class="wing-left" d="M31 62 q-22 -18 -25 7 q12 4 25 -7 Z" fill="#FFFFFF" stroke="var(--ink)" stroke-width="3"/>');
+      p.push('<path class="wing-right" d="M89 62 q22 -18 25 7 q-12 4 -25 -7 Z" fill="#FFFFFF" stroke="var(--ink)" stroke-width="3"/>');
+    }
+
+    // ears
+    p.push('<ellipse class="ear-left" cx="40" cy="39" rx="'+(st>=4?13:10)+'" ry="'+(st>=4?20:15)+'" fill="'+c.body+'" stroke="var(--ink)" stroke-width="3" transform="rotate(-22 40 39)"/>');
+    p.push('<ellipse class="ear-right" cx="80" cy="39" rx="'+(st>=4?13:10)+'" ry="'+(st>=4?20:15)+'" fill="'+c.body+'" stroke="var(--ink)" stroke-width="3" transform="rotate(22 80 39)"/>');
+    p.push('<ellipse cx="40" cy="39" rx="5" ry="'+(st>=4?12:9)+'" fill="'+c.ear+'" transform="rotate(-22 40 39)"/>');
+    p.push('<ellipse cx="80" cy="39" rx="5" ry="'+(st>=4?12:9)+'" fill="'+c.ear+'" transform="rotate(22 80 39)"/>');
+
+    // body
+    p.push('<ellipse cx="60" cy="76" rx="'+(31+Math.min(st,6))+'" ry="'+(31+Math.min(st,5))+'" fill="'+c.body+'" stroke="var(--ink)" stroke-width="3"/>');
+    p.push('<ellipse cx="60" cy="88" rx="22" ry="17" fill="'+c.belly+'" opacity=".92"/>');
+
+    // paws
+    if(st>=5){
+      p.push('<ellipse cx="30" cy="79" rx="10" ry="8" fill="'+c.body+'" stroke="var(--ink)" stroke-width="3" transform="rotate(-12 30 79)"/>');
+      p.push('<ellipse cx="90" cy="79" rx="10" ry="8" fill="'+c.body+'" stroke="var(--ink)" stroke-width="3" transform="rotate(12 90 79)"/>');
+      p.push('<path d="M27 79 l2 1 M31 78 l2 1 M87 78 l2 1 M91 79 l2 1" stroke="'+c.accent+'" stroke-width="1.8" stroke-linecap="round"/>');
+    }
+
+    // eyes
+    p.push('<ellipse cx="49" cy="68" rx="'+(st>=6?7.5:6.5)+'" ry="'+(st>=6?8.5:7.5)+'" fill="#fff"/>');
+    p.push('<ellipse cx="71" cy="68" rx="'+(st>=6?7.5:6.5)+'" ry="'+(st>=6?8.5:7.5)+'" fill="#fff"/>');
+    p.push('<ellipse cx="51" cy="70" rx="4.1" ry="4.8" fill="var(--ink)"/>');
+    p.push('<ellipse cx="69" cy="70" rx="4.1" ry="4.8" fill="var(--ink)"/>');
+    p.push('<circle cx="49.4" cy="67.8" r="1.7" fill="#fff"/><circle cx="67.4" cy="67.8" r="1.7" fill="#fff"/>');
+    p.push('<circle cx="52.5" cy="72.5" r=".8" fill="#fff"/><circle cx="70.5" cy="72.5" r=".8" fill="#fff"/>');
+
+    // face
+    p.push('<circle cx="40" cy="80" r="'+(st>=6?6:4.8)+'" fill="#FFB5C9" opacity=".9"/>');
+    p.push('<circle cx="80" cy="80" r="'+(st>=6?6:4.8)+'" fill="#FFB5C9" opacity=".9"/>');
+    p.push('<path d="M57 76 q3 3 6 0" fill="none" stroke="var(--ink)" stroke-width="2.3" stroke-linecap="round"/>');
+    p.push('<path d="M52 84 q8 '+(st>=6?9:7)+' 16 0" fill="none" stroke="var(--ink)" stroke-width="3" stroke-linecap="round"/>');
+    if(st>=6) p.push('<path d="M58 88 q2 3 4 0" fill="#FF718E" stroke="none"/>');
+
+    // feet
+    p.push('<ellipse cx="45" cy="105" rx="11" ry="6" fill="'+c.body+'" stroke="var(--ink)" stroke-width="3"/>');
+    p.push('<ellipse cx="75" cy="105" rx="11" ry="6" fill="'+c.body+'" stroke="var(--ink)" stroke-width="3"/>');
+
+    // special evolution details
+    if(st>=3) p.push('<path d="M60 48 q-6 -8 -12 -2 q2 7 12 11 q10 -4 12 -11 q-6 -6 -12 2 Z" fill="'+c.accent+'" opacity=".95"/>');
+    if(st>=8){
+      p.push('<path class="heart-pop" d="M100 48 q-5 -7 -10 0 q0 6 10 12 q10 -6 10 -12 q-5 -7 -10 0 Z" fill="#FF79A8"/>');
+      p.push('<circle cx="60" cy="28" r="4" fill="#FFD84D" stroke="var(--ink)" stroke-width="2"/>');
+    }
+  }
+
+  // accessories
+  if(a.hat) p.push('<g transform="translate(0,-2)"><path d="M43 42 q17 -23 34 0 Z" fill="#FF9B6A" stroke="var(--ink)" stroke-width="3"/><path d="M36 42 h48" stroke="var(--ink)" stroke-width="3" stroke-linecap="round"/></g>');
+  if(a.scarf) p.push('<path d="M42 93 q18 10 36 0" fill="none" stroke="#FF6B8E" stroke-width="7" stroke-linecap="round"/><path d="M75 94 q8 8 5 19" fill="none" stroke="#FF6B8E" stroke-width="7" stroke-linecap="round"/>');
+  if(a.star) p.push('<path d="M99 18 l3.5 8 8.5.8 -6.5 5.5 2 8.5 -7.5 -4.5 -7.5 4.5 2 -8.5 -6.5 -5.5 8.5 -.8 Z" fill="#FFD84D" stroke="var(--ink)" stroke-width="2.4"/>');
+  if(a.crown) p.push('<path d="M43 34 l6 -15 11 10 11 -10 6 15 Z" fill="#FFD84D" stroke="var(--ink)" stroke-width="3"/><circle cx="49" cy="19" r="2" fill="#FF79A8"/><circle cx="60" cy="28" r="2" fill="#7ED6FF"/><circle cx="71" cy="19" r="2" fill="#9BE287"/>');
+
+  return '<svg viewBox="0 0 120 120" class="'+(cls||'')+'">'+p.join('')+'</svg>';
+}
+
+function monsterMarkup(lvl,mood,cls,alt){
+  const stage=monsterStage(lvl),state=MONSTER_EXPRESSIONS[mood]||mood||'happy';
+  const accessories=P&&Array.isArray(P.accessories)?P.accessories:[];
+  const fallback='<span class="monster-fallback">'+petSVG(artLevelOf(lvl),cls||'',accessories)+'</span>';
+  if(!stage.assetReady) return '<span class="monster-asset mood-'+state+'" data-stage="'+stage.id+'">'+fallback+'</span>';
+  return '<span class="monster-asset asset-image mood-'+state+(cls?' '+cls:'')+'" data-stage="'+stage.id+'">'+
+    '<img src="'+stage.image+'" alt="'+esc(alt||'Momo')+'" onerror="this.hidden=true;this.parentElement.classList.remove(\'asset-image\',\'bob\',\'evolution-burst\');this.nextElementSibling.hidden=false">'+
+    '<span class="monster-fallback" hidden>'+petSVG(artLevelOf(lvl),cls||'',accessories)+'</span></span>';
+}
+
+
+/* ---------------- sound ---------------- */
+let AC=null;
+function beep(f,d,type){
+  if(!DB.sound) return;
+  try{
+    AC=AC||new (window.AudioContext||window.webkitAudioContext)();
+    const o=AC.createOscillator(),g=AC.createGain();
+    o.type=type||'triangle'; o.frequency.value=f;
+    g.gain.setValueAtTime(.14,AC.currentTime);
+    g.gain.exponentialRampToValueAtTime(.001,AC.currentTime+d);
+    o.connect(g); g.connect(AC.destination); o.start(); o.stop(AC.currentTime+d);
+  }catch(e){}
+}
+const sGood=()=>{beep(660,.09);setTimeout(()=>beep(880,.12),90)};
+const sStep=()=>beep(760,.06);
+const sBad =()=>beep(180,.22,'sawtooth');
+const sTap =()=>beep(440,.04);
+const sLvl =()=>{[523,659,784,1046].forEach((f,i)=>setTimeout(()=>beep(f,.16),i*110))};
+
+/* ---------------- column working model ---------------- */
+const rnd=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+const columnPlace=(wid,col)=>['ones','tens','hundreds','thousands','ten-thousands'][wid-1-col]||'next';
+function buildColumn(op,a,b){
+  const A=String(a),B=String(b);
+  const wid=op==='mul'?A.length+B.length:Math.max(A.length,B.length)+(op==='sub'?0:1);
+  const ad=new Array(wid).fill(null), bd=new Array(wid).fill(null);
+  for(let i=0;i<A.length;i++) ad[wid-A.length+i]=Number(A[i]);
+  for(let i=0;i<B.length;i++) bd[wid-B.length+i]=Number(B[i]);
+  const steps=[];
+  if(op==='add'){
+    let carry=0;
+    for(let i=wid-1;i>=0;i--){
+      if(ad[i]===null&&bd[i]===null&&carry===0) break;
+      const tot=(ad[i]||0)+(bd[i]||0)+carry;
+      steps.push({t:'res',col:i,want:String(tot%10),x:ad[i],y:bd[i],carry:carry});
+      carry=Math.floor(tot/10);
+      // A column with no digits of its own gets no carry mark above it. The carried digit
+      // is written straight into the answer on the next turn, so the child always works
+      // right to left: ones, then tens, then the one that spills into the hundreds.
+      if(carry>0&&i>0&&!(ad[i-1]===null&&bd[i-1]===null)) steps.push({t:'carry',col:i-1,want:String(carry)});
+    }
+  }else if(op==='mul'){
+    const m=Number(b); let carry=0,leftmost=ad.findIndex(v=>v!==null);
+    for(let i=wid-1;i>=0;i--){
+      if(ad[i]===null&&carry===0) break;
+      const tot=(ad[i]||0)*m+carry;
+      steps.push({t:'res',col:i,want:String(tot%10),x:ad[i],m:m,carry:carry});
+      carry=Math.floor(tot/10);
+      if(carry>0&&i>leftmost) steps.push({t:'mulCarry',row:0,col:i-1,anchorCol:i,want:String(carry),placement:'side'});
+    }
+  }else{
+    const top=ad.slice();
+    for(let i=wid-1;i>=0;i--){
+      if(top[i]===null&&bd[i]===null) break;
+      const y=bd[i]||0; let x=top[i]===null?0:top[i];
+      if(x<y){
+        let lender=i-1;
+        while(lender>=0&&(top[lender]===null||top[lender]===0)){
+          steps.push({t:'seek',col:lender,want:'0',place:columnPlace(wid,lender)});
+          lender--;
+        }
+        if(lender<0) throw new Error('Subtraction model cannot borrow');
+        const lentFrom=top[lender];
+        top[lender]=lentFrom-1;
+        steps.push({t:'ann',role:'lend',col:lender,from:lentFrom,want:String(top[lender]),hx:x,hy:y,place:columnPlace(wid,lender)});
+        for(let k=lender+1;k<i;k++){
+          const received=(top[k]||0)+10;
+          steps.push({t:'ann',role:'receive',col:k,from:top[k]||0,want:String(received),place:columnPlace(wid,k)});
+          top[k]=received;
+          steps.push({t:'ann',role:'pass',col:k,from:top[k],want:String(top[k]-1),place:columnPlace(wid,k)});
+          top[k]-=1;
+        }
+        const received=x+10;
+        steps.push({t:'ann',role:'receive',col:i,from:x,want:String(received),place:columnPlace(wid,i)});
+        x=received; top[i]=x;
+      }
+      steps.push({t:'res',col:i,want:String(x-y),x:x,y:y});
+    }
+  }
+  return {op:op,wid:wid,ad:ad,bd:bd,steps:steps,
+          ent:{carry:{},mulCarries:{},annotations:Array.from({length:wid},()=>[]),res:{}},si:0,buf:'',tries:0,err:0,hint:false};
+}
+const colValid=M=>M.steps.every(s=>/^\d+$/.test(s.want));
+
+function buildLongMultiplication(a,b){
+  const width=String(a*b).length,upper=String(a),lower=String(b),steps=[],partials=[];
+  const lowerDigits=lower.split('').reverse().map(Number);
+  lowerDigits.forEach((multiplier,row)=>{
+    const offset=row;
+    if(offset) steps.push({t:'placeholder',row:row,col:width-1,want:'0'});
+    let carry=0;
+    const digits=upper.split('').reverse().map(Number);
+    digits.forEach((digit,k)=>{
+      const total=digit*multiplier+carry,col=width-1-offset-k;
+      steps.push({t:'partial',row:row,col:col,want:String(total%10),digit:digit,multiplier:multiplier,carry:carry});
+      carry=Math.floor(total/10);
+      if(carry&&k<digits.length-1) steps.push({t:'partialCarry',row:row,col:col-1,anchorCol:col,want:String(carry),placement:'side'});
+    });
+    // what the last multiplication carried is written on its own, one column further left,
+    // so this row is also filled in right to left rather than two digits at once
+    if(carry) steps.push({t:'partial',row:row,col:width-1-offset-digits.length,want:String(carry),leading:true,multiplier:multiplier,carry:carry});
+    carry=0;
+    partials.push(a*multiplier*Math.pow(10,offset));
+  });
+  let carry=0;
+  for(let col=width-1;col>=0;col--){
+    const place=Math.pow(10,width-1-col);
+    const x=Math.floor(partials[0]/place)%10,y=Math.floor(partials[1]/place)%10,total=x+y+carry;
+    steps.push({t:'sum',col:col,want:String(total%10),x:x,y:y,carry:carry});
+    carry=Math.floor(total/10);
+    if(carry&&col>0) steps.push({t:'sumCarry',col:col-1,want:String(carry)});
+  }
+  return {a:a,b:b,width:width,partials:partials,total:a*b,steps:steps,si:0,buf:'',tries:0,err:0,hint:false,
+    ent:{partials:[{},{}],partialCarries:[null,null],sum:{},sumCarry:{}}};
+}
+
+function twoDigitColumnAddition(questionIndex){
+  const phase=questionIndex<=3?'no-carry':questionIndex<=6?'one-carry':'mixed';
+  for(let guard=0;guard<300;guard++){
+    const a=rnd(10,89),b=rnd(10,89),ones=a%10+b%10,tens=Math.floor(a/10)+Math.floor(b/10)+(ones>=10?1:0);
+    const carries=(ones>=10?1:0)+(tens>=10?1:0);
+    if((phase==='no-carry'&&carries===0)||(phase==='one-carry'&&ones>=10&&tens<10)||phase==='mixed')
+      return {kind:'col',a:a,b:b,M:buildColumn('add',a,b),phase:phase};
+  }
+  return {kind:'col',a:phase==='no-carry'?23:phase==='one-carry'?27:58,b:phase==='no-carry'?14:phase==='one-carry'?15:34,M:buildColumn('add',phase==='no-carry'?23:phase==='one-carry'?27:58,phase==='no-carry'?14:phase==='one-carry'?15:34),phase:phase};
+}
+/* the lesson 84-16 is written for: take-aways that need no crossing out first, then
+   ones that do, then a mix. The answer fills both columns so no leading 0 is written. */
+function twoDigitColumnSubtraction(questionIndex){
+  const phase=questionIndex<=3?'no-regroup':questionIndex<=6?'regroup':'mixed';
+  for(let guard=0;guard<300;guard++){
+    const a=rnd(21,99),b=rnd(11,a-10);
+    const M=buildColumn('sub',a,b);
+    if(!colValid(M)) continue;
+    const regroups=M.steps.some(s=>s.t==='ann');
+    if((phase==='no-regroup'&&regroups)||(phase==='regroup'&&!regroups)) continue;
+    return {kind:'col',a:a,b:b,M:M,phase:phase};
+  }
+  const a=phase==='no-regroup'?68:84,b=phase==='no-regroup'?24:16;
+  return {kind:'col',a:a,b:b,M:buildColumn('sub',a,b),phase:phase};
+}
+
+/* ---------------- question generation ---------------- */
+function genEasy(gid,tr){
+  if(gid==='add'){ const m=[9,12,20,30][tr]; const a=rnd(1,m),b=rnd(1,m); return{txt:a+' + '+b,ans:a+b}; }
+  if(gid==='sub'){ const m=[10,18,40,80][tr]; let a,b; do{a=rnd(3,m);b=rnd(1,a)}while(a%10<b%10); return{txt:a+' \u2212 '+b,ans:a-b}; }
+  if(gid==='mul'){ const tab=[[2,5,10],[2,3,4,5,6,10],[2,3,4,5,6,7,8,9,10],[3,4,6,7,8,9,11,12]][tr];
+    const a=tab[rnd(0,tab.length-1)],b=rnd(2,tr<=1?10:12); return{txt:a+' \u00D7 '+b,ans:a*b}; }
+  const d=rnd(2,[5,9,10,12][tr]),q=rnd(2,[6,9,12,12][tr]); return{txt:(d*q)+' \u00F7 '+d,ans:q};
+}
+function genHard(gid,tr){
+  if(gid==='add'){
+    for(let i=0;i<200;i++){
+      const a=[rnd(11,89),rnd(15,99),rnd(101,899),rnd(150,999)][tr];
+      const b=[rnd(11,89),rnd(15,99),rnd(11,99),rnd(150,999)][tr];
+      const M=buildColumn('add',a,b);
+      if(M.steps.some(s=>s.t==='carry')&&colValid(M)) return {a:a,b:b,M:M};
+    }
+    return {a:96,b:18,M:buildColumn('add',96,18)};
+  }
+  if(gid==='sub'){
+    for(let i=0;i<300;i++){
+      const a=[rnd(21,99),rnd(31,99),rnd(111,999),rnd(201,999)][tr];
+      const b=[rnd(11,a-1),rnd(11,a-1),rnd(11,99),rnd(111,a-1)][tr];
+      if(b>=a) continue;
+      const M=buildColumn('sub',a,b);
+      if(M.steps.some(s=>s.t==='ann')&&colValid(M)) return {a:a,b:b,M:M};
+    }
+    return {a:84,b:16,M:buildColumn('sub',84,16)};
+  }
+  if(gid==='mul'){
+    const a=[rnd(12,49),rnd(12,99),rnd(102,499),rnd(112,999)][tr];
+    const b=[rnd(2,5),rnd(2,9),rnd(3,9),rnd(3,9)][tr];
+    return {a:a,b:b,M:buildColumn('mul',a,b)};
+  }
+  return genDivision(tr);
+}
+/* the long division lesson starts short and grows: two-digit dividends, then three, then four.
+   Each length is met dividing exactly first and only then with something left over, so a
+   question never grows longer and starts leaving something over at the same time. */
+function longDivisionPhase(questionIndex){
+  const i=questionIndex||1;
+  const leftover=i===3||i===6||i>=9;
+  return {digits:i<=3?2:i<=6?3:4,exact:!leftover};
+}
+function genDivision(tr,phase){
+  const tier=Math.max(0,Math.min(3,tr|0));
+  const digits=phase&&phase.digits?Math.max(2,Math.min(4,phase.digits|0)):0;
+  const exact=phase?phase.exact!==false:tier<=1;
+  for(let guard=0;guard<400;guard++){
+    // the divisor stays a single digit: the lesson teaches the process, not two new things at once
+    const d = rnd(2,digits?9:[5,9,9,9][tier]);
+    // a lesson question that is not exact really does leave something over, never a sneaky 0
+    const rest = exact?0:rnd(phase?1:0,d-1);
+    let q;
+    if(digits){
+      // land the dividend inside the wanted length, remainder included
+      const lo=Math.pow(10,digits-1),hi=Math.pow(10,digits)-1;
+      q=rnd(Math.ceil((lo-rest)/d),Math.floor((hi-rest)/d));
+    }else{
+      let s=''; for(let i=0;i<(tier<=1?2:3);i++) s+=rnd(1,9);
+      q=parseInt(s,10);
+    }
+    if(q<1) continue;
+    const N=d*q+rest;
+    if(digits?String(N).length!==digits:String(N).length>4) continue;
+    const steps=divSteps(String(N),d);
+    if(steps.length<2) continue;          // there is always at least one digit to bring down
+    if(steps.some(s=>s.q===0)) continue;  // never write a 0 above the line
+    return {div:true,N:String(N),d:d,steps:steps,quot:String(q),rest:rest};
+  }
+  return {div:true,N:'126',d:6,steps:divSteps('126',6),quot:'21',rest:0};
+}
+function generateLessonQuestion(stage,questionIndex){
+  if(stage.id==='add_1digit'){
+    const a=rnd(0,9),b=rnd(0,9); return {kind:'n',txt:a+' + '+b,ans:a+b};
+  }
+  if(stage.id==='add_2column') return twoDigitColumnAddition(questionIndex||1);
+  if(stage.id==='add_2mental'){
+    const a=rnd(12,58),b=rnd(11,39); return {kind:'n',txt:a+' + '+b,ans:a+b};
+  }
+  if(stage.id==='sub_1digit'){
+    const a=rnd(2,9),b=rnd(0,a); return {kind:'n',txt:a+' \u2212 '+b,ans:a-b};
+  }
+  if(stage.id==='sub_2column') return twoDigitColumnSubtraction(questionIndex||1);
+  if(stage.id==='sub_2mental'){
+    // in the head now, after the columns taught it: never below zero, never a single digit
+    const a=rnd(25,95),b=rnd(11,Math.min(49,a-10)); return {kind:'n',txt:a+' − '+b,ans:a-b};
+  }
+  if(stage.id==='mul_1x1'){
+    const a=rnd(2,12),b=rnd(2,12); return {kind:'n',txt:a+' \u00D7 '+b,ans:a*b};
+  }
+  if(stage.id==='div_simple'){
+    const d=rnd(2,12),q=rnd(2,12); return {kind:'n',txt:(d*q)+' \u00F7 '+d,ans:q};
+  }
+  if(stage.mode==='division') return {kind:'div',made:genDivision(3,longDivisionPhase(questionIndex))};
+  if(stage.gid==='add'){
+    const lo=stage.digits===4?1000:100,hi=stage.digits===4?8999:899;
+    for(let i=0;i<250;i++){ const a=rnd(lo,hi),b=rnd(lo,hi),M=buildColumn('add',a,b); if(M.steps.some(s=>s.t==='carry')&&colValid(M)) return {kind:'col',a,b,M}; }
+  }
+  if(stage.gid==='sub'){
+    const lo=stage.digits===4?1000:100,hi=stage.digits===4?9999:999;
+    for(let i=0;i<350;i++){ const a=rnd(lo,hi),b=rnd(lo,a-1),M=buildColumn('sub',a,b); if(M.steps.some(s=>s.t==='ann')&&colValid(M)) return {kind:'col',a,b,M}; }
+  }
+  if(stage.id==='mul_1x2'){
+    const a=rnd(12,99),b=rnd(2,9); return {kind:'col',a,b,M:buildColumn('mul',a,b)};
+  }
+  if(stage.id==='mul_2x2'){
+    const a=rnd(12,99),b=rnd(12,99); return {kind:'longmul',a:a,b:b,L:buildLongMultiplication(a,b)};
+  }
+  return {kind:'n',txt:'1 + 1',ans:2};
+}
+function divSteps(Nstr,d){
+  const out=[]; let cur=0,started=false;
+  for(let i=0;i<Nstr.length;i++){
+    cur=cur*10+Number(Nstr[i]);
+    const q=Math.floor(cur/d);
+    if(q===0&&!started) continue;
+    started=true;
+    out.push({end:i,cur:cur,q:q,prod:q*d,rem:cur-q*d});
+    cur=cur-q*d;
+  }
+  return out;
+}
+</script>
+<script>
+/* ---------------- screens ---------------- */
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
+function show(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on')); $(id).classList.add('on'); try{window.scrollTo(0,0)}catch(e){} }
+
+const STORY_SCENES=[
+  {image:'assets/story/find-egg.png',alt:'A child discovers a glowing magical egg in the woods',title:'A magical egg!',text:'While walking through the woods, you find a mysterious egg glowing beneath the leaves.'},
+  {image:'assets/story/take-home.png',alt:'A child makes a warm, cosy nest for a magical egg',title:'A new friend',text:'You take the egg home and make it warm and cosy. {name} gives a tiny, happy wiggle.'},
+  {image:'assets/story/magic-maths.png',alt:'A magical friend glows beside a child solving a maths problem',title:'Magic maths',text:'{name} has magic inside. Every maths lesson will help your new friend grow.'}
+];
+let storyStep=0;
+function captureFriendName(){ if(!P) return; const value=$('friendName').value.trim(); P.momoName=value||'Momo'; $('friendName').value=P.momoName; }
+function renderStory(){
+  const scene=STORY_SCENES[storyStep],img=$('storyImg');
+  img.style.display='block'; img.src=scene.image; img.alt=scene.alt;
+  $('storyEyebrow').textContent=storyStep===0?'A magical friend\'s story':petName()+"'s story";
+  $('storyTitle').textContent=scene.title; $('storyText').textContent=scene.text.replaceAll('{name}',petName());
+  $('friendNameBox').style.display=storyStep===0?'block':'none';
+  $('storyNext').textContent=storyStep===STORY_SCENES.length-1?'Begin the adventure':'Next';
+  $('storyDots').innerHTML=STORY_SCENES.map((_,i)=>'<i class="'+(i===storyStep?'on':'')+'"></i>').join('');
+}
+function openStory(){ storyStep=0; $('friendName').value=petName(); renderStory(); show('s-story'); }
+function finishStory(){ captureFriendName(); P.storySeen=true; save(); renderHome(); show('s-home'); }
+
+function renderPlayers(){
+  const L=$('playerList'); L.innerHTML='';
+  DB.players.forEach(pl=>{
+    migrate(pl);
+    const b=document.createElement('button');
+    b.className='player-chip';
+    b.innerHTML='<span class="mini-pet">'+monsterMarkup(pl.monsterStage,'idle','',pl.momoName)+'</span><span><span class="nm">'+esc(pl.name)+
+      '</span><br><span class="lv">'+esc(pl.momoName)+' · '+completedCount(pl)+' glowing lessons</span></span>';
+    b.onclick=()=>{ DB.current=pl.id; P=migrate(pl); save(); renderHome(); show('s-home'); };
+    L.appendChild(b);
+  });
+}
+function renderHome(){
+  $('homeWho').textContent=P.name;
+  const count=completedCount(P),evolution=evolutionForCount(count),nextEvolution=EVOLUTIONS.find(e=>e.completed>count);
+  P.monsterStage=P.devMonsterOverride||artForPlayer(P);
+  $('petBox').innerHTML=monsterMarkup(P.monsterStage,'idle','bob',petName());
+  $('journeyMessage').textContent=count===0?petName()+"'s heart glows when you come near.":count===MATH_STAGES.length?petName()+' is a Guardian of Maths!':petName()+' has grown through '+count+' magical '+(count===1?'lesson':'lessons')+'.';
+  if(nextEvolution&&nextEvolution.completed<1) $('nextReward').textContent='Get 4 of the first 5 answers right to see the first crack.';
+  else if(nextEvolution){ const left=nextEvolution.completed-count; $('nextReward').textContent=left===1?'One more lesson until '+nextEvolution.title+'!':left+' more lessons until '+nextEvolution.title+'.'; }
+  else $('nextReward').textContent='The whole enchanted path is glowing.';
+  $('collectionBox').innerHTML=COLLECTIBLES.filter(c=>P.collectibles[c.id]>0).map(c=>'<span class="collectible">'+c.emoji+' '+c.name+' ×'+P.collectibles[c.id]+'</span>').join('')||'<span class="magic-whisper">Replay a glowing lesson to discover magical treasures.</span>';
+  $('wardrobeBox').innerHTML=COSMETIC_REWARDS.filter(a=>P.accessories.includes(a.id)).map(a=>'<span class="accessory-chip">'+a.emoji+' '+a.name+'</span>').join('');
+  // plain words and a number that says what it is out of: "path lights" and "kind
+  // answers" were the game's own vocabulary, which is no use to the child reading them
+  $('statBox').innerHTML=
+    '<div><b class="mono">'+count+' of '+MATH_STAGES.length+'</b><span>lessons lit</span></div>'+
+    '<div><b class="mono">'+P.right+'</b><span>right answers</span></div>'+
+    '<div><b class="mono">'+P.best+'</b><span>best streak</span></div>';
+  $('playBtn').textContent=count===0?'Help the egg awaken':count===MATH_STAGES.length?'Revisit the enchanted lessons':'Continue '+petName()+"'s adventure";
+}
+
+function renderMenu(){
+  const count=completedCount(P),L=$('pickList');
+  $('menuTitle').textContent=petName()+"'s enchanted journey";
+  $('menuProgress').textContent=count+' of '+MATH_STAGES.length+' lessons lit';
+  $('mapIntro').textContent=count===MATH_STAGES.length?'Every path is glowing. Practise any stop to find treasures.':'Where are '+petName()+' and you going next?';
+  L.innerHTML='<div class="adventure-path" aria-hidden="true"></div>';
+  const currentIndex=Math.min(count,PROGRESSION_NODES.length-1);
+  PROGRESSION_NODES.forEach((node,i)=>{
+    const stage=STAGE_BY_ID(node.lessonId),status=stageStatus(P,node.lessonId),locked=status==='locked',done=status==='completed';
+    const b=document.createElement('button');
+    b.className='map-location '+status+(i===currentIndex&&!done?' current':'')+(node.majorEvolution?' major':'');
+    b.style.left=node.mapPosition.x+'%';
+    b.style.top=node.mapPosition.y+'%';
+    b.disabled=locked;
+    const art=locked?'<span class="silhouette" aria-hidden="true"></span>':monsterMarkup(done?node.stage:P.monsterStage,'idle',i===currentIndex?'bob':'',petName());
+    const statusText=locked?'Locked':done?'Visited':i===currentIndex?'Continue here':'Practise';
+    b.innerHTML=art+'<span class="map-region">'+esc(node.region)+'</span><h3>'+esc(node.title)+'</h3><p>'+esc(stage.label)+'</p><span class="map-pin-status">'+statusText+'</span>';
+    if(!locked) b.onclick=()=>openMapNode(node.id);
+    L.appendChild(b);
+  });
+}
+
+let selectedMapNode=null;
+function openMapNode(nodeId){
+  const node=PROGRESSION_NODES.find(n=>n.id===nodeId); if(!node) return;
+  const stage=STAGE_BY_ID(node.lessonId); if(!stage||stageStatus(P,stage.id)==='locked') return;
+  selectedMapNode=node;
+  storyProgressOf(P).mapSeen[node.id]=true; save();
+  $('nodeRegion').textContent=node.region;
+  $('nodeLesson').textContent=stageStatus(P,stage.id)==='completed'?'practise again · '+stage.label:'next lesson · '+stage.label;
+  $('nodeTitle').textContent=node.title;
+  $('nodePet').innerHTML=monsterMarkup(stageStatus(P,stage.id)==='completed'?node.stage:P.monsterStage,'curious','bob',petName());
+  $('nodeStory').textContent=node.storyBefore.replaceAll('{name}',petName());
+  $('nodeStart').textContent=stageStatus(P,stage.id)==='completed'?'Practise Again':'Start Lesson';
+  show('s-node');
+}
+
+
+/* ---------------- settings ---------------- */
+/* the name belongs to the child, so it is theirs to change later, not only at the story */
+function captureSettingsName(){
+  if(!P) return;
+  const value=$('setFriendName').value.trim();
+  P.momoName=value||'Momo';
+  $('setFriendName').value=P.momoName;
+  save();
+}
+function renderSettings(){
+  $('setWho').textContent=P.name;
+  $('setFriendName').value=petName();
+  const ar=$('setAge'); ar.innerHTML='';
+  [6,7,8,9,10,11].forEach(a=>{
+    const b=document.createElement('button');
+    b.className='agebtn'+(a===P.age?' sel':''); b.textContent=a;
+    b.onclick=()=>{ P.age=a; save(); renderSettings(); sTap(); };
+    ar.appendChild(b);
+  });
+  const L=$('opList'); L.innerHTML='';
+  MATH_STAGES.forEach(stage=>{
+    const row=document.createElement('div'),status=stageStatus(P,stage.id); row.className='opt';
+    row.innerHTML='<span><span class="lbl">'+stage.label+'</span><br><span class="magic">'+stage.magic+'</span></span><span class="accessory-chip">'+(status==='completed'?'✨ glowing':status)+'</span>';
+    L.appendChild(row);
+  });
+  $('swSound').className='sw'+(DB.sound?' on':'');
+}
+
+/* ---------------- gameplay ---------------- */
+const SESSION=10;
+/* A four-digit column is a lot of work for one question, so the harder lessons ask for
+   fewer of them. The share needed to light the path stays the same 8 in 10 throughout. */
+function sessionPlan(stage){
+  const total=stage&&stage.digits===4?5:stage&&stage.digits===3?7:SESSION;
+  return {total:total,pass:Math.ceil(total*0.8)};
+}
+let S=null;
+let pendingUnlockStage=null;
+let lastSessionStageId=null;
+let sleepyTimer=null;
+function setPlayMood(mood){
+  if(!$('playPet')||!P) return;
+  const crack=S&&S.stageId==='add_1digit'&&!S.wasCompleted&&S.crackSeen,art=crack?2:P.monsterStage;
+  $('playPet').innerHTML=monsterMarkup(art,mood,crack&&S.crackMoment?'egg-wiggle':'',petName());
+  clearTimeout(sleepyTimer); sleepyTimer=setTimeout(()=>{ if(S&&$('s-play').classList.contains('on')) $('playPet').innerHTML=monsterMarkup(art,'inactive','',petName()); },30000);
+}
+
+/* one space per question, filling with a star as it is answered. A star won without help
+   is gold; one the child needed a hand with still lights, just softly, because an empty
+   space next to a right answer would read as a telling-off. */
+function renderStars(justWon){
+  const box=$('progress'); if(!box||!S) return;
+  box.innerHTML='';
+  for(let i=0;i<S.total;i++){
+    const mark=S.marks[i],s=document.createElement('span');
+    s.className='star'+(mark?' '+mark:'')+(justWon&&i===S.marks.length-1?' fresh':'');
+    s.textContent=mark?'★':'☆';
+    box.appendChild(s);
+  }
+  const won=S.marks.filter(m=>m==='won').length;
+  box.setAttribute('aria-label',won+' of '+S.total+' stars, '+S.pass+' needed');
+}
+function markQuestion(mark){ if(S.marks.length<S.total) S.marks.push(mark); renderStars(true); }
+function startSession(stageId){
+  const stage=STAGE_BY_ID(stageId);
+  if(!stage||stageStatus(P,stage.id)==='locked') return;
+  const plan=sessionPlan(stage);
+  const cracked=stage.id==='add_1digit'&&!P.stageProgress.completed[stage.id]&&!!storyProgressOf(P).firstCrackSeen;
+  S={gid:stage.gid,vid:stage.id,stageId:stage.id,stage:stage,wasCompleted:P.stageProgress.completed[stage.id],i:0,right:0,mastered:0,streak:0,best:0,q:null,input:'',col:null,longMul:null,div:null,locked:false,attempt:0,mode:'answer',crackMoment:false,crackSeen:cracked,reward:null,total:plan.total,pass:plan.pass,marks:[]};
+  show('s-play'); nextQuestion();
+}
+function nextQuestion(){
+  if(S.i>=S.total){ endSession(); return; }
+  S.i++; S.input=''; S.locked=false; S.attempt=0; S.mode='answer'; S.crackMoment=false; $('fb').textContent='';
+  setPlayMood('beforeQuestion');
+  renderStars(false);
+  const made=generateLessonQuestion(S.stage,S.i);
+  $('colHint').style.display='none'; $('hintBtn').style.display='none';
+  if(made.kind==='n'){
+    S.q={vid:S.stage.id,kind:'n',ans:made.ans};
+    $('normalQ').style.display='block'; $('colQ').style.display='none';
+    $('qText').textContent=made.txt+' =';
+    S.input=''; paintAns();
+    $('qTag').textContent=S.stage.magic+' · help '+petName()+' find the answer';
+  }else{
+    if(made.kind==='div'){
+      S.q={vid:S.stage.id,kind:'div'};
+      S.div={g:made.made,plan:divPlan(made.made),pi:0,buf:'',done:{},err:0,tries:0,hint:false};
+      S.col=null;
+      $('normalQ').style.display='none'; $('colQ').style.display='block';
+      $('hintBtn').style.display='block'; $('hintBtn').textContent='need a hint?';
+      renderDiv();
+    }else if(made.kind==='longmul'){
+      S.q={vid:S.stage.id,kind:'longmul'};
+      S.longMul=made.L; S.col=null; S.div=null; S.colB=made.b;
+      $('normalQ').style.display='none'; $('colQ').style.display='block';
+      $('hintBtn').style.display='block'; $('hintBtn').textContent='open a multiplication spell?';
+      renderLongMul();
+    }else{
+      S.q={vid:S.stage.id,kind:'col'};
+      S.col=made.M; S.longMul=null; S.div=null;
+      S.colB=made.b;
+      $('normalQ').style.display='none'; $('colQ').style.display='block';
+      if(S.stage.gid==='mul'){ $('hintBtn').style.display='block'; $('hintBtn').textContent='open a multiplication spell?'; }
+      renderCol();
+    }
+    $('qTag').textContent=S.stage.magic+' · work the magic one step at a time';
+  }
+  buildPad();
+}
+function paintAns(){ const b=$('ansBox'); b.textContent=S.input; b.classList.toggle('empty',S.input===''); }
+function praise(){ return PRAISE[Math.floor(Math.random()*PRAISE.length)]; }
+
+function buildPad(){
+  const pad=$('pad'); pad.innerHTML='';
+  ['1','2','3','4','5','6','7','8','9','del','0','go'].forEach(k=>{
+    const b=document.createElement('button');
+    b.className='key'+(k==='go'?' go':k==='del'?' del':'');
+    b.textContent=k==='del'?'\u232B':k==='go'?'\u2713':k;
+    b.setAttribute('aria-label',k==='del'?'delete':k==='go'?'ok':k);
+    b.onclick=()=>press(k);
+    pad.appendChild(b);
+  });
+  if(S.q.kind!=='n') pad.lastChild.style.visibility='hidden';
+}
+function press(k){
+  if(S.locked) return;
+  sTap();
+  if(S.q.kind==='col') return pressCol(k);
+  if(S.q.kind==='longmul') return pressLongMul(k);
+  if(S.q.kind==='div') return pressDiv(k);
+  if(k==='del') S.input=S.input.slice(0,-1);
+  else if(k==='go'){ if(S.input!=='') checkNormal(); return; }
+  else if(S.input.length<6) S.input+=k;
+  paintAns();
+}
+function checkNormal(){
+  const ok=Number(S.input)===S.q.ans;
+  if(S.mode==='copy'){
+    if(!ok){ $('fb').innerHTML='<span class="no">'+petName()+' is thinking with you. It\u2019s '+S.q.ans+'.</span>'; setPlayMood('wrong'); S.input=''; paintAns(); return; }
+    S.locked=true; awardHelped();
+    $('fb').innerHTML='<span class="ok">There it is.</span>'; sGood(); save();
+    afterAnswerDelay(900); return;
+  }
+  if(ok){
+    S.locked=true;
+    if(S.attempt===0) ease(S.q.vid,0.2);
+    award(S.attempt===0);
+    $('fb').innerHTML='<span class="ok">'+(S.attempt===0?praise():'You fixed that one yourself.')+'</span>'+bonusStamp()+crackMessage();
+    setPlayMood(S.streak>=3?'streak':'correct');
+    sGood(); save(); afterAnswerDelay(950); return;
+  }
+  if(S.attempt===0){
+    S.attempt=1; S.input=''; paintAns();
+    $('fb').innerHTML='<span class="no">Nearly there. '+petName()+' believes in you!</span>';
+    setPlayMood('wrong');
+    shake(); sBad(); return;
+  }
+  S.streak=0; ease(S.q.vid,-0.6);
+  S.mode='copy'; S.input=''; paintAns();
+  $('fb').innerHTML='<span class="no">Every try gives '+petName()+' more magic. It\u2019s '+S.q.ans+' · type it in</span>';
+  setPlayMood('wrong');
+  sBad();
+}
+function shake(){ $('qcard').classList.add('shake'); setTimeout(()=>$('qcard').classList.remove('shake'),300); }
+function bonusStamp(){ return S.streak>=3?' <span class="stamp">✨ streak magic</span>':''; }
+function crackMessage(){ return S.crackMoment?'<br><span class="stamp">The egg wiggles… a tiny crack appears!</span>':''; }
+function shouldShowCrackPause(){
+  return S&&S.stageId==='add_1digit'&&!S.wasCompleted&&!S.crackSeen&&S.i===5&&S.mastered>=4;
+}
+function afterAnswerDelay(ms){
+  setTimeout(()=>{ if(shouldShowCrackPause()) showCrackPause(); else nextQuestion(); },ms);
+}
+function showCrackPause(){
+  S.crackSeen=true; S.crackMoment=false; storyProgressOf(P).firstCrackSeen=true; P.monsterStage=P.devMonsterOverride||artForPlayer(P); save();
+  $('crackTitle').textContent='A crack has started to appear!';
+  $('crackPet').innerHTML=monsterMarkup(2,'levelUp','egg-wiggle',petName()+' cracking');
+  $('crackStats').innerHTML=
+    '<div><b class="mono">'+S.mastered+'</b><span>of the first 5 mastered</span></div>'+
+    '<div><b class="mono">'+(S.total-S.i)+'</b><span>questions left</span></div>'+
+    '<div><b class="mono">'+S.pass+'</b><span>needed to light the path</span></div>';
+  $('crackReward').textContent='A crack has started to appear. Keep going and see if it hatches.';
+  show('s-crack');
+  sLvl();
+}
+function award(mastered){
+  S.streak++; S.right++; P.right++;
+  if(mastered) S.mastered++;
+  markQuestion(mastered?'won':'helped');
+  if(S.streak>P.best) P.best=S.streak;
+  if(S.streak>S.best) S.best=S.streak;
+  P.total=(Number(P.total)||0)+1;
+  if(shouldShowCrackPause()) S.crackMoment=true;
+}
+/* the child got there, but with help: the answer counts, the mastery does not */
+function awardHelped(){ S.right++; P.right++; S.streak=0; P.total=(Number(P.total)||0)+1; markQuestion('helped'); }
+function awardCollectible(){
+  const item=COLLECTIBLES[Math.floor(Math.random()*COLLECTIBLES.length)];
+  P.collectibles[item.id]=(P.collectibles[item.id]||0)+1;
+  const before=P.accessories.slice();
+  COSMETIC_REWARDS.forEach(a=>{ if(collectibleTotal(P)>=a.total&&!P.accessories.includes(a.id)) P.accessories.push(a.id); });
+  return {item,newCosmetics:COSMETIC_REWARDS.filter(a=>P.accessories.includes(a.id)&&!before.includes(a.id))};
+}
+
+function maybeCompleteStage(){
+  if(!S.stageId||S.mastered<S.pass) return false;
+  if(S.wasCompleted){ S.reward=awardCollectible(); save(); return 'collectible'; }
+  const beforeArt=P.monsterStage;
+  const next=completeMathStage(P,S.stageId);
+  const count=completedCount(P),afterEvolution=evolutionForCount(count),node=NODE_BY_LESSON(S.stageId);
+  P.monsterStage=P.devMonsterOverride||afterEvolution.art;
+  save();
+  pendingUnlockStage=next;
+  const evolved=beforeArt!==P.monsterStage,message=afterEvolution.message.replaceAll('{name}',petName());
+  $('unlockBox').classList.toggle('major-transition',!!afterEvolution.majorEvolution);
+  $('unlockPair').style.display=afterEvolution.majorEvolution?'grid':'none';
+  $('unlockArrow').style.display=afterEvolution.majorEvolution?'block':'none';
+  $('unlockPet').style.display=afterEvolution.majorEvolution?'none':'flex';
+  if(afterEvolution.majorEvolution){
+    $('unlockBeforePet').innerHTML=monsterMarkup(beforeArt,'idle','',petName()+' before transforming');
+    $('unlockAfterPet').innerHTML=monsterMarkup(P.monsterStage,'levelUp','evolution-burst',petName()+' transformed');
+  }else $('unlockPet').innerHTML=monsterMarkup(P.monsterStage,'levelUp','evolution-burst',petName()+' celebrating');
+  $('unlockTitle').textContent=evolved?afterEvolution.title:S.stage.magic+' is glowing!';
+  $('unlockText').textContent=evolved?message:(node?node.storyAfter.replaceAll('{name}',petName()):petName()+' has grown because you learned together.');
+  $('unlockOk').textContent='See your result';
+  $('unlockBox').classList.add('on');
+  sLvl(); return 'completed';
+}
+
+function endSession(){
+  lastSessionStageId=S.stageId;
+  const result=maybeCompleteStage(); save();
+  $('endTitle').textContent=S.mastered>=S.pass?(S.wasCompleted?'Treasure discovered!':'The path is glowing!'):'The magic needs another try';
+  $('endPet').innerHTML=monsterMarkup(P.monsterStage,S.mastered>=S.pass?'streak':'idle','bob',petName());
+  $('endStats').innerHTML=
+    '<div><b class="mono">'+S.mastered+'</b><span>answers mastered</span></div>'+
+    '<div><b class="mono">'+S.best+'</b><span>brightest streak</span></div>'+
+    '<div><b class="mono">'+completedCount(P)+' of '+MATH_STAGES.length+'</b><span>lessons lit</span></div>';
+  if(result==='collectible'){
+    const cosmetic=S.reward.newCosmetics[0];
+    $('endReward').textContent=petName()+' found '+S.reward.item.emoji+' '+S.reward.item.name+'!'+(cosmetic?' A new '+cosmetic.name+' appeared in the magic wardrobe!':'');
+  }else if(S.mastered<S.pass) $('endReward').textContent=petName()+' is proud of every try. Master '+S.pass+' answers to light this path.';
+  else {
+    const node=NODE_BY_LESSON(S.stageId);
+    $('endReward').textContent=node?node.storyAfter.replaceAll('{name}',petName()):petName()+' has grown because you learned together.';
+  }
+  $('againBtn').textContent='Continue Adventure';
+  $('endHome').textContent='Practise Again';
+  show('s-end');
+}
+</script>
+<script>
+/* ---------------- columns: addition, subtraction, multiplication ---------------- */
+function colPrompt(M){
+  const st=M.steps[M.si];
+  if(!st) return '';
+  if(M.op==='add'){
+    if(st.t==='carry') return 'Carry the '+st.want+' into the next column.';
+    if(st.x===null&&st.y===null&&st.carry) return 'Nothing left to add. Write the carried '+st.carry+'.';
+    const parts=[]; if(st.x!==null)parts.push(st.x); if(st.y!==null)parts.push(st.y); if(st.carry)parts.push(st.carry);
+    if(parts.length===1) return 'Only '+parts[0]+' here. Write it down.';
+    return parts.join(' + ')+'. Write the ones digit here.';
+  }
+  if(M.op==='mul'){
+    if(st.t==='mulCarry') return 'Keep the carried '+st.want+' beside this multiplication step.';
+    if(st.x===null) return 'Nothing left to multiply. Write the carried '+st.carry+'.';
+    return st.x+' \u00D7 '+st.m+(st.carry?' + '+st.carry:'')+'. Write the ones digit here.';
+  }
+  if(st.t==='seek') return 'The '+st.place+' column has 0, so it has nothing to lend. Enter 0, then follow the borrow one column left.';
+  if(st.t==='ann'&&st.role==='lend') return st.hx+' \u2212 '+st.hy+' needs borrowing. Cross out the '+st.from+' and write '+st.want+'.';
+  if(st.t==='ann'&&st.role==='pass') return 'This '+st.from+' lends one onward. Cross it out and write '+st.want+'.';
+  if(st.t==='ann') return 'The '+st.from+' receives a ten and becomes '+st.want+'. Write '+st.want+' above it.';
+  return st.x+' \u2212 '+st.y+'. Write the answer.';
+}
+function renderCol(){
+  const M=S.col, g=$('colGrid'), cols=M.wid+1, st=M.steps[M.si];
+  g.style.gridTemplateColumns='repeat('+cols+', var(--cell))'+(M.op==='mul'?' 50px':'');
+  g.style.gridTemplateRows='calc(var(--cell) * 1.35) repeat(3, var(--cell))';
+  g.innerHTML='';
+  const cell=(r,c,txt,cls)=>{
+    const d=document.createElement('div'); d.className='dc '+(cls||''); d.textContent=txt;
+    d.style.gridRow=r; d.style.gridColumn=c; g.appendChild(d); return d;
+  };
+  const sign=M.op==='add'?'+':M.op==='sub'?'\u2212':'\u00D7';
+  for(let i=0;i<M.wid;i++){
+    const gc=i+2;
+    if(M.op==='sub'){
+      const history=M.ent.annotations[i];
+      if(history.length||(st&&st.t==='ann'&&st.col===i)){
+        const d=cell(1,gc,'','small annotations');
+        history.forEach((entry,index)=>{ const span=document.createElement('span'); span.textContent=entry.value; if(index<history.length-1) span.className='ann-struck'; d.appendChild(span); });
+        if(st&&st.t==='ann'&&st.col===i){ const span=document.createElement('span'); span.textContent=M.buf; span.className='ann-input slot act'+(st.want.length>1?' wide':''); d.appendChild(span); }
+      }
+    }else{
+      if(M.ent.carry[i]!==undefined) cell(1,gc,M.ent.carry[i],'small');
+      else if(st&&st.t==='carry'&&st.col===i) cell(1,gc,M.buf,'small slot act');
+    }
+    if(M.ad[i]!==null) cell(2,gc,M.ad[i],(M.op==='sub'&&M.ent.annotations[i].length?'struck ':'')+(st&&st.t==='seek'&&st.col===i?'focus':''));
+    if(M.bd[i]!==null) cell(3,gc,M.bd[i],'');
+  }
+  cell(3,1,sign,'op');
+  const rule=document.createElement('div');
+  rule.className='rule'; rule.style.gridRow=4; rule.style.gridColumn='1 / span '+cols;
+  g.appendChild(rule);
+  const resultCols=new Set();
+  M.steps.forEach(s=>{ if(s.t==='res') resultCols.add(s.col); });
+  resultCols.forEach(col=>{
+    const gc=col+2,active=st&&st.t==='res'&&st.col===col;
+    let typed='';
+    if(M.ent.res[col]!==undefined) typed=M.ent.res[col];
+    else if(active) typed=(st.t==='res'?M.buf:M.buf[st.cols.indexOf(col)])||'';
+    cell(4,gc,typed,(M.ent.res[col]!==undefined?'typed ':'slot ')+(active?'act':''));
+  });
+  if(M.op==='mul'){
+    const carry=M.ent.mulCarries[0],activeCarry=st&&st.t==='mulCarry';
+    if(carry||activeCarry) cell(2,cols+1,'carry '+(activeCarry?M.buf:carry.value),'mul-carry-note'+(!st?' retired':''));
+  }
+  $('colPrompt').textContent=colPrompt(M);
+  if(M.hint&&M.op==='mul'){
+    const strip=$('colHint'); strip.style.display='grid'; strip.innerHTML='';
+    const m=Number(String(S.colB!==undefined?S.colB:M.bd[M.wid-1]));
+    for(let i=1;i<=9;i++){ const e=document.createElement('span'); e.textContent=m+'\u00D7'+i+'='+(m*i); strip.appendChild(e); }
+    $('hintBtn').style.display='none';
+  }
+}
+function commitColumnStep(M){
+  const st=M.steps[M.si]; if(!st) return null;
+  if(st.t==='res') M.ent.res[st.col]=st.want;
+  else if(st.t==='carry') M.ent.carry[st.col]=st.want;
+  else if(st.t==='mulCarry') M.ent.mulCarries[st.row]={value:st.want,anchorCol:st.anchorCol};
+  else if(st.t==='ann') M.ent.annotations[st.col].push({value:st.want,role:st.role});
+  M.buf=''; M.si++; return st;
+}
+function pressCol(k){
+  const M=S.col, st=M.steps[M.si];
+  if(!st) return;
+  if(k==='del'){ M.buf=M.buf.slice(0,-1); renderCol(); return; }
+  if(k==='go') return;
+  if(M.buf.length>=st.want.length) return;
+  M.buf+=k;
+  if(M.buf.length<st.want.length){ renderCol(); return; }
+  if(M.buf===st.want){
+    sStep(); M.tries=0;
+    commitColumnStep(M);
+    if(M.si>=M.steps.length){ renderCol(); finishCol(); return; }
+    renderCol(); return;
+  }
+  sBad(); M.tries++;
+  if(M.tries>=2){ M.err++; S.streak=0; $('fb').innerHTML='<span class="no">'+petName()+' is thinking with you. It\u2019s '+st.want+'.</span>'; setPlayMood('wrong'); }
+  else { $('fb').innerHTML='<span class="no">Nearly there. '+petName()+' believes in you!</span>'; setPlayMood('wrong'); }
+  shake(); S.locked=true;
+  const wait=M.tries>=2?1500:1000;
+  setTimeout(()=>{ $('fb').textContent=''; M.buf=''; S.locked=false; renderCol(); },wait);
+  renderCol();
+}
+function finishCol(){
+  const M=S.col; S.locked=true;
+  const clean=M.err===0&&!M.hint;
+  if(clean){ ease(S.q.vid,0.2); award(true); }
+  else { if(M.err>0) ease(S.q.vid,-0.6); awardHelped(); }
+  let total=''; for(let i=0;i<M.wid;i++) if(M.ent.res[i]!==undefined) total+=M.ent.res[i];
+  $('fb').innerHTML='<span class="ok">'+(clean?praise():'Worked all the way through.')+' '+Number(total)+'</span>'+(clean?bonusStamp():'')+crackMessage();
+  setPlayMood(S.streak>=3?'streak':'correct');
+  save(); afterAnswerDelay(1600);
+}
+
+/* ---------------- two-digit long multiplication ---------------- */
+function longMulPrompt(L){
+  const st=L.steps[L.si]; if(!st) return '';
+  if(st.t==='placeholder') return 'The tens row is worth tens. Put a 0 in the ones place.';
+  if(st.t==='partialCarry') return 'Keep the carried '+st.want+' beside this partial-product step.';
+  if(st.t==='partial'){
+    if(st.leading) return 'Write the final carried '+st.want+' at the start of this row.';
+    return st.digit+' × '+st.multiplier+(st.carry?' + '+st.carry:'')+'. Write the ones digit in this partial row.';
+  }
+  if(st.t==='sumCarry') return 'Carry the '+st.want+' while adding the partial rows.';
+  return st.x+' + '+st.y+(st.carry?' + '+st.carry:'')+'. Add the partial rows in this column.';
+}
+function renderLongMul(){
+  const L=S.longMul,st=L.steps[L.si],grid=$('colGrid'),cols=L.width+1;
+  grid.style.gridTemplateColumns='repeat('+cols+', var(--cell)) 50px';
+  grid.style.gridTemplateRows='repeat(9, var(--cell))'; grid.innerHTML='';
+  const cell=(r,c,txt,cls)=>{ const d=document.createElement('div'); d.className='dc '+(cls||''); d.textContent=txt; d.style.gridRow=r; d.style.gridColumn=c; grid.appendChild(d); return d; };
+  const rule=(row)=>{ const d=document.createElement('div'); d.className='rule'; d.style.gridRow=row; d.style.gridColumn='1 / span '+cols; grid.appendChild(d); };
+  const upper=String(L.a),lower=String(L.b);
+  [...upper].forEach((digit,i)=>cell(2,L.width-upper.length+i+2,digit));
+  [...lower].forEach((digit,i)=>cell(3,L.width-lower.length+i+2,digit));
+  cell(3,1,'×','op'); rule(4);
+  [0,1].forEach(row=>{
+    Object.entries(L.ent.partials[row]).forEach(([col,value])=>cell(5+row,Number(col)+2,value,'typed'));
+    if(st&&st.row===row&&(st.t==='partial'||st.t==='placeholder')) cell(5+row,st.col+2,L.buf||'','slot act');
+    const carry=L.ent.partialCarries[row],activeCarry=st&&st.t==='partialCarry'&&st.row===row;
+    if(carry||activeCarry){
+      const activeRow=st&&(st.t==='partial'||st.t==='partialCarry'||st.t==='placeholder')?st.row:null;
+      cell(5+row,cols+1,'carry '+(activeCarry?L.buf:carry.value),'mul-carry-note'+(activeRow!==row?' retired':''));
+    }
+  });
+  Object.entries(L.ent.sumCarry).forEach(([col,value])=>cell(7,Number(col)+2,value,'small'));
+  if(st&&st.t==='sumCarry') cell(7,st.col+2,L.buf,'small slot act');
+  rule(8);
+  Object.entries(L.ent.sum).forEach(([col,value])=>cell(9,Number(col)+2,value,'typed'));
+  if(st&&st.t==='sum') cell(9,st.col+2,L.buf,'slot act');
+  $('colPrompt').textContent=longMulPrompt(L);
+  if(L.hint){
+    const strip=$('colHint'); strip.style.display='grid'; strip.innerHTML='';
+    const digits=[...new Set(String(L.b).split(''))].map(Number);
+    digits.forEach(m=>{ for(let i=1;i<=9;i++){ const e=document.createElement('span'); e.textContent=m+'×'+i+'='+(m*i); strip.appendChild(e); } });
+    $('hintBtn').style.display='none';
+  }
+}
+function commitLongMultiplicationStep(L){
+  const st=L.steps[L.si]; if(!st) return null;
+  if(st.t==='partial'||st.t==='placeholder') L.ent.partials[st.row][st.col]=st.want;
+  else if(st.t==='partialCarry') L.ent.partialCarries[st.row]={value:st.want,anchorCol:st.anchorCol};
+  else if(st.t==='sum') L.ent.sum[st.col]=st.want;
+  else if(st.t==='sumCarry') L.ent.sumCarry[st.col]=st.want;
+  L.buf=''; L.si++; return st;
+}
+function pressLongMul(k){
+  const L=S.longMul,st=L.steps[L.si]; if(!st) return;
+  if(k==='del'){ L.buf=L.buf.slice(0,-1); renderLongMul(); return; }
+  if(k==='go'||L.buf.length>=st.want.length) return;
+  L.buf+=k;
+  if(L.buf.length<st.want.length){ renderLongMul(); return; }
+  if(L.buf===st.want){
+    sStep(); L.tries=0;
+    commitLongMultiplicationStep(L);
+    if(L.si>=L.steps.length){ renderLongMul(); finishLongMul(); return; }
+    renderLongMul(); return;
+  }
+  sBad(); L.tries++;
+  if(L.tries>=2){ L.err++; S.streak=0; $('fb').innerHTML='<span class="no">'+petName()+' is thinking with you. It’s '+st.want+'.</span>'; }
+  else $('fb').innerHTML='<span class="no">Nearly there. '+petName()+' believes in you!</span>';
+  setPlayMood('wrong'); shake(); S.locked=true;
+  setTimeout(()=>{ $('fb').textContent=''; L.buf=''; S.locked=false; renderLongMul(); },L.tries>=2?1500:1000);
+  renderLongMul();
+}
+function finishLongMul(){
+  const L=S.longMul; S.locked=true; const clean=L.err===0&&!L.hint;
+  if(clean){ ease(S.q.vid,.2); award(true); } else { if(L.err>0) ease(S.q.vid,-.6); awardHelped(); }
+  $('fb').innerHTML='<span class="ok">'+L.a+' × '+L.b+' = '+L.total+'</span>'+(clean?bonusStamp():'');
+  setPlayMood(S.streak>=3?'streak':'correct'); save(); afterAnswerDelay(2200);
+}
+
+/* ---------------- division in columns (Italian layout) ---------------- */
+/* the plan walks the way a child is taught it: does it go into the first digit?
+   no -> take one more digit. then how many times, times back, take away, bring down. */
+function divPlan(g){
+  const plan=[]; let v=0;
+  for(let i=0;i<g.steps[0].end;i++){ v=v*10+Number(g.N[i]); plan.push({t:'skip',into:v,end:i,want:'0'}); }
+  g.steps.forEach((c,k)=>{
+    plan.push({t:'fit', k:k,into:c.cur,want:String(c.q)});
+    plan.push({t:'prod',k:k,q:c.q,want:String(c.prod)});
+    plan.push({t:'rem', k:k,into:c.cur,prod:c.prod,want:String(c.rem),last:k===g.steps.length-1});
+  });
+  return plan;
+}
+function divPromptText(D){
+  const st=D.plan[D.pi], d=D.g.d;
+  if(!st) return '';
+  if(st.t==='skip'||st.t==='fit') return 'How many times does '+d+' go into '+st.into+'?';
+  if(st.t==='prod') return st.q+' \u00D7 '+d+'. Write it underneath.';
+  // on the last take-away there is no digit waiting to come down, so what is left simply stays
+  if(st.last) return 'Nothing left to bring down. '+st.into+' \u2212 '+st.prod+'. Write what is left over.';
+  return st.into+' \u2212 '+st.prod+'. Write what is left.';
+}
+function renderDiv(){
+  const D=S.div, g=D.g, L=g.N.length, st=D.plan[D.pi];
+  const rightCols=Math.max(String(g.d).length,g.quot.length);
+  const grid=$('colGrid');
+  grid.style.gridTemplateColumns='repeat('+(L+1+rightCols)+', var(--cell))';
+  grid.style.gridTemplateRows='repeat('+(1+2*g.steps.length)+', var(--cell))';
+  grid.innerHTML='';
+  const foc={};
+  if(st){
+    if(st.t==='skip') for(let c=0;c<=st.end;c++) foc['1,'+(c+1)]=1;
+    else if(st.k===0) for(let c=0;c<=g.steps[0].end;c++) foc['1,'+(c+1)]=1;
+    else{
+      const prev=g.steps[st.k-1], rs=String(prev.rem).length, r=3+2*(st.k-1);
+      for(let c=prev.end+1-rs+1;c<=g.steps[st.k].end+1;c++) foc[r+','+c]=1;
+    }
+  }
+  const cell=(r,c,txt,cls)=>{
+    const dv=document.createElement('div');
+    dv.className='dc '+(cls||'')+(foc[r+','+c]?' focus':'');
+    dv.textContent=txt; dv.style.gridRow=r; dv.style.gridColumn=c; grid.appendChild(dv); return dv;
+  };
+  const bar=document.createElement('div');
+  bar.className='vbar'; bar.style.gridColumn=(L+1); bar.style.gridRow='1 / -1'; grid.appendChild(bar);
+  for(let i=0;i<L;i++) cell(1,i+1,g.N[i]);
+  const ds=String(g.d);
+  for(let i=0;i<ds.length;i++) cell(1,L+2+i,ds[i]);
+  const under=document.createElement('div');
+  under.className='rule'; under.style.gridRow=2; under.style.gridColumn=(L+2)+' / span '+rightCols;
+  grid.appendChild(under);
+  // answer digits above the line, one per round, kept on screen once written
+  for(let k=0;k<g.steps.length;k++){
+    const e=D.done[k];
+    if(e&&e.q!==undefined) cell(2,L+2+k,e.q,'typed');
+    else if(st&&st.t==='fit'&&st.k===k) cell(2,L+2+k,D.buf,'slot act');
+  }
+  if(st&&st.t==='skip') cell(2,L+2,D.buf,'slot act');
+  g.steps.forEach((c,k)=>{
+    const e=D.done[k]||{}, prodRow=2+2*k, remRow=3+2*k;
+    const ps=String(c.prod), pstart=c.end+1-ps.length+1;
+    if(e.prod!==undefined) for(let j=0;j<ps.length;j++) cell(prodRow,pstart+j,e.prod[j],'sub typed');
+    else if(st&&st.t==='prod'&&st.k===k)
+      for(let j=0;j<ps.length;j++) cell(prodRow,pstart+j,D.buf[j]||'',j<D.buf.length?'sub slot typed':(j===D.buf.length?'sub slot act':'sub slot'));
+    const rs=String(c.rem), rstart=c.end+1-rs.length+1;
+    if(e.rem!==undefined) for(let j=0;j<rs.length;j++) cell(remRow,rstart+j,e.rem[j],'typed');
+    else if(st&&st.t==='rem'&&st.k===k)
+      for(let j=0;j<rs.length;j++) cell(remRow,rstart+j,D.buf[j]||'',j<D.buf.length?'slot typed':(j===D.buf.length?'slot act':'slot'));
+    if(e.rem!==undefined&&k+1<g.steps.length)
+      for(let c2=c.end+1;c2<=g.steps[k+1].end;c2++) cell(remRow,c2+1,g.N[c2],'brought');
+  });
+  $('colPrompt').textContent=divPromptText(D);
+  if(D.hint){
+    const strip=$('colHint'); strip.style.display='grid'; strip.innerHTML='';
+    for(let i=1;i<=9;i++){ const e=document.createElement('span'); e.textContent=g.d+'\u00D7'+i+'='+(g.d*i); strip.appendChild(e); }
+    $('hintBtn').style.display='none';
+  }
+}
+function pressDiv(k){
+  const D=S.div, st=D.plan[D.pi];
+  if(!st) return;
+  if(k==='del'){ D.buf=D.buf.slice(0,-1); renderDiv(); return; }
+  if(k==='go') return;
+  if(D.buf.length>=st.want.length) return;
+  D.buf+=k;
+  if(D.buf.length<st.want.length){ renderDiv(); return; }
+  if(D.buf===st.want){
+    sStep(); D.tries=0;
+    if(st.t!=='skip'){
+      if(!D.done[st.k]) D.done[st.k]={};
+      if(st.t==='fit') D.done[st.k].q=st.want;
+      else if(st.t==='prod') D.done[st.k].prod=st.want;
+      else D.done[st.k].rem=st.want;
+    }
+    D.buf=''; D.pi++;
+    const nx=D.plan[D.pi];
+    if(st.t==='skip') $('fb').innerHTML='<span class="ok">Not even once. Take one more digit.</span>';
+    else if(st.t==='rem'&&nx) $('fb').innerHTML='<span class="ok">Bring the next digit down.</span>';
+    else $('fb').textContent='';
+    if(D.pi>=D.plan.length){ renderDiv(); finishDiv(); return; }
+    renderDiv(); return;
+  }
+  sBad(); D.tries++;
+  if(D.tries>=2){ D.err++; S.streak=0; $('fb').innerHTML='<span class="no">'+petName()+' is thinking with you. It\u2019s '+st.want+'.</span>'; setPlayMood('wrong'); }
+  else { $('fb').innerHTML='<span class="no">Nearly there. '+petName()+' believes in you!</span>'; setPlayMood('wrong'); }
+  shake(); S.locked=true;
+  setTimeout(()=>{ $('fb').textContent=''; D.buf=''; S.locked=false; renderDiv(); },D.tries>=2?1500:1000);
+  renderDiv();
+}
+function finishDiv(){
+  const D=S.div; S.locked=true;
+  const clean=D.err===0&&!D.hint;
+  if(clean){ ease(S.q.vid,0.2); award(true); }
+  else { if(D.err>0) ease(S.q.vid,-0.6); awardHelped(); }
+  // a leftover is not a mistake, so say so the first time the child sees one
+  const rest=D.g.rest>0?' with '+D.g.rest+' left over. Not everything fits evenly!':'';
+  $('fb').innerHTML='<span class="ok">'+D.g.N+' \u00F7 '+D.g.d+' = '+D.g.quot+rest+'</span>'+(clean?bonusStamp():'');
+  setPlayMood(S.streak>=3?'streak':'correct');
+  save(); afterAnswerDelay(2400);
+}
+
+/* ---------------- hidden developer spellbook ---------------- */
+function renderDeveloper(){
+  $('devLesson').innerHTML=MATH_STAGES.map((s,i)=>'<option value="'+i+'">Lesson '+(i+1)+' · '+s.label+'</option>').join('');
+  $('devLesson').value=String(Math.min(completedCount(P),MATH_STAGES.length-1));
+  $('devEvolution').innerHTML=EVOLUTIONS.map(e=>'<option value="'+e.art+'">'+e.title+'</option>').join('');
+  $('devEvolution').value=String(P.monsterStage);
+}
+function openDeveloper(){ renderDeveloper(); show('s-dev'); }
+function resetPlayerProgress(){
+  P.stageProgress=blankStageProgress(); P.monsterStage=1; delete P.devMonsterOverride;
+  P.collectibles={}; COLLECTIBLES.forEach(c=>P.collectibles[c.id]=0); P.accessories=[];
+  P.right=0; P.best=0; P.total=0; P.storySeen=false; P.storyProgress={firstCrackSeen:false,mapSeen:{}}; P.migrationVersion=7; save();
+}
+
+/* ---------------- wiring ---------------- */
+let newAge=9;
+function renderAges(){
+  const r=$('ageRow'); r.innerHTML='';
+  [6,7,8,9,10,11].forEach(a=>{
+    const b=document.createElement('button');
+    b.className='agebtn'+(a===newAge?' sel':''); b.textContent=a;
+    b.onclick=()=>{ newAge=a; renderAges(); sTap(); };
+    r.appendChild(b);
+  });
+}
+$('addPlayer').onclick=()=>{ $('newBox').style.display='block'; renderAges(); $('newName').focus(); };
+$('cancelNew').onclick=()=>{ $('newBox').style.display='none'; $('newName').value=''; };
+$('saveNew').onclick=()=>{
+  const n=$('newName').value.trim(); if(!n) return;
+  const pl=newPlayer(n,newAge); DB.players.push(pl); DB.current=pl.id; P=pl; save();
+  $('newName').value=''; $('newBox').style.display='none';
+  renderPlayers(); openStory();
+};
+$('switchPlayer').onclick=()=>{ renderPlayers(); show('s-players'); };
+$('playBtn').onclick=()=>{ renderMenu(); show('s-menu'); };
+$('menuBack').onclick=()=>{ renderHome(); show('s-home'); };
+$('nodeBack').onclick=()=>{ renderMenu(); show('s-menu'); };
+$('nodeStart').onclick=()=>{ if(selectedMapNode) startSession(selectedMapNode.lessonId); };
+$('setBtn').onclick=()=>{ renderSettings(); show('s-set'); };
+$('setFriendName').onchange=()=>{ captureSettingsName(); renderSettings(); };
+$('setBack').onclick=()=>{ captureSettingsName(); renderHome(); show('s-home'); };
+$('quitPlay').onclick=()=>{ save(); renderHome(); show('s-home'); };
+$('crackContinue').onclick=()=>{ sTap(); show('s-play'); nextQuestion(); };
+$('againBtn').onclick=()=>{ renderMenu(); show('s-menu'); };
+$('endHome').onclick=()=>{ if(lastSessionStageId) startSession(lastSessionStageId); };
+$('luOk').onclick=()=>{ $('lvUp').classList.remove('on'); };
+$('unlockOk').onclick=()=>{
+  $('unlockBox').classList.remove('on');
+  $('unlockBox').classList.remove('major-transition');
+  pendingUnlockStage=null;
+};
+$('storyNext').onclick=()=>{ captureFriendName(); if(storyStep<STORY_SCENES.length-1){ storyStep++; renderStory(); } else finishStory(); };
+$('storySkip').onclick=finishStory;
+$('replayStory').onclick=openStory;
+$('swSound').onclick=()=>{ DB.sound=!DB.sound; $('swSound').classList.toggle('on'); save(); };
+$('hintBtn').onclick=()=>{
+  if(!S) return;
+  if(S.div){ S.div.hint=true; renderDiv(); }
+  else if(S.longMul){ S.longMul.hint=true; renderLongMul(); }
+  else if(S.col){ S.col.hint=true; renderCol(); }
+  setPlayMood('hint');
+  sTap();
+};
+$('delPlayer').onclick=()=>{
+  if(!confirm('Delete this player and all their progress?')) return;
+  DB.players=DB.players.filter(x=>x.id!==P.id); DB.current=null; P=null; save();
+  renderPlayers(); show('s-players');
+};
+let devTaps=0,devTapTimer=null;
+$('homeWho').onclick=()=>{ clearTimeout(devTapTimer); devTaps++; if(devTaps>=7){ devTaps=0; openDeveloper(); return; } devTapTimer=setTimeout(()=>devTaps=0,2200); };
+$('devBack').onclick=()=>{ renderHome(); show('s-home'); };
+$('devJump').onclick=()=>{
+  const index=Number($('devLesson').value); P.stageProgress=progressFromCount(index); delete P.devMonsterOverride; P.monsterStage=artForPlayer(P); save(); renderMenu(); show('s-menu');
+};
+$('devUnlockLessons').onclick=()=>{ P.stageProgress=progressFromCount(MATH_STAGES.length); delete P.devMonsterOverride; P.monsterStage=artForPlayer(P); save(); renderDeveloper(); sLvl(); };
+$('devUnlockCollectibles').onclick=()=>{ COLLECTIBLES.forEach(c=>P.collectibles[c.id]=5); P.accessories=COSMETIC_REWARDS.map(a=>a.id); save(); renderDeveloper(); sLvl(); };
+$('devEvolve').onclick=()=>{
+  const art=Number($('devEvolution').value); P.devMonsterOverride=art; P.monsterStage=art; save();
+  const evolution=EVOLUTIONS.find(e=>e.art===art); $('luTitle').textContent=evolution?evolution.title:'Magical transformation';
+  $('luPet').innerHTML=monsterMarkup(art,'levelUp','evolution-burst',petName()+' transforming'); $('luMsg').textContent=petName()+' transformed for testing.'; $('lvUp').classList.add('on');
+};
+$('devStory').onclick=openStory;
+$('devRename').onclick=()=>{ const name=prompt('What should your magical friend be called?',petName()); if(name&&name.trim()){ P.momoName=name.trim().slice(0,12); save(); renderDeveloper(); } };
+$('devReset').onclick=()=>{ if(!confirm('Reset this player\'s journey, treasures and story?')) return; resetPlayerProgress(); openStory(); };
+
+(async function(){
+  const d=await store.get();
+  if(d&&d.players){ DB=d; if(DB.sound===undefined) DB.sound=true; DB.players.forEach(migrate); save(); }
+  renderPlayers();
+  if(DB.current) P=DB.players.find(x=>x.id===DB.current)||null;
+  if(P){ if(P.storySeen){ renderHome(); show('s-home'); } else openStory(); } else show('s-players');
+})();
+</script>
+</body>
+</html>
