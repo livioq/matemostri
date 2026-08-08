@@ -6,6 +6,16 @@ const vm = require('node:vm');
 const source = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
 const plain = value => JSON.parse(JSON.stringify(value));
 
+assert.match(source,
+  /function shouldShowCrackPause\(\)\{[\s\S]*S\.i===5&&S\.mastered>=4;/,
+  'the opening lesson pauses after five questions when at least four were mastered');
+assert.match(source,
+  /<section id="s-crack" class="screen">/,
+  'the first crack gets its own midpoint celebration screen');
+assert.match(source,
+  /\$\('crackContinue'\)\.onclick=\(\)=>\{ sTap\(\); show\('s-play'\); nextQuestion\(\); \};/,
+  'continuing from the crack screen resumes the same ten-question lesson');
+
 function functionSource(name) {
   const start = source.indexOf(`function ${name}(`);
   assert.notEqual(start, -1, `Missing function ${name}`);
@@ -17,6 +27,20 @@ function functionSource(name) {
   }
   throw new Error(`Unterminated function ${name}`);
 }
+
+const crackContext = { S:null };
+vm.createContext(crackContext);
+vm.runInContext(functionSource('shouldShowCrackPause'), crackContext);
+crackContext.S = {stageId:'add_1digit', wasCompleted:false, crackSeen:false, i:5, mastered:4};
+assert.equal(crackContext.shouldShowCrackPause(), true,
+  'four mastered answers in the first five is enough to pause for the crack');
+crackContext.S.mastered = 3;
+assert.equal(crackContext.shouldShowCrackPause(), false,
+  'three mastered answers in the first five keeps the lesson moving');
+crackContext.S.mastered = 4;
+crackContext.S.wasCompleted = true;
+assert.equal(crackContext.shouldShowCrackPause(), false,
+  'replaying the opening lesson does not split it into a midpoint lesson');
 
 const context = { Math };
 vm.createContext(context);
@@ -650,6 +674,35 @@ assert.equal(finalEvolution.completed, lessonTotal,
 assert.equal(saveContext.evolutionFor(lessonTotal).title, 'Guardian of Maths');
 assert.notEqual(saveContext.evolutionFor(lessonTotal - 1).title, 'Guardian of Maths',
   'one lesson short is not a Guardian');
+assert.equal(saveContext.evolutionFor(0.5).title, 'First Crack',
+  'the cracked egg is now the opening midpoint milestone');
+assert.equal(saveContext.evolutionFor(1).title, 'Hatched Friend',
+  'finishing the first lesson now hatches the friend');
+assert.equal(saveContext.artFor(1), 3,
+  'one completed lesson uses the hatched artwork, not the cracked egg');
+assert.deepEqual(plain(saveContext.evolutions).map(step => [step.completed, step.art, step.title]), [
+  [0, 1, 'Magical Egg'],
+  [0.5, 2, 'First Crack'],
+  [1, 3, 'Hatched Friend'],
+  [2, 4, 'Fluffy Ears'],
+  [3, 5, 'Bright Tail'],
+  [4, 6, 'Wide Wings'],
+  [5, 7, 'Addition Flight'],
+  [6, 8, 'Soft Scarf'],
+  [7, 9, 'Backpack Explorer'],
+  [8, 10, 'Explorer Goggles'],
+  [9, 11, 'Pencil Wand'],
+  [10, 12, 'Subtraction Guardian Light'],
+  [11, 13, 'Flower Crown'],
+  [12, 14, 'Sky Explorer'],
+  [13, 15, 'Multiplication Guardian'],
+  [14, 16, 'Star Cape'],
+  [15, 17, 'Guardian of Maths']
+], 'the visible evolution path matches the lesson milestones');
+['stage-05-pink-cheeks.png', 'stage-06-bright-tail.png'].forEach(file => {
+  assert.equal(fs.existsSync(path.join(__dirname, '..', 'assets', 'monsters', file)), true,
+    `${file} exists for the early addition path`);
+});
 plain(saveContext.evolutions).forEach(step => {
   assert.ok(step.completed <= lessonTotal, `the ${step.title} milestone is reachable`);
 });

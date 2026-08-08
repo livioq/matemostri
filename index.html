@@ -351,6 +351,17 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
     <div class="pad" id="pad"></div>
   </section>
 
+  <section id="s-crack" class="screen">
+    <div class="eyebrow">the magic stirs</div>
+    <h1 style="font-size:30px;margin:4px 0" id="crackTitle">A tiny crack!</h1>
+    <div class="card">
+      <div class="pet-stage" id="crackPet"></div>
+      <div class="stats" id="crackStats"></div>
+      <div class="reward-line" id="crackReward" style="margin-top:12px"></div>
+    </div>
+    <button class="btn" id="crackContinue">Continue</button>
+  </section>
+
   <section id="s-end" class="screen">
     <div class="eyebrow">the magic settles</div>
     <h1 style="font-size:30px;margin:4px 0" id="endTitle">Well done!</h1>
@@ -470,16 +481,25 @@ const MATH_STAGES=[
   {id:'div_long',gid:'div',label:'Long division',mode:'division',magic:'Guardian Castle'}
 ];
 const STAGE_BY_ID=id=>MATH_STAGES.find(s=>s.id===id);
-const PET_NAMES=['Heartlight Egg','Hatchling Momo','Fluffy Momo','Twinkle Momo','Trail Momo','Brave Momo','Scout Momo','Wonder Momo','Hover Momo','Cloud Momo','Sky Momo','Starfinder Momo','Companion Momo','Kindheart Momo','Scholar Momo','Magic Momo','Starlight Momo','Royal Momo','Guardian Momo','Guardian of Maths'];
+const PET_NAMES=['Heartlight Egg','Hatchling Momo','Fluffy Momo','Twinkle Momo','Trail Momo','Brave Momo','Scout Momo','Wonder Momo','Hover Momo','Cloud Momo','Sky Momo','Starfinder Momo','Companion Momo','Kindheart Momo','Scholar Momo','Magic Momo','Guardian of Maths','Royal Momo','Guardian Momo','Guardian of Maths'];
 const EVOLUTIONS=[
   {completed:0,art:1,title:'Magical Egg',message:'A warm golden heart glows inside the egg.'},
-  {completed:1,art:2,title:'Cracked Egg',message:'The egg cracked open much further!'},
-  {completed:2,art:3,title:'Hatched Friend',message:'{name} hatched!'},
-  {completed:4,art:4,title:'Growing Friend',message:'{name} grew magnificent fluffy ears!'},
-  {completed:6,art:5,title:'Winged Friend',message:'{name} learned to flutter on tiny wings!'},
-  {completed:8,art:9,title:'Explorer',message:'{name} became a brave magical explorer!'},
-  {completed:11,art:18,title:'Apprentice Guardian',message:'{name} began Guardian training!'},
-  {completed:15,art:20,title:'Guardian of Maths',message:'{name} became a Guardian of Maths!'}
+  {completed:0.5,art:2,title:'First Crack',message:'A crack has started to appear. Keep going and see if it hatches.'},
+  {completed:1,art:3,title:'Hatched Friend',message:'{name} hatched!'},
+  {completed:2,art:4,title:'Fluffy Ears',message:'{name} grew magnificent fluffy ears!'},
+  {completed:3,art:5,title:'Bright Tail',message:'{name} grew a bright, sparkling tail!'},
+  {completed:4,art:6,title:'Wide Wings',message:'{name} grew wide magical wings!'},
+  {completed:5,art:7,title:'Addition Flight',message:'{name} completed Addition and made a huge leap into first flight!'},
+  {completed:6,art:8,title:'Soft Scarf',message:'A soft explorer scarf appeared for {name}!'},
+  {completed:7,art:9,title:'Backpack Explorer',message:'{name} found a magical adventure backpack!'},
+  {completed:8,art:10,title:'Explorer Goggles',message:'{name} put on a pair of shining explorer goggles!'},
+  {completed:9,art:11,title:'Pencil Wand',message:'{name} earned a magical pencil wand!'},
+  {completed:10,art:12,title:'Subtraction Guardian Light',message:'{name} completed Subtraction and burst into guardian light!'},
+  {completed:11,art:13,title:'Flower Crown',message:'A magical flower crown bloomed for {name}!'},
+  {completed:12,art:14,title:'Sky Explorer',message:'{name} became a brave sky explorer!'},
+  {completed:13,art:15,title:'Multiplication Guardian',message:'{name} completed Multiplication and began Guardian training!'},
+  {completed:14,art:16,title:'Star Cape',message:'A star cape swirled around {name}!'},
+  {completed:15,art:17,title:'Guardian of Maths',message:'{name} became a Guardian of Maths!'}
 ];
 const EVOLUTION_LEVELS=EVOLUTIONS.map(e=>e.art);
 const ACC=[
@@ -509,11 +529,11 @@ const MONSTER_PALETTES=[
   ['#EAA9D0','#FFF0F8','#C35AA3'],['#D79DDD','#FFF1FE','#A85FC3'],['#BE92E3','#F9F0FF','#8758C5'],['#A47DDF','#F7F1FF','#704DC1'],
   ['#8D6AD8','#F4EEFF','#5D3EB5'],['#D887C8','#FFF0F8','#A83F97'],['#F1B458','#FFF3D0','#7B43B8'],['#F5C64F','#FFF5CE','#6738A8']
 ];
-const MONSTER_SLUGS=['egg','cracked-egg','hatchling','fluffy-ears','pink-cheeks','bright-tail','tiny-wings','scarf','backpack','goggles','pencil-wand','hovering','magic-marks','flower-crown','explorer','star-cape','larger-wings','apprentice-guardian','young-guardian','royal-guardian'];
+const MONSTER_SLUGS=['egg','cracked-egg','hatchling','fluffy-ears','pink-cheeks','bright-tail','tiny-wings','scarf','backpack','goggles','pencil-wand','magic-marks','flower-crown','explorer','guardian-light','star-cape','guardian-of-maths','apprentice-guardian','young-guardian','royal-guardian'];
 const MONSTER_STAGES=MONSTER_SLUGS.map((slug,i)=>({
   id:'stage-'+String(i+1).padStart(2,'0'),minLevel:i+1,maxLevel:i+1,name:PET_NAMES[i],
-  group:i<2?'Egg & hatchling':i<6?'Toddler':i<12?'Explorer':i<18?'Companion':'Guardian',image:'assets/monsters/stage-'+String(i+1).padStart(2,'0')+'-'+slug+(i<5?'.png':'.webp'),
-  palette:MONSTER_PALETTES[i],fallback:i===0?'egg':'momo',assetReady:i<5
+  group:i<2?'Egg & hatchling':i<6?'Toddler':i<12?'Explorer':i<18?'Companion':'Guardian',image:'assets/monsters/stage-'+String(i+1).padStart(2,'0')+'-'+slug+(i<6?'.png':'.webp'),
+  palette:MONSTER_PALETTES[i],fallback:i===0?'egg':'momo',assetReady:i<6
 }));
 const MONSTER_EXPRESSIONS={idle:'happy',beforeQuestion:'curious',correct:'excited',streak:'proud',hint:'thinking',wrong:'surprised',inactive:'sleepy',levelUp:'love'};
 const PRAISE=['Correct!','Nice one.',"Yes, that's it.",'Spot on.','Exactly.','Well worked out.'];
@@ -1064,7 +1084,8 @@ function renderHome(){
   P.monsterStage=P.devMonsterOverride||evolution.art;
   $('petBox').innerHTML=monsterMarkup(P.monsterStage,'idle','bob',petName());
   $('journeyMessage').textContent=count===0?petName()+"'s heart glows when you come near.":count===MATH_STAGES.length?petName()+' is a Guardian of Maths!':petName()+' has grown through '+count+' magical '+(count===1?'lesson':'lessons')+'.';
-  if(nextEvolution){ const left=nextEvolution.completed-count; $('nextReward').textContent=left===1?'One more lesson until '+nextEvolution.title+'!':left+' more lessons until '+nextEvolution.title+'.'; }
+  if(nextEvolution&&nextEvolution.completed<1) $('nextReward').textContent='Get 4 of the first 5 answers right to see the first crack.';
+  else if(nextEvolution){ const left=nextEvolution.completed-count; $('nextReward').textContent=left===1?'One more lesson until '+nextEvolution.title+'!':left+' more lessons until '+nextEvolution.title+'.'; }
   else $('nextReward').textContent='The whole enchanted path is glowing.';
   $('collectionBox').innerHTML=COLLECTIBLES.filter(c=>P.collectibles[c.id]>0).map(c=>'<span class="collectible">'+c.emoji+' '+c.name+' ×'+P.collectibles[c.id]+'</span>').join('')||'<span class="magic-whisper">Replay a glowing lesson to discover magical treasures.</span>';
   $('wardrobeBox').innerHTML=COSMETIC_REWARDS.filter(a=>P.accessories.includes(a.id)).map(a=>'<span class="accessory-chip">'+a.emoji+' '+a.name+'</span>').join('');
@@ -1136,7 +1157,7 @@ let pendingUnlockStage=null;
 let sleepyTimer=null;
 function setPlayMood(mood){
   if(!$('playPet')||!P) return;
-  const crack=S&&S.stageId==='add_1digit'&&!S.wasCompleted&&S.mastered>=5,art=crack?1:P.monsterStage;
+  const crack=S&&S.stageId==='add_1digit'&&!S.wasCompleted&&S.crackSeen,art=crack?2:P.monsterStage;
   $('playPet').innerHTML=monsterMarkup(art,mood,crack&&S.crackMoment?'egg-wiggle':'',petName());
   clearTimeout(sleepyTimer); sleepyTimer=setTimeout(()=>{ if(S&&$('s-play').classList.contains('on')) $('playPet').innerHTML=monsterMarkup(art,'inactive','',petName()); },30000);
 }
@@ -1161,7 +1182,7 @@ function startSession(stageId){
   const stage=STAGE_BY_ID(stageId);
   if(!stage||stageStatus(P,stage.id)==='locked') return;
   const plan=sessionPlan(stage);
-  S={gid:stage.gid,vid:stage.id,stageId:stage.id,stage:stage,wasCompleted:P.stageProgress.completed[stage.id],i:0,right:0,mastered:0,streak:0,best:0,q:null,input:'',col:null,longMul:null,div:null,locked:false,attempt:0,mode:'answer',crackMoment:false,reward:null,total:plan.total,pass:plan.pass,marks:[]};
+  S={gid:stage.gid,vid:stage.id,stageId:stage.id,stage:stage,wasCompleted:P.stageProgress.completed[stage.id],i:0,right:0,mastered:0,streak:0,best:0,q:null,input:'',col:null,longMul:null,div:null,locked:false,attempt:0,mode:'answer',crackMoment:false,crackSeen:false,reward:null,total:plan.total,pass:plan.pass,marks:[]};
   show('s-play'); nextQuestion();
 }
 function nextQuestion(){
@@ -1235,7 +1256,7 @@ function checkNormal(){
     if(!ok){ $('fb').innerHTML='<span class="no">'+petName()+' is thinking with you. It\u2019s '+S.q.ans+'.</span>'; setPlayMood('wrong'); S.input=''; paintAns(); return; }
     S.locked=true; awardHelped();
     $('fb').innerHTML='<span class="ok">There it is.</span>'; sGood(); save();
-    setTimeout(nextQuestion,900); return;
+    afterAnswerDelay(900); return;
   }
   if(ok){
     S.locked=true;
@@ -1243,7 +1264,7 @@ function checkNormal(){
     award(S.attempt===0);
     $('fb').innerHTML='<span class="ok">'+(S.attempt===0?praise():'You fixed that one yourself.')+'</span>'+bonusStamp()+crackMessage();
     setPlayMood(S.streak>=3?'streak':'correct');
-    sGood(); save(); setTimeout(nextQuestion,950); return;
+    sGood(); save(); afterAnswerDelay(950); return;
   }
   if(S.attempt===0){
     S.attempt=1; S.input=''; paintAns();
@@ -1260,6 +1281,24 @@ function checkNormal(){
 function shake(){ $('qcard').classList.add('shake'); setTimeout(()=>$('qcard').classList.remove('shake'),300); }
 function bonusStamp(){ return S.streak>=3?' <span class="stamp">✨ streak magic</span>':''; }
 function crackMessage(){ return S.crackMoment?'<br><span class="stamp">The egg wiggles… a tiny crack appears!</span>':''; }
+function shouldShowCrackPause(){
+  return S&&S.stageId==='add_1digit'&&!S.wasCompleted&&!S.crackSeen&&S.i===5&&S.mastered>=4;
+}
+function afterAnswerDelay(ms){
+  setTimeout(()=>{ if(shouldShowCrackPause()) showCrackPause(); else nextQuestion(); },ms);
+}
+function showCrackPause(){
+  S.crackSeen=true; S.crackMoment=false; save();
+  $('crackTitle').textContent='A crack has started to appear!';
+  $('crackPet').innerHTML=monsterMarkup(2,'levelUp','egg-wiggle',petName()+' cracking');
+  $('crackStats').innerHTML=
+    '<div><b class="mono">'+S.mastered+'</b><span>of the first 5 mastered</span></div>'+
+    '<div><b class="mono">'+(S.total-S.i)+'</b><span>questions left</span></div>'+
+    '<div><b class="mono">'+S.pass+'</b><span>needed to light the path</span></div>';
+  $('crackReward').textContent='A crack has started to appear. Keep going and see if it hatches.';
+  show('s-crack');
+  sLvl();
+}
 function award(mastered){
   S.streak++; S.right++; P.right++;
   if(mastered) S.mastered++;
@@ -1267,7 +1306,7 @@ function award(mastered){
   if(S.streak>P.best) P.best=S.streak;
   if(S.streak>S.best) S.best=S.streak;
   P.total=(Number(P.total)||0)+1;
-  if(S.stageId==='add_1digit'&&!S.wasCompleted&&S.mastered===5) S.crackMoment=true;
+  if(shouldShowCrackPause()) S.crackMoment=true;
 }
 /* the child got there, but with help: the answer counts, the mastery does not */
 function awardHelped(){ S.right++; P.right++; S.streak=0; P.total=(Number(P.total)||0)+1; markQuestion('helped'); }
@@ -1423,7 +1462,7 @@ function finishCol(){
   let total=''; for(let i=0;i<M.wid;i++) if(M.ent.res[i]!==undefined) total+=M.ent.res[i];
   $('fb').innerHTML='<span class="ok">'+(clean?praise():'Worked all the way through.')+' '+Number(total)+'</span>'+(clean?bonusStamp():'')+crackMessage();
   setPlayMood(S.streak>=3?'streak':'correct');
-  save(); setTimeout(nextQuestion,1600);
+  save(); afterAnswerDelay(1600);
 }
 
 /* ---------------- two-digit long multiplication ---------------- */
@@ -1501,7 +1540,7 @@ function finishLongMul(){
   const L=S.longMul; S.locked=true; const clean=L.err===0&&!L.hint;
   if(clean){ ease(S.q.vid,.2); award(true); } else { if(L.err>0) ease(S.q.vid,-.6); awardHelped(); }
   $('fb').innerHTML='<span class="ok">'+L.a+' × '+L.b+' = '+L.total+'</span>'+(clean?bonusStamp():'');
-  setPlayMood(S.streak>=3?'streak':'correct'); save(); setTimeout(nextQuestion,2200);
+  setPlayMood(S.streak>=3?'streak':'correct'); save(); afterAnswerDelay(2200);
 }
 
 /* ---------------- division in columns (Italian layout) ---------------- */
@@ -1622,7 +1661,7 @@ function finishDiv(){
   const rest=D.g.rest>0?' with '+D.g.rest+' left over. Not everything fits evenly!':'';
   $('fb').innerHTML='<span class="ok">'+D.g.N+' \u00F7 '+D.g.d+' = '+D.g.quot+rest+'</span>'+(clean?bonusStamp():'');
   setPlayMood(S.streak>=3?'streak':'correct');
-  save(); setTimeout(nextQuestion,2400);
+  save(); afterAnswerDelay(2400);
 }
 
 /* ---------------- hidden developer spellbook ---------------- */
@@ -1665,6 +1704,7 @@ $('setBtn').onclick=()=>{ renderSettings(); show('s-set'); };
 $('setFriendName').onchange=()=>{ captureSettingsName(); renderSettings(); };
 $('setBack').onclick=()=>{ captureSettingsName(); renderHome(); show('s-home'); };
 $('quitPlay').onclick=()=>{ save(); renderHome(); show('s-home'); };
+$('crackContinue').onclick=()=>{ sTap(); show('s-play'); nextQuestion(); };
 $('againBtn').onclick=()=>{ renderMenu(); show('s-menu'); };
 $('endHome').onclick=()=>{ renderHome(); show('s-home'); };
 $('luOk').onclick=()=>{ $('lvUp').classList.remove('on'); };
