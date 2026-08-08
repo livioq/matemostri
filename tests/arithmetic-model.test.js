@@ -15,6 +15,9 @@ assert.match(source,
 assert.match(source,
   /\$\('crackContinue'\)\.onclick=\(\)=>\{ sTap\(\); show\('s-play'\); nextQuestion\(\); \};/,
   'continuing from the crack screen resumes the same ten-question lesson');
+assert.match(source,
+  /storyProgressOf\(P\)\.firstCrackSeen=true/,
+  'the opening crack is persisted on the player story progress');
 
 function functionSource(name) {
   const start = source.indexOf(`function ${name}(`);
@@ -628,10 +631,18 @@ source.split('\n').forEach((line, i) => {
 assert.equal(/\bGROUPS\b/.test(source.replace(/STAGE_GROUPS/g, '')), false,
   'the xp-only GROUPS table is gone');
 
-// what the lesson list promises has to come from sessionPlan, or it drifts from the pass mark
+// the old lesson tabs have been replaced by the adventure map
 const menuSource = functionSource('renderMenu');
-assert.match(menuSource, /sessionPlan\(stage\)\.pass/,
-  'the lesson list reads the pass mark rather than naming a number');
+assert.match(menuSource, /PROGRESSION_NODES\.forEach/,
+  'the journey menu is driven by the canonical story map nodes');
+assert.match(menuSource, /map-location/,
+  'the journey menu renders adventure map locations rather than tab-like lesson rows');
+assert.match(source,
+  /\$\('againBtn'\)\.onclick=\(\)=>\{ renderMenu\(\); show\('s-menu'\); \};/,
+  'Continue Adventure returns to the map after the result screen');
+assert.doesNotMatch(source,
+  /\$\('unlockOk'\)\.onclick=[\s\S]*startSession\(next\.id\)/,
+  'the evolution overlay no longer auto-starts the next lesson');
 assert.equal(/\d+ correct answers/.test(source), false,
   'no screen hard-codes how many correct answers a lesson needs');
 
@@ -654,11 +665,13 @@ const currentSave = saveContext.migrate({
 });
 assert.equal('xp' in currentSave, false, 'xp is dropped from a current save');
 assert.equal('level' in currentSave, false);
-assert.equal(currentSave.migrationVersion, 6);
+assert.equal(currentSave.migrationVersion, 7);
 assert.equal(currentSave.momoName, 'Sparkle', 'the chosen name survives');
 assert.equal(currentSave.best, 9, 'play stats survive');
 assert.deepEqual(plain(currentSave.collectibles).stars, 3, 'collectibles survive');
 assert.ok(currentSave.accessories.includes('scarf'), 'cosmetics survive');
+assert.deepEqual(plain(currentSave.storyProgress), {firstCrackSeen:false,mapSeen:{}},
+  'map/story migration adds safe defaults without resetting progress');
 ['add_1digit', 'add_2column', 'add_2mental', 'sub_1digit'].forEach(id => {
   assert.equal(currentSave.stageProgress.completed[id], true, `${id} stays completed`);
 });
@@ -666,8 +679,12 @@ assert.equal(currentSave.stageProgress.completed.sub_2column, false, 'no lesson 
 assert.equal(currentSave.stageProgress.available.sub_2column, true, 'the next lesson is still open');
 
 // the last evolution waits for the last lesson, however many lessons there are
-vm.runInContext('this.stages=MATH_STAGES;this.evolutions=EVOLUTIONS;this.artFor=artForCount;this.evolutionFor=evolutionForCount;', saveContext);
+vm.runInContext('this.stages=MATH_STAGES;this.nodes=PROGRESSION_NODES;this.evolutions=EVOLUTIONS;this.stageData=MONSTER_STAGE_DATA;this.artFor=artForCount;this.artForPlayer=artForPlayer;this.evolutionFor=evolutionForCount;', saveContext);
 const lessonTotal = saveContext.stages.length;
+assert.equal(saveContext.nodes.length, lessonTotal,
+  'every maths lesson has one adventure map node');
+assert.deepEqual(plain(saveContext.nodes.map(node => node.lessonId)), plain(saveContext.stages.map(stage => stage.id)),
+  'map nodes preserve the exact maths lesson order');
 const finalEvolution = plain(saveContext.evolutions).at(-1);
 assert.equal(finalEvolution.completed, lessonTotal,
   'becoming a Guardian of Maths needs every lesson, not all but one');
@@ -688,35 +705,64 @@ assert.deepEqual(plain(saveContext.evolutions).map(step => [step.completed, step
   [3, 5, 'Bright Tail'],
   [4, 6, 'Wide Wings'],
   [5, 7, 'Addition Flight'],
-  [6, 8, 'Soft Scarf'],
-  [7, 9, 'Backpack Explorer'],
-  [8, 10, 'Explorer Goggles'],
-  [9, 11, 'Pencil Wand'],
+  [6, 8, 'Backpack Explorer'],
+  [7, 9, 'Explorer Goggles'],
+  [8, 10, 'Magic Marks'],
+  [9, 11, 'Flower Crown'],
   [10, 12, 'Subtraction Guardian Light'],
-  [11, 13, 'Flower Crown'],
-  [12, 14, 'Sky Explorer'],
-  [13, 15, 'Multiplication Guardian'],
-  [14, 16, 'Star Cape'],
+  [11, 13, 'Star Cape'],
+  [12, 14, 'Celestial Wings'],
+  [13, 15, 'Multiplication Mage'],
+  [14, 16, 'Arcane Master'],
   [15, 17, 'Guardian of Maths']
 ], 'the visible evolution path matches the lesson milestones');
+assert.deepEqual(plain(saveContext.evolutions.filter(step => step.majorEvolution).map(step => [step.art, step.title])), [
+  [7, 'Addition Flight'],
+  [12, 'Subtraction Guardian Light'],
+  [15, 'Multiplication Mage'],
+  [17, 'Guardian of Maths']
+], 'the four major story evolutions are marked in data');
 [
-  'stage-05-pink-cheeks.png',
-  'stage-06-bright-tail.png',
-  'stage-07-tiny-wings.png',
-  'stage-08-scarf.png',
-  'stage-09-backpack.png',
-  'stage-10-goggles.png',
-  'stage-11-pencil-wand.png',
-  'stage-12-magic-marks.png',
-  'stage-13-flower-crown.png',
-  'stage-14-explorer.png',
-  'stage-15-guardian-light.png',
-  'stage-16-star-cape.png',
+  'stage-01-magical-egg.png',
+  'stage-02-first-crack.png',
+  'stage-03-hatched-friend.png',
+  'stage-04-fluffy-ears.png',
+  'stage-05-bright-tail.png',
+  'stage-06-wide-wings.png',
+  'stage-07-addition-flight.png',
+  'stage-08-backpack-explorer.png',
+  'stage-09-explorer-goggles.png',
+  'stage-10-magic-marks.png',
+  'stage-11-flower-crown.png',
+  'stage-12-subtraction-guardian-light.png',
+  'stage-13-star-cape.png',
+  'stage-14-celestial-wings.png',
+  'stage-15-multiplication-mage.png',
+  'stage-16-arcane-master.png',
   'stage-17-guardian-of-maths.png'
 ].forEach(file => {
   assert.equal(fs.existsSync(path.join(__dirname, '..', 'assets', 'monsters', file)), true,
     `${file} exists for the ready monster art path`);
 });
+assert.deepEqual(plain(saveContext.stageData.map(stage => stage.image)), [
+  'stage-01-magical-egg.png',
+  'stage-02-first-crack.png',
+  'stage-03-hatched-friend.png',
+  'stage-04-fluffy-ears.png',
+  'stage-05-bright-tail.png',
+  'stage-06-wide-wings.png',
+  'stage-07-addition-flight.png',
+  'stage-08-backpack-explorer.png',
+  'stage-09-explorer-goggles.png',
+  'stage-10-magic-marks.png',
+  'stage-11-flower-crown.png',
+  'stage-12-subtraction-guardian-light.png',
+  'stage-13-star-cape.png',
+  'stage-14-celestial-wings.png',
+  'stage-15-multiplication-mage.png',
+  'stage-16-arcane-master.png',
+  'stage-17-guardian-of-maths.png'
+], 'canonical stage data points at the renamed production artwork');
 plain(saveContext.evolutions).forEach(step => {
   assert.ok(step.completed <= lessonTotal, `the ${step.title} milestone is reachable`);
 });
@@ -729,15 +775,18 @@ const legacySave = saveContext.migrate({id:'p2', name:'Bo', age:8, level:12, xp:
 assert.equal('level' in legacySave, false, 'the legacy level is dropped once it has been read');
 assert.equal('xp' in legacySave, false);
 assert.ok(legacySave.stageProgress.completed.add_1digit, 'legacy level still became real progress');
-assert.equal(legacySave.migrationVersion, 6);
+assert.equal(legacySave.migrationVersion, 7);
 
 // a save already on the new version is left alone
 const fresh = saveContext.newPlayer('Cy', 7);
 assert.equal('xp' in fresh, false, 'a new player never has xp');
 assert.equal('level' in fresh, false);
-assert.equal(fresh.migrationVersion, 6);
+assert.equal(fresh.migrationVersion, 7);
+assert.equal(saveContext.artForPlayer(fresh), 1, 'new players begin with the magical egg');
+fresh.storyProgress.firstCrackSeen = true;
+assert.equal(saveContext.artForPlayer(fresh), 2, 'the saved crack milestone shows the cracked egg before hatching');
 const rerun = saveContext.migrate(saveContext.migrate(fresh));
-assert.equal(rerun.migrationVersion, 6, 'migrating twice changes nothing');
+assert.equal(rerun.migrationVersion, 7, 'migrating twice changes nothing');
 assert.equal('xp' in rerun, false);
 
 console.log('Arithmetic model tests passed.');

@@ -1,475 +1,154 @@
 # Current State - Matemostri
 
-Last inspected: 2026-08-08
+Last inspected and updated: 2026-08-08
 
-This document is the authoritative description of the current implementation in this working tree. It is based on the source code and tests, not on older design prompts. Existing documents such as `EVOLUTION_ROADMAP.md` and parts of `CLAUDE.md` are useful history but can be stale.
+This is the authoritative current-state document for this working tree. It is based on the real `index.html`, tests, and assets in the repository, not on older prompts.
 
-## 1. Repository State
+## Repository State
 
 - Repository: `livioq/matemostri`
-- Remote: `https://github.com/livioq/matemostri.git`
-- Default remote branch: `origin/main`
-- Current local branch inspected: `fix/cracked-egg-visual`
-- Implementation baseline inspected: `4428417 Update monster evolution path`
-- GitHub Pages entry point, if served from the repository root, is `index.html`.
+- Working branch: `fix/cracked-egg-visual`
+- Current implementation: full single-file game in `index.html`
+- Important repository issue verified: older history contains a placeholder `index.html` on `origin/main`; this branch contains the complete working game build and is the correct source for progression changes.
+- Stable engine preserved: arithmetic generation, column-working UI, long multiplication, long division, profiles, saves, custom Momo names, collectibles, settings, hints, sounds, and developer tools remain in the same app.
 
-Important blocker:
+## Current Maths Progression
 
-- `origin/main:index.html` is not the working game. It is a one-line placeholder:
-  `PLACEHOLDER - the full content of /tmp/new_index.html is 101k characters...`
-- The working game currently exists in this branch's root `index.html`.
-- No repair to `origin/main` was made as part of this documentation task.
-- I did not confirm a live deployed GitHub Pages page. Search did not surface a public `livioq.github.io/matemostri` result. If GitHub Pages currently serves `origin/main` from the root, it would serve the placeholder rather than the working game.
-
-Relevant files:
-
-- `index.html`: entire implemented app: markup, CSS, model, question generators, session flow, UI, story, developer tools.
-- `tests/arithmetic-model.test.js`: automated model/UI logic tests using `node:vm` and DOM stubs.
-- `assets/monsters/stages.json`: stage asset manifest.
-- `assets/monsters/*.png`: current monster production image files.
-- `assets/story/*.png`: opening story images.
-- `assets/ui/magic-glow.png`: celebration backdrop.
-- `assets/accessories/manifest.json`: accessory stage manifest, not the runtime collectible unlock table.
-- `assets/expressions/manifest.json`: expression-name manifest.
-- `CLAUDE.md`, `CONTRIBUTING.md`, `EVOLUTION_ROADMAP.md`: project docs. Treat `EVOLUTION_ROADMAP.md` as stale relative to the current code.
-
-Recent meaningful commits in this working tree:
-
-- `4428417 Update monster evolution path`
-- `3abe4f0 Remove test file`
-- `b7923a5 Test binary upload handling`
-- `9d4419e Fix stage-15 image name to guardian-light and confirm stages 6-15 ready`
-- `4b42206 Mark evolution stages 6-15 ready and align ids with art roadmap`
-- `dd7b1b6 Add evolution roadmap documentation for agents`
-- `3b597d8 Say what the home screen numbers mean`
-- `18c407c Show stars instead of a counter, and write column digits right to left`
-- `5cb9486 Add two-digit mental subtraction`
-- `c88e303 Rename the creature in settings, and drop the duplicate lesson list`
-- `9b6e83b Remove XP`
-
-## 2. Current Lesson Structure
-
-`MATH_STAGES` defines 15 lessons. A lesson is available when it is the first lesson, already completed, or the next lesson after the furthest completed lesson. Completing a lesson unlocks the next lesson.
+`MATH_STAGES` defines 15 lessons. Unlocks are linear: lesson 1 is available for a new player; completing a lesson unlocks the next lesson. Completed lessons remain replayable for collectibles and do not advance story/evolution again.
 
 Pass rule:
 
 - Normal lessons: 10 questions, pass with 8 mastered answers.
 - Three-digit column lessons: 7 questions, pass with 6 mastered answers.
 - Four-digit column lessons: 5 questions, pass with 4 mastered answers.
-- "Mastered" means correct on the first attempt or clean column/long-working without hints/errors. Helped answers advance the question but do not count toward the pass mark.
-
-| # | Lesson ID | Name | Operation | Questions | Type/interface | Question-number ranges and generation | Carrying/borrowing | Pass | Prerequisite | Next |
-|---|---|---|---|---:|---|---|---|---:|---|---|
-| 1 | `add_1digit` | One-digit addition | Addition | 10 | Mental keypad | Each question uses `a` 0-9 and `b` 0-9. | No column carrying. | 8 | None | `add_2column` |
-| 2 | `add_2column` | Two-digit column addition | Addition | 10 | Column | Q1-Q3 no carry; Q4-Q6 exactly one carry from ones; Q7-Q10 mixed. Numbers are 10-89. | Yes, by phase. | 8 | `add_1digit` | `add_2mental` |
-| 3 | `add_2mental` | Two-digit mental addition | Addition | 10 | Mental keypad | `a` 12-58, `b` 11-39. | Mental only; no column UI. Sums may cross tens. | 8 | `add_2column` | `add_3column` |
-| 4 | `add_3column` | Three-digit column addition | Addition | 7 | Column | Both addends 100-899; generator requires at least one carry. | Yes. | 6 | `add_2mental` | `add_4column` |
-| 5 | `add_4column` | Four-digit column addition | Addition | 5 | Column | Both addends 1000-8999; generator requires at least one carry. | Yes. | 4 | `add_3column` | `sub_1digit` |
-| 6 | `sub_1digit` | One-digit subtraction | Subtraction | 10 | Mental keypad | `a` 2-9, `b` 0-`a`; never below zero. | No column borrowing. | 8 | `add_4column` | `sub_2column` |
-| 7 | `sub_2column` | Two-digit column subtraction | Subtraction | 10 | Column | Q1-Q3 no regroup; Q4-Q6 regroup; Q7-Q10 mixed. `a` 21-99, `b` 11 to `a-10`; answer stays two-digit. | Yes, by phase. | 8 | `sub_1digit` | `sub_2mental` |
-| 8 | `sub_2mental` | Two-digit mental subtraction | Subtraction | 10 | Mental keypad | `a` 25-95, `b` 11 to `min(49, a-10)`; answer is positive and two-digit. | Mental only; no column UI. | 8 | `sub_2column` | `sub_3column` |
-| 9 | `sub_3column` | Three-digit column subtraction | Subtraction | 7 | Column | `a` 100-999, `b` 100 to `a-1`; generator requires at least one borrow annotation. | Yes. | 6 | `sub_2mental` | `sub_4column` |
-| 10 | `sub_4column` | Four-digit column subtraction | Subtraction | 5 | Column | `a` 1000-9999, `b` 1000 to `a-1`; generator requires at least one borrow annotation. | Yes. | 4 | `sub_3column` | `mul_1x1` |
-| 11 | `mul_1x1` | Single digit x single digit | Multiplication | 10 | Mental keypad | `a` 2-12, `b` 2-12. | No column UI. | 8 | `sub_4column` | `mul_1x2` |
-| 12 | `mul_1x2` | Single digit x two digits | Multiplication | 10 | Column | Two-digit multiplicand 12-99 times single-digit multiplier 2-9. | Multiplication carries, shown as side carry notes. | 8 | `mul_1x1` | `mul_2x2` |
-| 13 | `mul_2x2` | Two digits x two digits | Multiplication | 10 | Long multiplication | `a` 12-99, `b` 12-99. | Partial products, placeholders, row carries, final sum carries. | 8 | `mul_1x2` | `div_simple` |
-| 14 | `div_simple` | Simple division | Division | 10 | Mental keypad | Exact division: divisor 2-12, quotient 2-12, shown as `(d*q) / d`. | No column UI. | 8 | `mul_2x2` | `div_long` |
-| 15 | `div_long` | Long division | Division | 10 | Long division UI | Q1-Q3 two-digit dividends; Q4-Q6 three-digit; Q7-Q10 four-digit. Q3, Q6, Q9, Q10 leave something over; others divide exactly. | Single-digit divisors only, 2-9. Bring-down interaction is step-by-step. | 8 | `div_simple` | None |
-
-Long division currently uses single-digit divisors, not two-digit divisors.
-
-## 3. First-Lesson Intermediate Milestone
-
-The opening crack milestone is an in-session pause, not a saved lesson and not a completed-lesson evolution.
-
-Exact behavior:
-
-- It can happen only in `add_1digit`.
-- It can happen only when `S.wasCompleted` is false, so replaying the completed lesson does not split it.
-- It is checked after the fifth question is answered: `S.i === 5`.
-- It requires `S.mastered >= 4`, meaning at least 4 of the first 5 questions were mastered unaided.
-- It is based on mastered answers, not merely questions attempted.
-- It is stored only in the current session object as `S.crackSeen` and `S.crackMoment`.
-- It is not stored in `DB`, the player save, or `stageProgress`.
-- Before the pause, the player remains at monster art stage 1 (`Magical Egg`) unless the current play-session state says otherwise.
-- The pause screen displays art stage 2 (`stage-02-cracked-egg.png`) with the text "A crack has started to appear. Keep going and see if it hatches."
-- Pressing `Continue` returns to `s-play` and calls `nextQuestion()`, so play resumes at question 6.
-- After the pause and within that same session, the play pet uses the cracked artwork because `S.crackSeen` is true.
-- If the player leaves the lesson and starts it again before completion, the crack state does not persist; a new session starts at question 1.
-- On completing the first lesson, `add_1digit` is marked complete and the evolution becomes stage 3, `Hatched Friend`.
-
-## 4. Current Evolution System
-
-Evolution is driven by completed lesson count, with one special intermediate count of `0.5` used only for the first crack milestone. The code path is:
-
-- `completedCount(player)` counts completed `MATH_STAGES`.
-- `evolutionForCount(count)` selects the last `EVOLUTIONS` entry whose `completed` value is less than or equal to `count`.
-- `artForCount(count)` returns that evolution's `art`.
-- `P.monsterStage` is updated from `artForCount(completedCount(P))`, unless `P.devMonsterOverride` is set by the developer menu.
-- `MONSTER_STAGES` has 20 slots, but only stages 1-6 are configured as image-ready in code (`assetReady: i < 6`).
-- Image paths are generated from the stage number and slug. Stages 1-6 use `.png`; stages 7-20 would use `.webp` if made ready.
-- If `assetReady` is false, `monsterMarkup` uses inline SVG fallback art.
-- If an image is marked ready but fails to load, the image's `onerror` hides the image and reveals the SVG fallback.
-- There is no separate "major evolution" boolean or flag. Major moments are represented by stage titles/messages and art selection.
-
-| Trigger | Evolution stage | ID | Display name | Asset | Ready? | Fallback |
-|---|---:|---|---|---|---|---|
-| Start, 0 completed | 1 | `stage-01` / `egg` | Magical Egg | `assets/monsters/stage-01-egg.png` | Yes | SVG egg if image fails |
-| First-lesson midpoint, 4 of first 5 mastered | 2 | `stage-02` / `cracked-egg` | First Crack | `assets/monsters/stage-02-cracked-egg.png` | Yes | SVG Momo fallback if image fails |
-| 1 lesson completed | 3 | `stage-03` / `hatchling` | Hatched Friend | `assets/monsters/stage-03-hatchling.png` | Yes | SVG fallback |
-| 2 lessons completed | 4 | `stage-04` / `fluffy-ears` | Fluffy Ears | `assets/monsters/stage-04-fluffy-ears.png` | Yes | SVG fallback |
-| 3 lessons completed | 5 | `stage-05` / `pink-cheeks` | Bright Tail | `assets/monsters/stage-05-pink-cheeks.png` | Yes | SVG fallback |
-| 4 lessons completed | 6 | `stage-06` / `bright-tail` | Wide Wings | `assets/monsters/stage-06-bright-tail.png` | Yes | SVG fallback |
-| 5 lessons completed | 7 | `stage-07` / `tiny-wings` | Addition Flight | `assets/monsters/stage-07-tiny-wings.webp` | No | SVG fallback |
-| 6 lessons completed | 8 | `stage-08` / `scarf` | Soft Scarf | `assets/monsters/stage-08-scarf.webp` | No | SVG fallback |
-| 7 lessons completed | 9 | `stage-09` / `backpack` | Backpack Explorer | `assets/monsters/stage-09-backpack.webp` | No | SVG fallback |
-| 8 lessons completed | 10 | `stage-10` / `goggles` | Explorer Goggles | `assets/monsters/stage-10-goggles.webp` | No | SVG fallback |
-| 9 lessons completed | 11 | `stage-11` / `pencil-wand` | Pencil Wand | `assets/monsters/stage-11-pencil-wand.webp` | No | SVG fallback |
-| 10 lessons completed | 12 | `stage-12` / `magic-marks` | Subtraction Guardian Light | `assets/monsters/stage-12-magic-marks.webp` | No | SVG fallback |
-| 11 lessons completed | 13 | `stage-13` / `flower-crown` | Flower Crown | `assets/monsters/stage-13-flower-crown.webp` | No | SVG fallback |
-| 12 lessons completed | 14 | `stage-14` / `explorer` | Sky Explorer | `assets/monsters/stage-14-explorer.webp` | No | SVG fallback |
-| 13 lessons completed | 15 | `stage-15` / `guardian-light` | Multiplication Guardian | `assets/monsters/stage-15-guardian-light.webp` | No | SVG fallback |
-| 14 lessons completed | 16 | `stage-16` / `star-cape` | Star Cape | `assets/monsters/stage-16-star-cape.webp` | No | SVG fallback |
-| 15 lessons completed | 17 | `stage-17` / `guardian-of-maths` | Guardian of Maths | `assets/monsters/stage-17-guardian-of-maths.webp` | No | SVG fallback |
-
-Unused stage slots still exist in `MONSTER_STAGES` and `stages.json`:
-
-- Stage 18: `apprentice-guardian`
-- Stage 19: `young-guardian`
-- Stage 20: `royal-guardian`
-
-These are not reached by the current `EVOLUTIONS` array.
-
-## 5. Current Production Art Status
-
-Monster files currently present:
-
-| File | Stage | Referenced by game? | Production image used? | Fallback used? | Metadata / transparency |
-|---|---:|---|---|---|---|
-| `stage-01-egg.png` | 1 | Yes | Yes | Only if image fails | PNG, 1254x1254, RGB, no alpha channel |
-| `stage-02-cracked-egg.png` | 2 | Yes | Yes | Only if image fails | PNG, 1024x1024, RGBA |
-| `stage-03-hatchling.png` | 3 | Yes | Yes | Only if image fails | PNG, 1254x1254, RGB, no alpha channel |
-| `stage-04-fluffy-ears.png` | 4 | Yes | Yes | Only if image fails | PNG, 1254x1254, RGB, no alpha channel |
-| `stage-05-pink-cheeks.png` | 5 | Yes | Yes | Only if image fails | PNG, 1024x1024, RGBA |
-| `stage-06-bright-tail.png` | 6 | Yes | Yes | Only if image fails | PNG, 1024x1024, RGBA |
-| `test-binary.png` | None | No | No | No | Not a real PNG; `file` reports ASCII text |
-
-Configured but absent production art:
-
-- Stages 7-20 are listed in `stages.json`, but the corresponding WebP files are not present and are marked `ready:false`.
-- In runtime code, stages 7-20 use SVG fallback because `assetReady` is false.
+- Mastered means correct unaided, or clean column/long-working without hints/errors.
+
+| # | Lesson ID | Lesson | Interface | Questions | Pass | Unlocks |
+|---:|---|---|---|---:|---:|---|
+| 1 | `add_1digit` | One-digit addition | Mental keypad | 10 | 8 | `add_2column` |
+| 2 | `add_2column` | Two-digit column addition | Column addition | 10 | 8 | `add_2mental` |
+| 3 | `add_2mental` | Two-digit mental addition | Mental keypad | 10 | 8 | `add_3column` |
+| 4 | `add_3column` | Three-digit column addition | Column addition | 7 | 6 | `add_4column` |
+| 5 | `add_4column` | Four-digit column addition | Column addition | 5 | 4 | `sub_1digit` |
+| 6 | `sub_1digit` | One-digit subtraction | Mental keypad | 10 | 8 | `sub_2column` |
+| 7 | `sub_2column` | Two-digit column subtraction | Column subtraction | 10 | 8 | `sub_2mental` |
+| 8 | `sub_2mental` | Two-digit mental subtraction | Mental keypad | 10 | 8 | `sub_3column` |
+| 9 | `sub_3column` | Three-digit column subtraction | Column subtraction | 7 | 6 | `sub_4column` |
+| 10 | `sub_4column` | Four-digit column subtraction | Column subtraction | 5 | 4 | `mul_1x1` |
+| 11 | `mul_1x1` | Single digit × single digit | Mental keypad | 10 | 8 | `mul_1x2` |
+| 12 | `mul_1x2` | Single digit × two digits | Column multiplication | 10 | 8 | `mul_2x2` |
+| 13 | `mul_2x2` | Two digits × two digits | Long multiplication | 10 | 8 | `div_simple` |
+| 14 | `div_simple` | Simple division | Mental keypad | 10 | 8 | `div_long` |
+| 15 | `div_long` | Long division | Long division UI | 10 | 8 | End |
+
+Long division uses a single-digit divisor into a multi-digit dividend. The dividend grows from two digits to three digits to four digits, and later questions include remainders.
+
+## Evolution and Story Audit
+
+The intended production progression is now 17 stages. Stage 2 is a special intermediate state during the first lesson, not a normal map destination. The artwork was audited before renaming; several old filenames/slugs no longer matched what the art actually showed.
+
+| Stage | Previous code ID / slug | Previous display name | Previous image | Actual visual content | Trigger | Type | Major? | Previous name matched art? | Final canonical ID | Final canonical filename |
+|---:|---|---|---|---|---|---|---|---|---|---|
+| 1 | `stage-01` / `egg` | Magical Egg | `stage-01-egg.png` | Glowing purple-pink magical egg with golden heart | New player / 0 lessons | Starting state | No | Mostly | `magical-egg` | `stage-01-magical-egg.png` |
+| 2 | `stage-02` / `cracked-egg` | First Crack | `stage-02-cracked-egg.png` | Cracked magical egg | 4 mastered answers after first 5 questions in `add_1digit` | Intermediate | No | Yes | `first-crack` | `stage-02-first-crack.png` |
+| 3 | `stage-03` / `hatchling` | Hatched Friend | `stage-03-hatchling.png` | Hatchling just out of shell | Complete `add_1digit` | Lesson completion | No | Mostly | `hatched-friend` | `stage-03-hatched-friend.png` |
+| 4 | `stage-04` / `fluffy-ears` | Fluffy Ears | `stage-04-fluffy-ears.png` | Young Momo with large fluffy ears | Complete `add_2column` | Lesson completion | No | Yes | `fluffy-ears` | `stage-04-fluffy-ears.png` |
+| 5 | `stage-05` / `pink-cheeks` | Bright Tail | `stage-05-pink-cheeks.png` | Momo with bright magical tail and small wings | Complete `add_2mental` | Lesson completion | No | No | `bright-tail` | `stage-05-bright-tail.png` |
+| 6 | `stage-06` / `bright-tail` | Wide Wings | `stage-06-bright-tail.png` | Momo with much wider wings and glowing tail | Complete `add_3column` | Lesson completion | No | No | `wide-wings` | `stage-06-wide-wings.png` |
+| 7 | `stage-07` / `tiny-wings` | Addition Flight | `stage-07-tiny-wings.png` | Flying Momo with large wings | Complete `add_4column` / Addition finale | Lesson completion | Yes | No | `addition-flight` | `stage-07-addition-flight.png` |
+| 8 | `stage-08` / `scarf` | Backpack Explorer | `stage-08-scarf.png` | Explorer Momo with backpack, magnifier, coins | Complete `sub_1digit` | Lesson completion | No | No | `backpack-explorer` | `stage-08-backpack-explorer.png` |
+| 9 | `stage-09` / `backpack` | Explorer Goggles | `stage-09-backpack.png` | Explorer Momo with goggles, backpack, pencil | Complete `sub_2column` | Lesson completion | No | No | `explorer-goggles` | `stage-09-explorer-goggles.png` |
+| 10 | `stage-10` / `goggles` | Magic Marks | `stage-10-goggles.png` | Momo with goggles, staff, backpack and glowing body marks | Complete `sub_2mental` | Lesson completion | No | No | `magic-marks` | `stage-10-magic-marks.png` |
+| 11 | `stage-11` / `pencil-wand` | Flower Crown | `stage-11-pencil-wand.png` | Momo with flower crown, goggles, satchel and star wand | Complete `sub_3column` | Lesson completion | No | No | `flower-crown` | `stage-11-flower-crown.png` |
+| 12 | `stage-12` / `magic-marks` | Subtraction Guardian Light | `stage-12-magic-marks.png` | Armoured/light guardian form with cloak, staff and celestial wings | Complete `sub_4column` / Subtraction finale | Lesson completion | Yes | No | `subtraction-guardian-light` | `stage-12-subtraction-guardian-light.png` |
+| 13 | `stage-13` / `flower-crown` | Star Cape | `stage-13-flower-crown.png` | Starry caped Momo with wand and explorer satchel | Complete `mul_1x1` | Lesson completion | No | No | `star-cape` | `stage-13-star-cape.png` |
+| 14 | `stage-14` / `explorer` | Celestial Wings | `stage-14-explorer.png` | Larger celestial/armoured wings with purple-gold cape and staff | Complete `mul_1x2` | Lesson completion | No | No | `celestial-wings` | `stage-14-celestial-wings.png` |
+| 15 | `stage-15` / `guardian-light` | Multiplication Mage | `stage-15-guardian-light.png` | Wizard/mage Momo with hat, cloak, staff and large wings | Complete `mul_2x2` / Multiplication finale | Lesson completion | Yes | No | `multiplication-mage` | `stage-15-multiplication-mage.png` |
+| 16 | `stage-16` / `star-cape` | Arcane Master | `stage-16-star-cape.png` | Mage Momo with floating spellbook | Complete `div_simple` | Lesson completion | No | No | `arcane-master` | `stage-16-arcane-master.png` |
+| 17 | `stage-17` / `guardian-of-maths` | Guardian of Maths | `stage-17-guardian-of-maths.png` | Final grand mage/guardian form with book, staff, vast wings and flowing magic | Complete `div_long` / Division finale | Lesson completion | Yes | Yes | `guardian-of-maths` | `stage-17-guardian-of-maths.png` |
+
+Final major evolutions are stages 7, 12, 15, and 17.
+
+## First Crack Milestone
+
+The first crack remains an intermediate event inside `add_1digit`.
+
+- Exact trigger: `S.i === 5 && S.mastered >= 4`
+- It can only trigger if the first lesson was not already completed.
+- It is not a separate lesson and is not a separate map node.
+- Before it triggers, the displayed art is stage 1, Magical Egg.
+- When it triggers, the lesson pauses on the crack screen, showing stage 2.
+- Pressing Continue returns to the same 10-question lesson at question 6.
+- Save behaviour changed safely: `P.storyProgress.firstCrackSeen` now persists the crack state.
+- If a player leaves after the crack but before hatching, the home/play art can resume with stage 2.
+- Completing `add_1digit` moves to stage 3, Hatched Friend, based on completed lesson count.
+
+## Story Map Progression
+
+The old tab/list-style lesson picker has been replaced with a vertical, winding adventure map. It is driven by `PROGRESSION_NODES`, a canonical configuration that connects story, map node, lesson ID, stage, asset, unlock, and major-evolution state.
+
+| Map order | Map node | Region | Lesson ID | Evolution stage unlocked on completion | Major? |
+|---:|---|---|---|---:|---|
+| 1 | The Mysterious Egg | Awakening | `add_1digit` | 3 | No |
+| 2 | Whispering Woods | Addition | `add_2column` | 4 | No |
+| 3 | Starlight Trail | Addition | `add_2mental` | 5 | No |
+| 4 | Windy Cliffs | Addition | `add_3column` | 6 | No |
+| 5 | The Great Chasm | Addition Finale | `add_4column` | 7 | Yes |
+| 6 | Explorer's Valley | Subtraction | `sub_1digit` | 8 | No |
+| 7 | Crystal Caves | Subtraction | `sub_2column` | 9 | No |
+| 8 | The Rune Ruins | Subtraction | `sub_2mental` | 10 | No |
+| 9 | The Enchanted Garden | Subtraction | `sub_3column` | 11 | No |
+| 10 | The Guardian Gate | Subtraction Finale | `sub_4column` | 12 | Yes |
+| 11 | The Star Fields | Multiplication | `mul_1x1` | 13 | No |
+| 12 | The Celestial Heights | Multiplication | `mul_1x2` | 14 | No |
+| 13 | The Magician's Tower | Multiplication Finale | `mul_2x2` | 15 | Yes |
+| 14 | The Arcane Library | Division | `div_simple` | 16 | No |
+| 15 | The Heart of Matemostri | Division Finale | `div_long` | 17 | Yes |
+
+Map behaviour:
+
+- Completed locations are bright/visited and replayable.
+- The current location pulses with a clear “Continue here” affordance.
+- Future locations remain visible but dimmed/locked.
+- Tapping an unlocked node opens a short story card, then starts the existing maths lesson.
+- Completing a lesson shows the result/evolution, then `Continue Adventure` returns to the map.
+- `Practise Again` replays the same lesson and does not advance story.
+
+## Save and Migration Behaviour
+
+- Save key remains `matemostri:v2`.
+- Legacy key read fallback remains `matemostri:v4`.
+- Migration version is now `7`.
+- Existing completed lessons, availability, profile names, ages, custom monster names, stats, collectibles, accessories, sound settings, and storySeen values are preserved.
+- Map status is derived from `stageProgress`; old players do not need to replay story beats.
+- New `storyProgress` defaults are added safely:
+  - `firstCrackSeen:false`
+  - `mapSeen:{}`
+- Monster art is derived from completed lessons, except that stage 2 can display before the first lesson is complete if `firstCrackSeen` is true.
 
-Known transparency state from metadata only:
+## Asset State
 
-- Stages 1, 3, and 4 are RGB PNGs and therefore do not have an alpha channel.
-- Stages 2, 5, and 6 are RGBA PNGs and can contain transparency.
+Production monster artwork now exists for all 17 intended stages and is preferred over SVG fallback. `monsterMarkup` still keeps the inline SVG fallback if an image fails to load.
 
-## 6. Progression and Stars
+Known dimensions from current files:
 
-XP:
+- Stages 1-17 are PNG production assets.
+- Stages 1 and 3-17 are 1024×1024 PNGs after the recent replacements/additions.
+- Stage 2 is also 1024×1024 PNG.
+- Current ready artwork uses alpha where available; the image fallback path remains safe.
 
-- XP no longer exists as an active progression system.
-- The save migration removes `xp` and `level`.
-- Tests fail if XP-like fields or old XP award functions are reintroduced.
-- `ease`, `tierFor`, `genEasy`, and `genHard` remain in code, but the current lesson generator path does not call `tierFor`, `genEasy`, or `genHard`. This is inert leftover adaptive-difficulty code.
+`assets/monsters/stages.json` now lists only the intended 17 stages.
 
-Stars and lesson progress:
+## Tests
 
-- The play screen shows one star slot per question.
-- `renderStars` displays `☆` for unanswered and `★` for answered.
-- `markQuestion('won')` means mastered/unaided. `markQuestion('helped')` means answered with help.
-- Both won and helped answers visually fill a star, but only `won` stars count toward `mastered` and the pass threshold.
-- The ARIA label reports won stars, total questions, and pass mark.
-- The menu text uses `sessionPlan(stage).pass`, so the displayed requirement follows the real pass rule.
+`tests/arithmetic-model.test.js` verifies:
 
-Unlocking and completion:
-
-- `completeMathStage` marks the current lesson complete and makes the next lesson available.
-- `normalizeStageProgress` ensures earlier lessons up to the furthest completed lesson are consistently available/completed.
-- `Continue Adventure` / home button text changes by progress: first play says "Help the egg awaken"; completed game says "Revisit the enchanted lessons"; otherwise it uses the custom monster name.
-- Replaying a completed lesson does not advance evolution. If the replay passes, it awards a collectible.
-
-## 7. Collectibles
-
-Implemented:
-
-Collectibles are defined in `COLLECTIBLES`:
-
-- `stars`: Magic Stars
-- `flowers`: Flowers
-- `berries`: Magic Berries
-- `feathers`: Feathers
-- `mushrooms`: Mushrooms
-- `crystals`: Crystals
-- `leaves`: Lucky Leaves
-- `shells`: Forest Shells
-
-How they are earned:
-
-- Replaying a completed lesson and passing it triggers `awardCollectible`.
-- `awardCollectible` selects one collectible at random and increments `P.collectibles[item.id]`.
-- The end screen reports the found item.
-
-Cosmetic rewards implemented:
-
-- Cosmetic thresholds are implemented in `COSMETIC_REWARDS`.
-- When total collectibles reach thresholds, IDs are added to `P.accessories`.
-- Current thresholds: Flower Crown 3, Scarf 6, Backpack 10, Star Cape 15, Magic Pencil 22, Crystal Crown 30, Guardian Staff 40.
-- `wardrobeBox` on the home screen displays earned cosmetics.
-- `petSVG` reads some accessory IDs and draws fallback SVG accessories for scarf, star cape, and crowns. Raster images do not visually compose these accessories.
-
-Planned / unused or partly stale:
-
-- `assets/accessories/manifest.json` lists level-based accessory IDs, including `magic-staff` at level 20. Runtime collectible unlocking uses `COSMETIC_REWARDS`, not this manifest.
-- `ACC` still contains level-triggered accessory metadata used by older fallback-art logic, but `monsterMarkup` passes `P.accessories` to `petSVG`, so saved accessory IDs are the meaningful runtime path.
-
-Save format:
-
-- `P.collectibles` is an object keyed by collectible ID with numeric counts.
-- `P.accessories` is an array of cosmetic IDs.
-- Migration normalizes all collectible counts and creates missing IDs with zero.
-
-## 8. Monster Naming
-
-- Default monster name: `Momo`.
-- Player can rename the monster during the opening story on the first story screen.
-- Player can rename later in Settings via `setFriendName`.
-- The custom name is stored on the player as `momoName`.
-- `petName()` returns `P.momoName` or `Momo`.
-- Story text, home messages, menu title, journey requirements, feedback, evolution messages, end screen, and settings use `petName()` or saved `momoName`.
-- Some internal arrays and variable names still include `Momo` (`PET_NAMES`, `monsterMarkup`, comments, file/doc text), but child-facing dynamic text is intended to use the custom name. Static title text still refers to "magical friend" rather than the custom name in some places.
-
-## 9. Story
-
-Opening story:
-
-- `STORY_SCENES` has 3 screens.
-- Screen 1: `assets/story/find-egg.png`, title "A magical egg!", includes the naming input.
-- Screen 2: `assets/story/take-home.png`, title "A new friend", uses `{name}`.
-- Screen 3: `assets/story/magic-maths.png`, title "Magic maths", uses `{name}`.
-
-When it appears:
-
-- New players are sent to `openStory()`.
-- On app boot, if the current player exists and `storySeen` is false, the story opens; otherwise home opens.
-- `finishStory` sets `P.storySeen = true`, saves, and goes home.
-- The story can be skipped; skip calls `finishStory`.
-- The story can be replayed from Settings / developer-adjacent UI via `replayStory`.
-
-Migration note:
-
-- If `storySeen` is undefined during migration, it is set to true. Existing/legacy players are not forced through the story.
-
-## 10. Arithmetic Engine Status
-
-Addition:
-
-- Column addition uses `buildColumn('add', a, b)`.
-- Result digits are entered right-to-left.
-- A step never asks for two digits at once.
-- Carry steps are separate digit steps and are only placed above columns with original digits. If a carry becomes the final leftmost answer digit, it is entered as the answer digit in that column rather than as a carry mark above an empty column.
-- Tests cover examples including `63 + 71`, right-to-left order, no two-digit answer steps, and no carry mark over empty columns.
-
-Subtraction:
-
-- Column subtraction uses regrouping annotations.
-- It supports borrowing, chained borrowing, and borrowing across zeros.
-- For `84 - 16`, tests assert that the 8 becomes 7 and the 4 becomes 14.
-- For `1000 - 367`, tests assert the zero-search and chained borrow sequence.
-- Step-by-step reveal behavior is tested: future rewritten digits are not shown before the child reaches the relevant step.
-
-Multiplication:
-
-- `mul_1x2` uses column multiplication with one-digit multiplier and side carry notes.
-- `mul_2x2` uses `buildLongMultiplication` with:
-  - two partial-product rows,
-  - a zero placeholder for the tens row,
-  - partial-row carry notes,
-  - a final addition row.
-- Carried leading digits are written as their own right-to-left steps, not combined into two-digit entries.
-- Tests cover examples including `27 x 4`, `46 x 7`, `23 x 14`, and `99 x 99`.
-
-Division:
-
-- `div_simple` is exact mental division with divisor and quotient 2-12.
-- `div_long` uses long division UI with single-digit divisors only.
-- Divisors are 2-9 for long division.
-- Dividends ramp from 2 digits to 3 digits to 4 digits.
-- Each digit length is introduced with exact division before questions with something left over.
-- Bring-down is an explicit interaction in `divPlan`, `renderDiv`, and `pressDiv`.
-- Something left over is not treated as an error. The final prompt says there is nothing left to bring down and the summary says not everything fits evenly.
-- Tests cover divisor width, dividend length ramp, no zero quotient digits, bring-down behavior, leftover behavior, and no child-facing jargon such as quotient/product/remainder/divisor/dividend.
-
-## 11. Save Data and Migration
-
-Storage:
-
-- Current key: `matemostri:v2`
-- Legacy keys read: `matemostri:v4`
-- Save backend: `window.storage` if available, otherwise `localStorage`.
-
-Top-level DB shape:
-
-- `DB = { players: [], current: null, sound: true }`
-
-Current player fields:
-
-- `id`
-- `name`
-- `age`
-- `total`
-- `ease`
-- `right`
-- `best`
-- `groups`
-- `unlocked`
-- `stageProgress`
-- `monsterStage`
-- `momoName`
-- `collectibles`
-- `accessories`
-- `storySeen`
-- `migrationVersion`
-- Optional developer-only `devMonsterOverride`
-
-Lesson progress:
-
-- `stageProgress.available[id]`: whether a lesson can be selected.
-- `stageProgress.completed[id]`: whether a lesson has been completed.
-- `blankStageProgress`, `progressFromCount`, and `normalizeStageProgress` own this shape.
-
-Evolution fields:
-
-- `monsterStage`: current visual art stage.
-- `devMonsterOverride`: optional developer override.
-- There is no saved field for the first crack midpoint.
-
-Crack milestone fields:
-
-- `S.crackSeen` and `S.crackMoment` exist only on the live session object `S`.
-- They are not persisted in player save data.
-
-Migration functions:
-
-- `legacyCompletedCount(p)`: maps very old group/unlocked/level progress to a completed lesson count.
-- `migrateV3StageProgress(progress)`: maps an older 13-lesson structure into the current 15-lesson structure.
-- `RETIRED_STAGE_IDS = { sub_2digit: 'sub_2column' }`
-- `migrateV4StageProgress(progress)`: handles renamed lesson IDs.
-- `RETIRED_PLAYER_FIELDS = ['xp', 'level']`
-- `dropRetiredPlayerFields(p)`: removes XP and old level.
-- `migrate(p)`: normalizes all current player fields and sets `migrationVersion = 6`.
-
-Compatibility:
-
-- Tests cover v3/v4 migration, old level-to-progress conversion, retired field deletion, collectible/accessory preservation, and idempotent migration of a fresh save.
-
-## 12. Testing and Developer Tools
-
-Automated tests:
-
-- Run: `node tests/arithmetic-model.test.js`
-- Tests extract functions and constants from `index.html` and run them in Node.
-- Covered areas include:
-  - first crack trigger and continue flow source wiring,
-  - addition column steps,
-  - subtraction borrowing and reveal behavior,
-  - multiplication and long multiplication steps,
-  - long division generation and prompts,
-  - session lengths and pass marks,
-  - star row behavior,
-  - save migrations and XP removal,
-  - current evolution roadmap,
-  - stage 5 and stage 6 asset existence.
-
-Browser/mobile tests:
-
-- There is no committed browser test suite.
-- Recent manual checks were done at phone-like widths, but they are not automated.
-
-Developer tools:
-
-- Hidden developer spellbook opens by tapping the player name seven times.
-- It can:
-  - jump to a lesson count,
-  - unlock all maths lessons,
-  - unlock all collectibles,
-  - trigger a selected evolution,
-  - replay the story,
-  - rename the monster,
-  - reset the player.
-
-Not currently covered by automated tests:
-
-- Full browser visual layout.
-- Actual image transparency/visual quality beyond file presence.
-- End-to-end browser clicking for every lesson.
-- Audio behavior.
-- Live GitHub Pages deployment.
-
-## 13. Known Issues / Blockers
-
-Actual issues found during inspection:
-
-- `origin/main:index.html` is a placeholder, not the working game. This blocks main/default-branch deployment if GitHub Pages serves `main`.
-- The working game exists on local branch `fix/cracked-egg-visual`, not on `origin/main`.
-- `EVOLUTION_ROADMAP.md` is stale. It describes an older evolution table where the cracked egg is completed lesson 1 and final stages go beyond the current stage 17 finale.
-- `CLAUDE.md` is partly stale where it says five production Momo images are final; this branch now has six production-ready monster images and the fifth was replaced.
-- `assets/monsters/stages.json` still lists stages 18-20 even though current `EVOLUTIONS` ends at art stage 17.
-- `assets/monsters/test-binary.png` is present but is not a real PNG and is not used by the game.
-- Stage asset manifest paths for stages 7-20 point to absent WebP files. This is safe at runtime because those stages are `ready:false` and the runtime uses SVG fallback, but the files do not exist.
-- `assets/accessories/manifest.json` contains older level-based accessory data that does not match the current collectible-threshold runtime exactly.
-- Inert adaptive-difficulty code remains (`ease`, `tierFor`, `genEasy`, `genHard`); it does not currently drive question generation.
-- Long division uses 10 questions, with the last four using four-digit dividends; `CLAUDE.md` already flags that this may drag in play.
-- Two-digit-by-two-digit multiplication is still 10 full long-multiplication questions; `CLAUDE.md` flags this as worth watching.
-
-No broken runtime asset references were found for stages 1-6. Later stages intentionally use fallback because `assetReady` is false.
-
-## 14. Current Authoritative Roadmap
-
-### A. Implemented now
-
-- Single-file static app in root `index.html`.
-- 15 implemented maths lessons.
-- 134 total questions across the journey:
-  - 10-question normal lessons,
-  - 7-question three-digit column lessons,
-  - 5-question four-digit column lessons.
-- First lesson has an in-session cracked-egg pause after question 5 if at least 4 of the first 5 were mastered.
-- Completed lessons drive evolution stages:
-  - 0: Stage 1 Magical Egg
-  - first midpoint: Stage 2 First Crack
-  - 1: Stage 3 Hatched Friend
-  - 2: Stage 4 Fluffy Ears
-  - 3: Stage 5 Bright Tail
-  - 4: Stage 6 Wide Wings
-  - 5: Stage 7 Addition Flight
-  - 6: Stage 8 Soft Scarf
-  - 7: Stage 9 Backpack Explorer
-  - 8: Stage 10 Explorer Goggles
-  - 9: Stage 11 Pencil Wand
-  - 10: Stage 12 Subtraction Guardian Light
-  - 11: Stage 13 Flower Crown
-  - 12: Stage 14 Sky Explorer
-  - 13: Stage 15 Multiplication Guardian
-  - 14: Stage 16 Star Cape
-  - 15: Stage 17 Guardian of Maths
-- Monster images are production-ready for stages 1-6 only.
-- Stages 7-17 are implemented via SVG fallback.
-- Replaying completed lessons awards collectibles.
-- Collectibles unlock cosmetic IDs.
-- XP and old level progression are removed from saved games.
-- Long division uses single-digit divisors only.
-
-### B. Recent agreed direction, not yet necessarily implemented
-
-Clearly identifiable from recent docs/commits but not fully implemented as production assets:
-
-- Every completed lesson should produce a noticeable evolution.
-- The operation endpoints should feel like bigger transformations:
-  - four-digit addition: Addition Flight,
-  - four-digit subtraction: Subtraction Guardian Light,
-  - two-digit-by-two-digit multiplication: Multiplication Guardian,
-  - long division: Guardian of Maths.
-- Later stages need production artwork. Current stages 7-17 rely on SVG fallback.
-- Existing docs mention transparent WebP production art for later stages; that is not present in the repo.
-- Stages 18-20 remain configured as possible slots but are not part of the current implemented evolution path.
+- First crack trigger remains 4 of first 5 mastered answers.
+- Crack state is persisted through `storyProgress.firstCrackSeen`.
+- Long division remains single-digit divisor into multi-digit dividend.
+- The old XP system is not reintroduced.
+- Existing saves migrate without losing progress, stats, custom names, collectibles, or cosmetics.
+- Every maths lesson maps to one adventure map node.
+- The final evolution requires all 15 lessons.
+- Major evolutions are exactly stages 7, 12, 15, and 17.
+- Canonical renamed asset filenames exist.

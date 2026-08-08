@@ -207,6 +207,28 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
 .silhouette::before,.silhouette::after{content:"";position:absolute;top:-12px;width:22px;height:30px;background:#28304a;border-radius:70% 20% 60% 30%}.silhouette::before{left:4px;transform:rotate(-25deg)}.silhouette::after{right:4px;transform:rotate(25deg)}
 .accessory-list{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px}.accessory-chip{font-size:10px;font-weight:800;background:#fff4c9;color:#785800;border-radius:999px;padding:3px 7px}
 .journey-stage .badge{display:inline-block;margin:5px 5px 0 0;padding:3px 7px;border-radius:999px;background:#e6e9ff;color:#493aa1;font-size:10px;font-weight:900}
+.adventure-map{position:relative;min-height:1120px;margin:10px 0 18px;padding:18px 0;background:linear-gradient(180deg,#fff8ff 0%,#f4f2ff 24%,#eefbff 48%,#fff5dc 70%,#f5ecff 100%);border:2px solid rgba(80,49,154,.22);border-radius:28px;overflow:hidden;box-shadow:inset 0 0 0 6px rgba(255,255,255,.45)}
+.adventure-map::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 22% 11%,rgba(145,215,177,.34),transparent 13%),radial-gradient(circle at 75% 29%,rgba(166,221,255,.32),transparent 16%),radial-gradient(circle at 23% 52%,rgba(180,151,255,.25),transparent 18%),radial-gradient(circle at 70% 78%,rgba(255,212,113,.34),transparent 17%);pointer-events:none}
+.adventure-path{position:absolute;left:50%;top:36px;width:8px;height:1040px;border-radius:999px;background:linear-gradient(#f6c85b,#e97fb7,#8fdac5,#9b7df0);transform:translateX(-50%);opacity:.42;box-shadow:0 0 18px rgba(242,185,59,.35)}
+.map-location{position:absolute;width:170px;min-height:132px;padding:10px;border:2px solid rgba(80,49,154,.22);border-radius:22px;background:rgba(255,255,255,.92);box-shadow:0 6px 16px rgba(80,49,154,.13);text-align:center;transform:translate(-50%,-50%);transition:transform .12s,box-shadow .12s,opacity .12s}
+.map-location:active:not(:disabled){transform:translate(-50%,-50%) scale(.98)}
+.map-location.completed{border-color:#65b782;background:linear-gradient(145deg,#fff,#effff6)}
+.map-location.available{border-color:#e477b4;box-shadow:0 0 0 4px rgba(228,119,180,.13),0 10px 22px rgba(80,49,154,.16)}
+.map-location.locked{opacity:.66;background:linear-gradient(145deg,#f8f6fb,#e7e9f2)}
+.map-location.current{animation:mapPulse 1.9s ease-in-out infinite;border-color:var(--gold)}
+.map-location.major{border-width:3px}
+.map-location img,.map-location svg{width:64px;height:64px;object-fit:contain}
+.map-location .map-region{display:block;font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:var(--ink-soft);font-weight:900}
+.map-location h3{margin:2px 0;color:var(--ink);font-size:14px;line-height:1.08}
+.map-location p{margin:0;color:var(--ink-soft);font-size:11px;font-weight:800;line-height:1.18}
+.map-pin-status{display:inline-block;margin-top:5px;padding:3px 7px;border-radius:999px;background:#fff4c9;color:#785800;font-size:10px;font-weight:900}
+.story-node-card{text-align:center}.story-node-card .pet-stage{min-height:230px}.story-node-card p{font-weight:780;line-height:1.35;color:var(--graphite);white-space:pre-line}
+.major-transition{background:linear-gradient(rgba(40,23,96,.9),rgba(104,39,126,.92)),url('assets/ui/magic-glow.png') center/cover}
+.major-transition .unlock-card{width:min(420px,94vw);border-color:#ffe38a;box-shadow:0 0 0 5px rgba(255,227,138,.22),0 16px 0 rgba(0,0,0,.18)}
+.evolution-pair{display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:center;margin:8px 0}.evolution-pair .pet-stage{min-height:150px}.evolution-pair .pet-stage::before{width:110px}.evolution-pair-wrap .arrow{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:28px;color:var(--gold);font-weight:900;text-shadow:0 2px 0 var(--ink)}
+.evolution-pair-wrap{position:relative}
+@keyframes mapPulse{0%,100%{box-shadow:0 0 0 4px rgba(242,185,59,.18),0 8px 18px rgba(80,49,154,.14)}50%{box-shadow:0 0 0 9px rgba(242,185,59,.34),0 12px 25px rgba(80,49,154,.2)}}
+@media (max-width:380px){.map-location{width:148px;padding:8px}.map-location h3{font-size:13px}.adventure-map{min-height:1060px}.adventure-path{height:980px}.map-location img,.map-location svg{width:56px;height:56px}}
 .evolution-burst{animation:evolve 1s cubic-bezier(.2,.9,.3,1)}
 .egg-wiggle{animation:eggWiggle .75s ease-in-out 2}.egg-wiggle>img{filter:drop-shadow(0 0 18px rgba(255,193,72,.7))}
 @keyframes evolve{0%{opacity:0;transform:scale(.55) rotate(-8deg)}65%{opacity:1;transform:scale(1.08) rotate(2deg)}100%{transform:scale(1) rotate(0)}}
@@ -324,8 +346,22 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
       <button class="link" id="menuBack">back</button>
       <span class="eyebrow" id="menuProgress"></span>
     </div>
-    <div class="journey-hero"><h1 style="font-size:25px" id="menuTitle">A magical maths journey</h1><p>Each lesson lights the path and helps your friend grow.</p></div>
-    <div class="journey" id="pickList"></div>
+    <div class="journey-hero"><h1 style="font-size:25px" id="menuTitle">A magical maths journey</h1><p id="mapIntro">Where are you and your friend going next?</p></div>
+    <div class="adventure-map" id="pickList"></div>
+  </section>
+
+  <section id="s-node" class="screen">
+    <div class="row" style="justify-content:space-between">
+      <button class="link" id="nodeBack">map</button>
+      <span class="eyebrow" id="nodeRegion"></span>
+    </div>
+    <div class="card story-node-card">
+      <div class="eyebrow" id="nodeLesson"></div>
+      <h1 style="font-size:29px;margin:4px 0" id="nodeTitle">The next path</h1>
+      <div class="pet-stage" id="nodePet"></div>
+      <p id="nodeStory"></p>
+    </div>
+    <button class="btn" id="nodeStart">Start lesson</button>
   </section>
 
   <section id="s-play" class="screen">
@@ -370,9 +406,9 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
       <div class="stats" id="endStats"></div>
       <div class="reward-line" id="endReward" style="margin-top:12px"></div>
     </div>
-    <button class="btn" id="againBtn">Choose another lesson</button>
+    <button class="btn" id="againBtn">Continue Adventure</button>
     <div style="height:10px"></div>
-    <button class="btn ghost" id="endHome">Back to the den</button>
+    <button class="btn ghost" id="endHome">Practise Again</button>
   </section>
 
   <section id="s-set" class="screen">
@@ -414,10 +450,17 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
     <div class="unlock-card">
       <div class="unlock-icon">✨💜✨</div>
       <div class="eyebrow" style="display:inline-block;background:#7b4bc4;color:#fff;border-radius:999px;padding:6px 12px">New magic unlocked</div>
+      <div class="evolution-pair-wrap">
+        <div class="evolution-pair" id="unlockPair" style="display:none">
+          <div class="pet-stage" id="unlockBeforePet"></div>
+          <div class="pet-stage" id="unlockAfterPet"></div>
+        </div>
+        <div class="arrow" id="unlockArrow" style="display:none">→</div>
+      </div>
       <div class="pet-stage" id="unlockPet"></div>
       <h2 id="unlockTitle">A new path is glowing!</h2>
       <p id="unlockText">A new maths adventure is ready.</p>
-      <button class="btn" id="unlockOk">Follow the glowing path</button>
+      <button class="btn" id="unlockOk">See your result</button>
     </div>
   </div>
 
@@ -481,25 +524,47 @@ const MATH_STAGES=[
   {id:'div_long',gid:'div',label:'Long division',mode:'division',magic:'Guardian Castle'}
 ];
 const STAGE_BY_ID=id=>MATH_STAGES.find(s=>s.id===id);
-const PET_NAMES=['Heartlight Egg','Hatchling Momo','Fluffy Momo','Twinkle Momo','Trail Momo','Brave Momo','Scout Momo','Wonder Momo','Hover Momo','Cloud Momo','Sky Momo','Starfinder Momo','Companion Momo','Kindheart Momo','Scholar Momo','Magic Momo','Guardian of Maths','Royal Momo','Guardian Momo','Guardian of Maths'];
+const MONSTER_STAGE_DATA=[
+  {stage:1,slug:'magical-egg',name:'Magical Egg',image:'stage-01-magical-egg.png',ready:true},
+  {stage:2,slug:'first-crack',name:'First Crack',image:'stage-02-first-crack.png',ready:true,intermediate:true},
+  {stage:3,slug:'hatched-friend',name:'Hatched Friend',image:'stage-03-hatched-friend.png',ready:true},
+  {stage:4,slug:'fluffy-ears',name:'Fluffy Ears',image:'stage-04-fluffy-ears.png',ready:true},
+  {stage:5,slug:'bright-tail',name:'Bright Tail',image:'stage-05-bright-tail.png',ready:true},
+  {stage:6,slug:'wide-wings',name:'Wide Wings',image:'stage-06-wide-wings.png',ready:true},
+  {stage:7,slug:'addition-flight',name:'Addition Flight',image:'stage-07-addition-flight.png',ready:true,majorEvolution:true},
+  {stage:8,slug:'backpack-explorer',name:'Backpack Explorer',image:'stage-08-backpack-explorer.png',ready:true},
+  {stage:9,slug:'explorer-goggles',name:'Explorer Goggles',image:'stage-09-explorer-goggles.png',ready:true},
+  {stage:10,slug:'magic-marks',name:'Magic Marks',image:'stage-10-magic-marks.png',ready:true},
+  {stage:11,slug:'flower-crown',name:'Flower Crown',image:'stage-11-flower-crown.png',ready:true},
+  {stage:12,slug:'subtraction-guardian-light',name:'Subtraction Guardian Light',image:'stage-12-subtraction-guardian-light.png',ready:true,majorEvolution:true},
+  {stage:13,slug:'star-cape',name:'Star Cape',image:'stage-13-star-cape.png',ready:true},
+  {stage:14,slug:'celestial-wings',name:'Celestial Wings',image:'stage-14-celestial-wings.png',ready:true},
+  {stage:15,slug:'multiplication-mage',name:'Multiplication Mage',image:'stage-15-multiplication-mage.png',ready:true,majorEvolution:true},
+  {stage:16,slug:'arcane-master',name:'Arcane Master',image:'stage-16-arcane-master.png',ready:true},
+  {stage:17,slug:'guardian-of-maths',name:'Guardian of Maths',image:'stage-17-guardian-of-maths.png',ready:true,majorEvolution:true}
+];
+const PROGRESSION_NODES=[
+  {id:'mysterious-egg',slug:'mysterious-egg',title:'The Mysterious Egg',region:'Awakening',lessonId:'add_1digit',stage:3,asset:'stage-03-hatched-friend.png',mapPosition:{x:52,y:6},storyBefore:'The egg glows when you come close. Its golden heart flickers, as if it knows your voice.',storyAfter:'The shell tumbles open. {name} blinks up at you, then gives a tiny happy squeak. Your journey has a friend now.',unlocks:'whispering-woods'},
+  {id:'whispering-woods',slug:'whispering-woods',title:'Whispering Woods',region:'Addition',lessonId:'add_2column',stage:4,asset:'stage-04-fluffy-ears.png',mapPosition:{x:30,y:12},storyBefore:'The trees whisper in soft little sums. {name} tilts those huge ears and hears a hidden path.',storyAfter:"{name}'s ears fluff wide and bright. The woods are not confusing anymore; they are calling you onward.",unlocks:'starlight-trail'},
+  {id:'starlight-trail',slug:'starlight-trail',title:'Starlight Trail',region:'Addition',lessonId:'add_2mental',stage:5,asset:'stage-05-bright-tail.png',mapPosition:{x:66,y:18},storyBefore:'The path grows dim, but little numbers sparkle under the leaves. {name} curls close, ready to light the way.',storyAfter:'A bright magical tail swishes behind {name}. Every step leaves a tiny trail of starlight.',unlocks:'windy-cliffs'},
+  {id:'windy-cliffs',slug:'windy-cliffs',title:'Windy Cliffs',region:'Addition',lessonId:'add_3column',stage:6,asset:'stage-06-wide-wings.png',mapPosition:{x:38,y:24},storyBefore:'Wind rushes around the cliffs. {name} spreads small wings and tries a brave little glide.',storyAfter:"{name}'s wings grow wide. They cannot cross the whole sky yet, but they can catch the wind.",unlocks:'great-chasm'},
+  {id:'great-chasm',slug:'great-chasm',title:'The Great Chasm',region:'Addition Finale',lessonId:'add_4column',stage:7,asset:'stage-07-addition-flight.png',mapPosition:{x:72,y:30},storyBefore:'The path suddenly ends. Far below, clouds twist through an enormous chasm. {name} looks at you, then at those wings.',storyAfter:"{name} takes one tiny step forward. Then she jumps. Her wings open wide. She's flying!",majorEvolution:true,unlocks:'explorers-valley'},
+  {id:'explorers-valley',slug:'explorers-valley',title:"Explorer's Valley",region:'Subtraction',lessonId:'sub_1digit',stage:8,asset:'stage-08-backpack-explorer.png',mapPosition:{x:42,y:36},storyBefore:'Across the chasm lies a valley full of winding tracks. {name} packs carefully, ready to explore with you.',storyAfter:'A brave explorer pack appears. {name} is learning how to carry courage.',unlocks:'crystal-caves'},
+  {id:'crystal-caves',slug:'crystal-caves',title:'Crystal Caves',region:'Subtraction',lessonId:'sub_2column',stage:9,asset:'stage-09-explorer-goggles.png',mapPosition:{x:18,y:42},storyBefore:'Crystal light bounces in every direction. {name} lowers her goggles and searches for the true path.',storyAfter:'The explorer goggles shine. Now {name} can spot the answer even when the cave sparkles try to trick her.',unlocks:'rune-ruins'},
+  {id:'rune-ruins',slug:'rune-ruins',title:'The Rune Ruins',region:'Subtraction',lessonId:'sub_2mental',stage:10,asset:'stage-10-magic-marks.png',mapPosition:{x:55,y:48},storyBefore:"Ancient runes hum in the stones. Some marks fade away; some marks wake up on {name}'s fur.",storyAfter:'Soft magic markings glow across {name}. The old ruins recognise your careful thinking.',unlocks:'enchanted-garden'},
+  {id:'enchanted-garden',slug:'enchanted-garden',title:'The Enchanted Garden',region:'Subtraction',lessonId:'sub_3column',stage:11,asset:'stage-11-flower-crown.png',mapPosition:{x:30,y:54},storyBefore:'A garden blooms where every petal hides a missing number. {name} sniffs the flowers and smiles.',storyAfter:"A flower crown blossoms around {name}'s ears. The garden has chosen its little guardian.",unlocks:'guardian-gate'},
+  {id:'guardian-gate',slug:'guardian-gate',title:'The Guardian Gate',region:'Subtraction Finale',lessonId:'sub_4column',stage:12,asset:'stage-12-subtraction-guardian-light.png',mapPosition:{x:68,y:60},storyBefore:"A sealed gate blocks the road. Explorer magic is not enough. {name}'s heart begins to glow.",storyAfter:"Guardian light bursts from {name}'s heart. The gate opens because you learned how to take away with care.",majorEvolution:true,unlocks:'star-fields'},
+  {id:'star-fields',slug:'star-fields',title:'The Star Fields',region:'Multiplication',lessonId:'mul_1x1',stage:13,asset:'stage-13-star-cape.png',mapPosition:{x:44,y:66},storyBefore:'Beyond the gate, stars gather in neat little groups. {name} counts the groups with a thoughtful swish of her tail.',storyAfter:'A starry cape begins to shimmer. {name} can feel patterns forming in the sky.',unlocks:'celestial-heights'},
+  {id:'celestial-heights',slug:'celestial-heights',title:'The Celestial Heights',region:'Multiplication',lessonId:'mul_1x2',stage:14,asset:'stage-14-celestial-wings.png',mapPosition:{x:20,y:72},storyBefore:"The path rises into golden clouds. {name}'s wings stretch toward the bright heights above.",storyAfter:"Celestial armour gleams along {name}'s wings. She is ready for higher magic.",unlocks:'magicians-tower'},
+  {id:'magicians-tower',slug:'magicians-tower',title:"The Magician's Tower",region:'Multiplication Finale',lessonId:'mul_2x2',stage:15,asset:'stage-15-multiplication-mage.png',mapPosition:{x:62,y:78},storyBefore:'An ancient tower waits in the clouds. Inside, every room is built from groups within groups.',storyAfter:"{name} emerges in a mage's hat and shining cloak. Multiplication has become magic she can wear.",majorEvolution:true,unlocks:'arcane-library'},
+  {id:'arcane-library',slug:'arcane-library',title:'The Arcane Library',region:'Division',lessonId:'div_simple',stage:16,asset:'stage-16-arcane-master.png',mapPosition:{x:36,y:86},storyBefore:'A floating spellbook opens by itself. Its pages ask how stars can be shared fairly.',storyAfter:'The spellbook floats beside {name}. She has learned that dividing can be generous magic.',unlocks:'heart-of-matemostri'},
+  {id:'heart-of-matemostri',slug:'heart-of-matemostri',title:'The Heart of Matemostri',region:'Division Finale',lessonId:'div_long',stage:17,asset:'stage-17-guardian-of-maths.png',mapPosition:{x:58,y:94},storyBefore:'At the centre of Matemostri, every path glows at once. {name} opens the spellbook for the final lesson.',storyAfter:'The whole world lights up. {name} rises as the Guardian of Maths, and every lesson you shared shines inside her heart.',majorEvolution:true}
+];
+const NODE_BY_LESSON=id=>PROGRESSION_NODES.find(n=>n.lessonId===id);
 const EVOLUTIONS=[
   {completed:0,art:1,title:'Magical Egg',message:'A warm golden heart glows inside the egg.'},
-  {completed:0.5,art:2,title:'First Crack',message:'A crack has started to appear. Keep going and see if it hatches.'},
-  {completed:1,art:3,title:'Hatched Friend',message:'{name} hatched!'},
-  {completed:2,art:4,title:'Fluffy Ears',message:'{name} grew magnificent fluffy ears!'},
-  {completed:3,art:5,title:'Bright Tail',message:'{name} grew a bright, sparkling tail!'},
-  {completed:4,art:6,title:'Wide Wings',message:'{name} grew wide magical wings!'},
-  {completed:5,art:7,title:'Addition Flight',message:'{name} completed Addition and made a huge leap into first flight!'},
-  {completed:6,art:8,title:'Soft Scarf',message:'A soft explorer scarf appeared for {name}!'},
-  {completed:7,art:9,title:'Backpack Explorer',message:'{name} found a magical adventure backpack!'},
-  {completed:8,art:10,title:'Explorer Goggles',message:'{name} put on a pair of shining explorer goggles!'},
-  {completed:9,art:11,title:'Pencil Wand',message:'{name} earned a magical pencil wand!'},
-  {completed:10,art:12,title:'Subtraction Guardian Light',message:'{name} completed Subtraction and burst into guardian light!'},
-  {completed:11,art:13,title:'Flower Crown',message:'A magical flower crown bloomed for {name}!'},
-  {completed:12,art:14,title:'Sky Explorer',message:'{name} became a brave sky explorer!'},
-  {completed:13,art:15,title:'Multiplication Guardian',message:'{name} completed Multiplication and began Guardian training!'},
-  {completed:14,art:16,title:'Star Cape',message:'A star cape swirled around {name}!'},
-  {completed:15,art:17,title:'Guardian of Maths',message:'{name} became a Guardian of Maths!'}
+  {completed:0.5,art:2,title:'First Crack',message:'A crack has started to appear. Keep going and see if it hatches.',intermediate:true},
+  ...PROGRESSION_NODES.map((node,i)=>({completed:i+1,art:node.stage,title:MONSTER_STAGE_DATA[node.stage-1].name,message:node.storyAfter,majorEvolution:!!node.majorEvolution,nodeId:node.id}))
 ];
 const EVOLUTION_LEVELS=EVOLUTIONS.map(e=>e.art);
 const ACC=[
@@ -507,7 +572,7 @@ const ACC=[
   {lvl:10,id:'goggles',name:'goggles'}, {lvl:11,id:'pencilWand',name:'pencil wand'},
   {lvl:12,id:'map',name:'map'}, {lvl:14,id:'flowerCrown',name:'flower crown'},
   {lvl:15,id:'headphones',name:'headphones'}, {lvl:15,id:'book',name:'book'},
-  {lvl:16,id:'starCape',name:'star cape'}, {lvl:20,id:'magicStaff',name:'magic staff'}
+  {lvl:16,id:'starCape',name:'star cape'}, {lvl:17,id:'magicStaff',name:'magic staff'}
 ];
 const COLLECTIBLES=[
   {id:'stars',emoji:'⭐',name:'Magic Stars'},{id:'flowers',emoji:'🌸',name:'Flowers'},
@@ -521,7 +586,7 @@ const COSMETIC_REWARDS=[
   {total:22,id:'magicPencil',name:'Magic Pencil',emoji:'✏️'},{total:30,id:'crystalCrown',name:'Crystal Crown',emoji:'💎'},
   {total:40,id:'guardianStaff',name:'Guardian Staff',emoji:'🪄'}
 ];
-const STAGE_GROUPS=[{from:1,to:2,name:'Egg & hatchling'},{from:3,to:6,name:'Toddler'},{from:7,to:12,name:'Explorer'},{from:13,to:18,name:'Companion'},{from:19,to:20,name:'Guardian'}];
+const STAGE_GROUPS=[{from:1,to:2,name:'Egg & hatchling'},{from:3,to:6,name:'Toddler'},{from:7,to:12,name:'Explorer'},{from:13,to:16,name:'Mage'},{from:17,to:17,name:'Guardian'}];
 const MONSTER_PALETTES=[
   ['#F9D9F0','#FFF5FC','#D98AD3'],['#E8D5FA','#FFF5FC','#A66DD4'],['#D9CBFA','#F8F4FF','#8762D9'],['#C9CDFB','#F3F6FF','#667BE0'],
   ['#B9D9FB','#F1FAFF','#4D96DF'],['#A9E7F2','#EFFDFF','#3AAEC4'],['#A5EBD8','#F1FFF9','#36B78B'],['#B7EBCB','#F5FFF8','#49B66E'],
@@ -529,16 +594,16 @@ const MONSTER_PALETTES=[
   ['#EAA9D0','#FFF0F8','#C35AA3'],['#D79DDD','#FFF1FE','#A85FC3'],['#BE92E3','#F9F0FF','#8758C5'],['#A47DDF','#F7F1FF','#704DC1'],
   ['#8D6AD8','#F4EEFF','#5D3EB5'],['#D887C8','#FFF0F8','#A83F97'],['#F1B458','#FFF3D0','#7B43B8'],['#F5C64F','#FFF5CE','#6738A8']
 ];
-const MONSTER_SLUGS=['egg','cracked-egg','hatchling','fluffy-ears','pink-cheeks','bright-tail','tiny-wings','scarf','backpack','goggles','pencil-wand','magic-marks','flower-crown','explorer','guardian-light','star-cape','guardian-of-maths','apprentice-guardian','young-guardian','royal-guardian'];
-const MONSTER_STAGES=MONSTER_SLUGS.map((slug,i)=>({
-  id:'stage-'+String(i+1).padStart(2,'0'),minLevel:i+1,maxLevel:i+1,name:PET_NAMES[i],
-  group:i<2?'Egg & hatchling':i<6?'Toddler':i<12?'Explorer':i<18?'Companion':'Guardian',image:'assets/monsters/stage-'+String(i+1).padStart(2,'0')+'-'+slug+(i<17?'.png':'.webp'),
-  palette:MONSTER_PALETTES[i],fallback:i===0?'egg':'momo',assetReady:i<17
+const MONSTER_STAGES=MONSTER_STAGE_DATA.map((stage,i)=>({
+  id:'stage-'+String(stage.stage).padStart(2,'0'),minLevel:stage.stage,maxLevel:stage.stage,name:stage.name,
+  slug:stage.slug,group:stage.stage<3?'Egg & hatchling':stage.stage<7?'Toddler':stage.stage<13?'Explorer':'Guardian',
+  image:'assets/monsters/'+stage.image,palette:MONSTER_PALETTES[i],fallback:stage.stage===1?'egg':'momo',
+  assetReady:!!stage.ready,majorEvolution:!!stage.majorEvolution,intermediate:!!stage.intermediate
 }));
 const MONSTER_EXPRESSIONS={idle:'happy',beforeQuestion:'curious',correct:'excited',streak:'proud',hint:'thinking',wrong:'surprised',inactive:'sleepy',levelUp:'love'};
 const PRAISE=['Correct!','Nice one.',"Yes, that's it.",'Spot on.','Exactly.','Well worked out.'];
 
-const stageOf = lvl => Math.max(1,Math.min(20,Math.floor(Number(lvl)||1)));
+const stageOf = lvl => Math.max(1,Math.min(MONSTER_STAGES.length,Math.floor(Number(lvl)||1)));
 const artLevelOf = lvl => { let art=1; EVOLUTION_LEVELS.forEach(L=>{ if(stageOf(lvl)>=L) art=L; }); return art; };
 const stageGroup = lvl => STAGE_GROUPS.find(g=>stageOf(lvl)>=g.from&&stageOf(lvl)<=g.to);
 const accsOf  = lvl => { const o={}; ACC.forEach(a=>{ if(stageOf(lvl)>=a.lvl) o[a.id]=true; }); return o; };
@@ -546,6 +611,8 @@ const monsterStage = lvl => MONSTER_STAGES[stageOf(lvl)-1];
 const completedCount=p=>MATH_STAGES.filter(s=>p.stageProgress&&p.stageProgress.completed&&p.stageProgress.completed[s.id]).length;
 function evolutionForCount(count){ let found=EVOLUTIONS[0]; EVOLUTIONS.forEach(e=>{ if(count>=e.completed) found=e; }); return found; }
 const artForCount=count=>evolutionForCount(count).art;
+function storyProgressOf(p){ if(!p.storyProgress||typeof p.storyProgress!=='object') p.storyProgress={}; if(p.storyProgress.firstCrackSeen===undefined) p.storyProgress.firstCrackSeen=false; if(!p.storyProgress.mapSeen||typeof p.storyProgress.mapSeen!=='object') p.storyProgress.mapSeen={}; return p.storyProgress; }
+function artForPlayer(p){ const count=completedCount(p); return count===0&&storyProgressOf(p).firstCrackSeen?2:artForCount(count); }
 const petName=()=>P&&P.momoName?P.momoName:'Momo';
 const collectibleTotal=p=>COLLECTIBLES.reduce((n,c)=>n+Number((p.collectibles&&p.collectibles[c.id])||0),0);
 const bandOf  = age => age<=7?0 : age<=9?1 : age<=10?2 : 3;
@@ -589,7 +656,7 @@ function legacyCompletedCount(p){
   if(old.sub2||old.sub) best=Math.max(best,6);
   if(old.mul2||old.mul) best=Math.max(best,11);
   if(old.div2||old.div) best=Math.max(best,14);
-  if(Number(p.level)>1) best=Math.max(best,Math.floor((Math.min(20,Number(p.level))-1)/19*MATH_STAGES.length));
+  if(Number(p.level)>1) best=Math.max(best,Math.floor((Math.min(17,Number(p.level))-1)/16*MATH_STAGES.length));
   return best;
 }
 function migrateV3StageProgress(progress){
@@ -635,7 +702,7 @@ function newPlayer(name,age){
   return {id:'p'+Date.now(),name:name,age:age,total:0,ease:{},right:0,best:0,
           groups:{add:true,sub:true,mul:true,div:!young},
           unlocked:{add2:false,sub2:false,mul2:false,div2:false},
-          stageProgress:blankStageProgress(),monsterStage:1,momoName:'Momo',collectibles:{},accessories:[],storySeen:false,migrationVersion:6};
+          stageProgress:blankStageProgress(),monsterStage:1,momoName:'Momo',collectibles:{},accessories:[],storySeen:false,storyProgress:{firstCrackSeen:false,mapSeen:{}},migrationVersion:7};
 }
 function migrate(p){
   const version=Number(p.migrationVersion)||0,wasLegacy=version<3;
@@ -660,13 +727,14 @@ function migrate(p){
     const aliases={pencilWand:'magicPencil',magicStaff:'guardianStaff'};
     p.accessories=p.accessories.map(id=>aliases[id]||id);
     const legacyLevel=Number(p.level)||1;
-    [[5,'flowerCrown'],[8,'scarf'],[9,'backpack'],[11,'magicPencil'],[16,'starCape'],[18,'crystalCrown'],[20,'guardianStaff']].forEach(([level,id])=>{ if(legacyLevel>=level&&!p.accessories.includes(id)) p.accessories.push(id); });
+    [[5,'flowerCrown'],[8,'scarf'],[9,'backpack'],[11,'magicPencil'],[16,'starCape'],[17,'crystalCrown'],[17,'guardianStaff']].forEach(([level,id])=>{ if(legacyLevel>=level&&!p.accessories.includes(id)) p.accessories.push(id); });
   }
   COSMETIC_REWARDS.forEach(a=>{ if(collectibleTotal(p)>=a.total&&!p.accessories.includes(a.id)) p.accessories.push(a.id); });
-  p.monsterStage=p.devMonsterOverride||artForCount(completedCount(p));
+  storyProgressOf(p);
+  p.monsterStage=p.devMonsterOverride||artForPlayer(p);
   if(p.storySeen===undefined) p.storySeen=true;
   dropRetiredPlayerFields(p);
-  p.migrationVersion=6;
+  p.migrationVersion=7;
   return p;
 }
 
@@ -1081,7 +1149,7 @@ function renderPlayers(){
 function renderHome(){
   $('homeWho').textContent=P.name;
   const count=completedCount(P),evolution=evolutionForCount(count),nextEvolution=EVOLUTIONS.find(e=>e.completed>count);
-  P.monsterStage=P.devMonsterOverride||evolution.art;
+  P.monsterStage=P.devMonsterOverride||artForPlayer(P);
   $('petBox').innerHTML=monsterMarkup(P.monsterStage,'idle','bob',petName());
   $('journeyMessage').textContent=count===0?petName()+"'s heart glows when you come near.":count===MATH_STAGES.length?petName()+' is a Guardian of Maths!':petName()+' has grown through '+count+' magical '+(count===1?'lesson':'lessons')+'.';
   if(nextEvolution&&nextEvolution.completed<1) $('nextReward').textContent='Get 4 of the first 5 answers right to see the first crack.';
@@ -1101,18 +1169,38 @@ function renderHome(){
 function renderMenu(){
   const count=completedCount(P),L=$('pickList');
   $('menuTitle').textContent=petName()+"'s enchanted journey";
-  $('menuProgress').textContent=count+' of '+MATH_STAGES.length+' lessons lit'; L.innerHTML='';
-  MATH_STAGES.forEach((stage,i)=>{
-    const status=stageStatus(P,stage.id),locked=status==='locked',done=status==='completed';
-    const prev=MATH_STAGES[i-1],b=document.createElement('button');
-    b.className='journey-stage '+status; b.disabled=locked;
-    const art=done?monsterMarkup(artForCount(i+1),'idle','',petName()):locked?'<span class="silhouette" aria-hidden="true"></span>':monsterMarkup(P.monsterStage,'curious','',petName());
-    const requirement=locked?'Help '+petName()+' complete '+prev.label+' first':done?'Path glowing · replay to find a collectible':'Ready now · light the path with '+sessionPlan(stage).pass+' correct answers';
-    b.innerHTML='<span class="journey-art">'+art+'</span><span><span class="eyebrow">Lesson '+(i+1)+' · '+stage.magic+'</span><h3>'+stage.label+'</h3><p>'+requirement+'</p>'+
-      (done?'<span class="accessory-chip">✨ Path glowing</span>':'')+'</span>';
-    if(!locked) b.onclick=()=>startSession(stage.id);
+  $('menuProgress').textContent=count+' of '+MATH_STAGES.length+' lessons lit';
+  $('mapIntro').textContent=count===MATH_STAGES.length?'Every path is glowing. Practise any stop to find treasures.':'Where are '+petName()+' and you going next?';
+  L.innerHTML='<div class="adventure-path" aria-hidden="true"></div>';
+  const currentIndex=Math.min(count,PROGRESSION_NODES.length-1);
+  PROGRESSION_NODES.forEach((node,i)=>{
+    const stage=STAGE_BY_ID(node.lessonId),status=stageStatus(P,node.lessonId),locked=status==='locked',done=status==='completed';
+    const b=document.createElement('button');
+    b.className='map-location '+status+(i===currentIndex&&!done?' current':'')+(node.majorEvolution?' major':'');
+    b.style.left=node.mapPosition.x+'%';
+    b.style.top=node.mapPosition.y+'%';
+    b.disabled=locked;
+    const art=locked?'<span class="silhouette" aria-hidden="true"></span>':monsterMarkup(done?node.stage:P.monsterStage,'idle',i===currentIndex?'bob':'',petName());
+    const statusText=locked?'Locked':done?'Visited':i===currentIndex?'Continue here':'Practise';
+    b.innerHTML=art+'<span class="map-region">'+esc(node.region)+'</span><h3>'+esc(node.title)+'</h3><p>'+esc(stage.label)+'</p><span class="map-pin-status">'+statusText+'</span>';
+    if(!locked) b.onclick=()=>openMapNode(node.id);
     L.appendChild(b);
   });
+}
+
+let selectedMapNode=null;
+function openMapNode(nodeId){
+  const node=PROGRESSION_NODES.find(n=>n.id===nodeId); if(!node) return;
+  const stage=STAGE_BY_ID(node.lessonId); if(!stage||stageStatus(P,stage.id)==='locked') return;
+  selectedMapNode=node;
+  storyProgressOf(P).mapSeen[node.id]=true; save();
+  $('nodeRegion').textContent=node.region;
+  $('nodeLesson').textContent=stageStatus(P,stage.id)==='completed'?'practise again · '+stage.label:'next lesson · '+stage.label;
+  $('nodeTitle').textContent=node.title;
+  $('nodePet').innerHTML=monsterMarkup(stageStatus(P,stage.id)==='completed'?node.stage:P.monsterStage,'curious','bob',petName());
+  $('nodeStory').textContent=node.storyBefore.replaceAll('{name}',petName());
+  $('nodeStart').textContent=stageStatus(P,stage.id)==='completed'?'Practise Again':'Start Lesson';
+  show('s-node');
 }
 
 
@@ -1154,6 +1242,7 @@ function sessionPlan(stage){
 }
 let S=null;
 let pendingUnlockStage=null;
+let lastSessionStageId=null;
 let sleepyTimer=null;
 function setPlayMood(mood){
   if(!$('playPet')||!P) return;
@@ -1182,7 +1271,8 @@ function startSession(stageId){
   const stage=STAGE_BY_ID(stageId);
   if(!stage||stageStatus(P,stage.id)==='locked') return;
   const plan=sessionPlan(stage);
-  S={gid:stage.gid,vid:stage.id,stageId:stage.id,stage:stage,wasCompleted:P.stageProgress.completed[stage.id],i:0,right:0,mastered:0,streak:0,best:0,q:null,input:'',col:null,longMul:null,div:null,locked:false,attempt:0,mode:'answer',crackMoment:false,crackSeen:false,reward:null,total:plan.total,pass:plan.pass,marks:[]};
+  const cracked=stage.id==='add_1digit'&&!P.stageProgress.completed[stage.id]&&!!storyProgressOf(P).firstCrackSeen;
+  S={gid:stage.gid,vid:stage.id,stageId:stage.id,stage:stage,wasCompleted:P.stageProgress.completed[stage.id],i:0,right:0,mastered:0,streak:0,best:0,q:null,input:'',col:null,longMul:null,div:null,locked:false,attempt:0,mode:'answer',crackMoment:false,crackSeen:cracked,reward:null,total:plan.total,pass:plan.pass,marks:[]};
   show('s-play'); nextQuestion();
 }
 function nextQuestion(){
@@ -1288,7 +1378,7 @@ function afterAnswerDelay(ms){
   setTimeout(()=>{ if(shouldShowCrackPause()) showCrackPause(); else nextQuestion(); },ms);
 }
 function showCrackPause(){
-  S.crackSeen=true; S.crackMoment=false; save();
+  S.crackSeen=true; S.crackMoment=false; storyProgressOf(P).firstCrackSeen=true; P.monsterStage=P.devMonsterOverride||artForPlayer(P); save();
   $('crackTitle').textContent='A crack has started to appear!';
   $('crackPet').innerHTML=monsterMarkup(2,'levelUp','egg-wiggle',petName()+' cracking');
   $('crackStats').innerHTML=
@@ -1323,18 +1413,28 @@ function maybeCompleteStage(){
   if(S.wasCompleted){ S.reward=awardCollectible(); save(); return 'collectible'; }
   const beforeArt=P.monsterStage;
   const next=completeMathStage(P,S.stageId);
-  const count=completedCount(P),afterEvolution=evolutionForCount(count); P.monsterStage=P.devMonsterOverride||afterEvolution.art;
+  const count=completedCount(P),afterEvolution=evolutionForCount(count),node=NODE_BY_LESSON(S.stageId);
+  P.monsterStage=P.devMonsterOverride||afterEvolution.art;
   save();
   pendingUnlockStage=next;
   const evolved=beforeArt!==P.monsterStage,message=afterEvolution.message.replaceAll('{name}',petName());
-  $('unlockPet').innerHTML=monsterMarkup(P.monsterStage,'levelUp','evolution-burst',petName()+' celebrating');
-  $('unlockTitle').textContent=evolved?message:S.stage.magic+' is glowing!';
-  $('unlockText').textContent=next?petName()+' has grown, and '+next.magic+' has appeared on the path.':'Every enchanted lesson is glowing. '+petName()+' is now a true Guardian of Maths!';
+  $('unlockBox').classList.toggle('major-transition',!!afterEvolution.majorEvolution);
+  $('unlockPair').style.display=afterEvolution.majorEvolution?'grid':'none';
+  $('unlockArrow').style.display=afterEvolution.majorEvolution?'block':'none';
+  $('unlockPet').style.display=afterEvolution.majorEvolution?'none':'flex';
+  if(afterEvolution.majorEvolution){
+    $('unlockBeforePet').innerHTML=monsterMarkup(beforeArt,'idle','',petName()+' before transforming');
+    $('unlockAfterPet').innerHTML=monsterMarkup(P.monsterStage,'levelUp','evolution-burst',petName()+' transformed');
+  }else $('unlockPet').innerHTML=monsterMarkup(P.monsterStage,'levelUp','evolution-burst',petName()+' celebrating');
+  $('unlockTitle').textContent=evolved?afterEvolution.title:S.stage.magic+' is glowing!';
+  $('unlockText').textContent=evolved?message:(node?node.storyAfter.replaceAll('{name}',petName()):petName()+' has grown because you learned together.');
+  $('unlockOk').textContent='See your result';
   $('unlockBox').classList.add('on');
   sLvl(); return 'completed';
 }
 
 function endSession(){
+  lastSessionStageId=S.stageId;
   const result=maybeCompleteStage(); save();
   $('endTitle').textContent=S.mastered>=S.pass?(S.wasCompleted?'Treasure discovered!':'The path is glowing!'):'The magic needs another try';
   $('endPet').innerHTML=monsterMarkup(P.monsterStage,S.mastered>=S.pass?'streak':'idle','bob',petName());
@@ -1346,7 +1446,12 @@ function endSession(){
     const cosmetic=S.reward.newCosmetics[0];
     $('endReward').textContent=petName()+' found '+S.reward.item.emoji+' '+S.reward.item.name+'!'+(cosmetic?' A new '+cosmetic.name+' appeared in the magic wardrobe!':'');
   }else if(S.mastered<S.pass) $('endReward').textContent=petName()+' is proud of every try. Master '+S.pass+' answers to light this path.';
-  else $('endReward').textContent=petName()+' has grown because you learned together.';
+  else {
+    const node=NODE_BY_LESSON(S.stageId);
+    $('endReward').textContent=node?node.storyAfter.replaceAll('{name}',petName()):petName()+' has grown because you learned together.';
+  }
+  $('againBtn').textContent='Continue Adventure';
+  $('endHome').textContent='Practise Again';
   show('s-end');
 }
 </script>
@@ -1675,7 +1780,7 @@ function openDeveloper(){ renderDeveloper(); show('s-dev'); }
 function resetPlayerProgress(){
   P.stageProgress=blankStageProgress(); P.monsterStage=1; delete P.devMonsterOverride;
   P.collectibles={}; COLLECTIBLES.forEach(c=>P.collectibles[c.id]=0); P.accessories=[];
-  P.right=0; P.best=0; P.total=0; P.storySeen=false; P.migrationVersion=6; save();
+  P.right=0; P.best=0; P.total=0; P.storySeen=false; P.storyProgress={firstCrackSeen:false,mapSeen:{}}; P.migrationVersion=7; save();
 }
 
 /* ---------------- wiring ---------------- */
@@ -1700,18 +1805,20 @@ $('saveNew').onclick=()=>{
 $('switchPlayer').onclick=()=>{ renderPlayers(); show('s-players'); };
 $('playBtn').onclick=()=>{ renderMenu(); show('s-menu'); };
 $('menuBack').onclick=()=>{ renderHome(); show('s-home'); };
+$('nodeBack').onclick=()=>{ renderMenu(); show('s-menu'); };
+$('nodeStart').onclick=()=>{ if(selectedMapNode) startSession(selectedMapNode.lessonId); };
 $('setBtn').onclick=()=>{ renderSettings(); show('s-set'); };
 $('setFriendName').onchange=()=>{ captureSettingsName(); renderSettings(); };
 $('setBack').onclick=()=>{ captureSettingsName(); renderHome(); show('s-home'); };
 $('quitPlay').onclick=()=>{ save(); renderHome(); show('s-home'); };
 $('crackContinue').onclick=()=>{ sTap(); show('s-play'); nextQuestion(); };
 $('againBtn').onclick=()=>{ renderMenu(); show('s-menu'); };
-$('endHome').onclick=()=>{ renderHome(); show('s-home'); };
+$('endHome').onclick=()=>{ if(lastSessionStageId) startSession(lastSessionStageId); };
 $('luOk').onclick=()=>{ $('lvUp').classList.remove('on'); };
 $('unlockOk').onclick=()=>{
   $('unlockBox').classList.remove('on');
-  const next=pendingUnlockStage; pendingUnlockStage=null;
-  if(next) startSession(next.id); else { renderMenu(); show('s-menu'); }
+  $('unlockBox').classList.remove('major-transition');
+  pendingUnlockStage=null;
 };
 $('storyNext').onclick=()=>{ captureFriendName(); if(storyStep<STORY_SCENES.length-1){ storyStep++; renderStory(); } else finishStory(); };
 $('storySkip').onclick=finishStory;
@@ -1734,9 +1841,9 @@ let devTaps=0,devTapTimer=null;
 $('homeWho').onclick=()=>{ clearTimeout(devTapTimer); devTaps++; if(devTaps>=7){ devTaps=0; openDeveloper(); return; } devTapTimer=setTimeout(()=>devTaps=0,2200); };
 $('devBack').onclick=()=>{ renderHome(); show('s-home'); };
 $('devJump').onclick=()=>{
-  const index=Number($('devLesson').value); P.stageProgress=progressFromCount(index); delete P.devMonsterOverride; P.monsterStage=artForCount(index); save(); renderMenu(); show('s-menu');
+  const index=Number($('devLesson').value); P.stageProgress=progressFromCount(index); delete P.devMonsterOverride; P.monsterStage=artForPlayer(P); save(); renderMenu(); show('s-menu');
 };
-$('devUnlockLessons').onclick=()=>{ P.stageProgress=progressFromCount(MATH_STAGES.length); delete P.devMonsterOverride; P.monsterStage=artForCount(MATH_STAGES.length); save(); renderDeveloper(); sLvl(); };
+$('devUnlockLessons').onclick=()=>{ P.stageProgress=progressFromCount(MATH_STAGES.length); delete P.devMonsterOverride; P.monsterStage=artForPlayer(P); save(); renderDeveloper(); sLvl(); };
 $('devUnlockCollectibles').onclick=()=>{ COLLECTIBLES.forEach(c=>P.collectibles[c.id]=5); P.accessories=COSMETIC_REWARDS.map(a=>a.id); save(); renderDeveloper(); sLvl(); };
 $('devEvolve').onclick=()=>{
   const art=Number($('devEvolution').value); P.devMonsterOverride=art; P.monsterStage=art; save();
