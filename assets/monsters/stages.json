@@ -13,7 +13,7 @@
   {"level":12,"id":"magic-marks","image":"stage-12-magic-marks.webp","ready":true},
   {"level":13,"id":"flower-crown","image":"stage-13-flower-crown.webp","ready":true},
   {"level":14,"id":"explorer","image":"stage-14-explorer.webp","ready":true},
-  {"level":15,"id":"guardian-light","image":"stage-15-explorer.webp","ready":true},
+  {"level":15,"id":"guardian-light","image":"stage-15-guardian-light.webp","ready":true},
   {"level":16,"id":"star-cape","image":"stage-16-star-cape.webp","ready":false},
   {"level":17,"id":"larger-wings","image":"stage-17-larger-wings.webp","ready":false},
   {"level":18,"id":"apprentice-guardian","image":"stage-18-apprentice-guardian.webp","ready":false},
