@@ -80,7 +80,10 @@ Major moments use the larger transition presentation with previous and new Momo 
 ## Player Flow
 
 1. Home shows the current companion and progress.
-2. Continue opens the adventure map.
+2. Continue opens the adventure map, scrolled straight to the current stop rather than the
+   top. The map is thousands of pixels long, so opening at the top would mean scrolling to
+   find yourself every time. `scrollMapToCurrent` places the stop a little above the middle
+   so the path ahead is still visible.
 3. The current map node pulses.
 4. Tapping an unlocked node opens a short story card.
 5. Start Lesson opens the existing maths interface.

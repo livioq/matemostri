@@ -596,10 +596,10 @@ vm.runInContext([
   functionSource('dropRetiredPlayerFields'),
   'this.dropRetired=dropRetiredPlayerFields;this.retiredFields=RETIRED_PLAYER_FIELDS;'
 ].join('\n'), migrationContext);
-assert.deepEqual(plain(migrationContext.retiredFields), ['xp', 'level']);
+assert.deepEqual(plain(migrationContext.retiredFields), ['xp', 'level', 'ease']);
 const saved = {
   id:'p1', name:'Ada', age:9, xp:340, level:12, total:88, right:70, best:9,
-  ease:{add_1digit:0.4}, momoName:'Sparkle', monsterStage:9,
+  momoName:'Sparkle', monsterStage:9,
   collectibles:{stars:3}, accessories:['scarf'], storySeen:true,
   stageProgress:{completed:{add_1digit:true}, available:{add_2column:true}}
 };
@@ -607,7 +607,7 @@ const cleaned = migrationContext.dropRetired(saved);
 assert.equal('xp' in cleaned, false, 'xp is gone from the save');
 assert.equal('level' in cleaned, false, 'the level it fed is gone too');
 assert.deepEqual(Object.keys(cleaned).sort(), [
-  'accessories', 'age', 'best', 'collectibles', 'ease', 'id', 'momoName',
+  'accessories', 'age', 'best', 'collectibles', 'id', 'momoName',
   'monsterStage', 'name', 'right', 'stageProgress', 'storySeen', 'total'
 ], 'nothing else is dropped');
 assert.equal(cleaned.momoName, 'Sparkle');
@@ -676,7 +676,7 @@ const currentSave = saveContext.migrate({
 });
 assert.equal('xp' in currentSave, false, 'xp is dropped from a current save');
 assert.equal('level' in currentSave, false);
-assert.equal(currentSave.migrationVersion, 7);
+assert.equal(currentSave.migrationVersion, 8);
 assert.equal(currentSave.momoName, 'Sparkle', 'the chosen name survives');
 assert.equal(currentSave.best, 9, 'play stats survive');
 assert.deepEqual(plain(currentSave.collectibles).stars, 3, 'collectibles survive');
@@ -756,6 +756,36 @@ stageImages.forEach((file, i) => {
     `${file} is numbered in order and shipped as webp`);
 });
 
+// the adaptive-difficulty subsystem is gone: ease wrote P.ease on every single answer,
+// its only reader was tierFor, and nothing ever called tierFor
+['tierFor', 'bandOf', 'HARD_P', 'genEasy', 'genHard'].forEach(name => {
+  assert.equal(new RegExp('\\b' + name + '\\b').test(source), false,
+    `${name} is gone, not merely unused`);
+});
+assert.equal(/\bease\s*\(/.test(source.replace(/animation:[^;}]*/g, '')), false,
+  'nothing calls ease() any more (the css easing keywords are not it)');
+assert.equal(/\bP\.ease\b|\bp\.ease\b/.test(source), false, 'no player carries an ease map');
+assert.equal(/vid:S\.stage\.id/.test(source), false,
+  'S.q.vid went with it, since ease was all that read it');
+
+// opening the map lands on the stop you are actually at, not the top of a 9000px scroll
+const menuSrc = functionSource('renderMenu');
+assert.match(menuSrc, /scrollMapToCurrent\(L,\s*current\)/,
+  'renderMenu scrolls the map to the current stop');
+const scrollSrc = functionSource('scrollMapToCurrent');
+assert.match(scrollSrc, /window\.scrollTo/);
+assert.match(scrollSrc, /Math\.max\(0,/, 'never scrolls to a negative offset for the first stop');
+const scrollCtx = {window:{innerHeight:740, scrollTo:(x, y) => { scrollCtx.landed = y; }}, Math};
+vm.createContext(scrollCtx);
+vm.runInContext(scrollSrc, scrollCtx);
+scrollCtx.scrollMapToCurrent({offsetTop:120}, {y:40});
+assert.equal(scrollCtx.landed, 0, 'the first stop does not scroll off the top of the page');
+scrollCtx.scrollMapToCurrent({offsetTop:120}, {y:5000});
+assert.equal(scrollCtx.landed, 120 + 5000 - Math.round(740 * 0.42),
+  'a later stop lands a little above the middle of the screen');
+scrollCtx.scrollMapToCurrent({offsetTop:120}, null);
+assert.equal(scrollCtx.landed, 120 + 5000 - Math.round(740 * 0.42), 'no current stop, no scroll');
+
 // the home-screen icon: without a manifest and a maskable icon, adding the game to an
 // Android home screen gives a grey square
 const manifest = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'manifest.webmanifest'), 'utf8'));
@@ -797,18 +827,18 @@ const legacySave = saveContext.migrate({id:'p2', name:'Bo', age:8, level:12, xp:
 assert.equal('level' in legacySave, false, 'the legacy level is dropped once it has been read');
 assert.equal('xp' in legacySave, false);
 assert.ok(legacySave.stageProgress.completed.add_1digit, 'legacy level still became real progress');
-assert.equal(legacySave.migrationVersion, 7);
+assert.equal(legacySave.migrationVersion, 8);
 
 // a save already on the new version is left alone
 const fresh = saveContext.newPlayer('Cy', 7);
 assert.equal('xp' in fresh, false, 'a new player never has xp');
 assert.equal('level' in fresh, false);
-assert.equal(fresh.migrationVersion, 7);
+assert.equal(fresh.migrationVersion, 8);
 assert.equal(saveContext.artForPlayer(fresh), 1, 'new players begin with the magical egg');
 fresh.storyProgress.firstCrackSeen = true;
 assert.equal(saveContext.artForPlayer(fresh), 2, 'the saved crack milestone shows the cracked egg before hatching');
 const rerun = saveContext.migrate(saveContext.migrate(fresh));
-assert.equal(rerun.migrationVersion, 7, 'migrating twice changes nothing');
+assert.equal(rerun.migrationVersion, 8, 'migrating twice changes nothing');
 assert.equal('xp' in rerun, false);
 
 console.log('Arithmetic model tests passed.');
