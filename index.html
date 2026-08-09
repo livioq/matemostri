@@ -1293,11 +1293,21 @@ function divStepDots(st,d){
    ones; hard sits the same question with the talking taken away, and on the very first
    lesson — where there is no working to take the talking out of — with both digits big,
    or hard would be medium under another name. */
+/* A lesson done in the head has no working, so hard cannot take the talking out of it. What
+   it takes away instead is the easy way through: bigger numbers, and ones that carry or
+   borrow, which is the part you cannot do without holding something in your head. Times
+   tables have nothing to carry, so there bigger is the whole of it. */
+function pickPair(make,ok,fallback){
+  for(let i=0;i<300;i++){ const pair=make(); if(ok(pair)) return pair; }
+  return fallback;
+}
 function generateLessonQuestion(stage,questionIndex,difficulty){
   const easy=difficulty==='easy',hard=difficulty==='hard';
   const picture=shape=>easy?shape:undefined;
   if(stage.id==='add_1digit'){
-    const lo=hard?4:easy?1:0,hi=easy?5:9,a=rnd(lo,hi),b=rnd(lo,hi);
+    // hard carries: the two digits make ten or more, so the answer is not a single digit
+    const [a,b]=hard?pickPair(()=>[rnd(4,9),rnd(4,9)],p=>p[0]+p[1]>=10,[7,8])
+      :[rnd(easy?1:0,easy?5:9),rnd(easy?1:0,easy?5:9)];
     return {kind:'n',txt:a+' + '+b,ans:a+b,
       dots:picture({parts:[a,b],words:a+' and '+b+' more. How many altogether?'})};
   }
@@ -1313,11 +1323,17 @@ function generateLessonQuestion(stage,questionIndex,difficulty){
       }
       return {kind:'n',txt:a+' + '+b,ans:a+b};
     }
-    const a=rnd(12,58),b=rnd(11,39);
+    // hard is bigger than medium and always carries out of the ones
+    const [a,b]=hard?pickPair(()=>[rnd(26,89),rnd(26,89)],p=>p[0]%10+p[1]%10>=10,[47,38])
+      :[rnd(12,58),rnd(11,39)];
     return {kind:'n',txt:a+' + '+b,ans:a+b};
   }
   if(stage.id==='sub_1digit'){
-    const a=easy?rnd(4,9):rnd(2,9),b=easy?rnd(1,a-1):rnd(0,a);
+    // the mirror of hard addition, where 8 + 5 crosses ten going up: here 15 - 8 crosses
+    // back down, which is the one-digit take-away that cannot be done without borrowing
+    const [a,b]=hard?pickPair(()=>[rnd(11,18),rnd(4,9)],p=>p[0]%10<p[1],[15,8])
+      :easy?pickPair(()=>[rnd(4,9),rnd(1,8)],p=>p[1]<p[0],[6,4])
+      :(()=>{ const x=rnd(2,9); return [x,rnd(0,x)]; })();
     return {kind:'n',txt:a+' − '+b,ans:a-b,
       dots:picture({per:a,take:b,words:'Start with '+a+'. Tap '+dotWord(b,'dot','dots')+' to cross out.'})};
   }
@@ -1333,16 +1349,19 @@ function generateLessonQuestion(stage,questionIndex,difficulty){
       }
       return {kind:'n',txt:a+' − '+b,ans:a-b};
     }
-    const a=rnd(25,95),b=rnd(11,Math.min(49,a-10));
+    // hard is bigger than medium and always borrows: the ones cannot be taken away as they are
+    const [a,b]=hard?pickPair(()=>[rnd(41,99),rnd(15,59)],p=>p[0]-p[1]>=10&&p[0]%10<p[1]%10,[62,38])
+      :(()=>{ const x=rnd(25,95); return [x,rnd(11,Math.min(49,x-10))]; })();
     return {kind:'n',txt:a+' − '+b,ans:a-b};
   }
   if(stage.id==='mul_1x1'){
-    const a=easy?rnd(2,4):rnd(2,12),b=easy?rnd(2,9):rnd(2,12);
+    // no carrying in a times table, so hard is simply the far end of it
+    const a=easy?rnd(2,4):hard?rnd(6,12):rnd(2,12),b=easy?rnd(2,9):hard?rnd(6,12):rnd(2,12);
     return {kind:'n',txt:a+' × '+b,ans:a*b,
       dots:picture({groups:a,per:b,words:a+' groups of '+b+'. How many altogether?'})};
   }
   if(stage.id==='div_simple'){
-    const d=easy?rnd(2,4):rnd(2,12),q=easy?rnd(3,6):rnd(2,12);
+    const d=easy?rnd(2,4):hard?rnd(6,12):rnd(2,12),q=easy?rnd(3,6):hard?rnd(6,12):rnd(2,12);
     return {kind:'n',txt:(d*q)+' ÷ '+d,ans:q,
       dots:picture({share:d*q,by:d,words:(d*q)+' shared into '+d+'. Tap to share them out.'})};
   }

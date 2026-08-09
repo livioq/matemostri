@@ -85,12 +85,16 @@ public release.
   the point, every digit in an easy number is 1 to 9: `easyNumber` builds
   them, and a step reading "0 + 5" cannot arise.
 - Hard is medium with the talking removed — the working is laid out with
-  its boxes empty and the child taps whichever one to fill next. The
-  first lesson has no working to take the talking out of, so hard takes
-  the small digits out instead: neither digit is below 4, or hard would
-  be medium under another name. The other mental lessons still differ
-  from medium only in nothing at all — worth fixing the same way if the
-  children notice.
+  its boxes empty and the child taps whichever one to fill next.
+- A lesson done in the head has no working, so hard cannot take the
+  talking out of it. It takes away the easy way through instead: bigger
+  numbers, and ones that carry or borrow, which is the part you cannot do
+  without holding something in your head. Every hard one-digit addition
+  crosses ten (8 + 5), and its mirror, one-digit subtraction, crosses
+  back down (15 - 8) — still one digit taken away, still the same lesson.
+  Both two-digit mental lessons always carry or always borrow. Times
+  tables have nothing to carry, so there bigger is the whole of it: hard
+  multiplies and divides at the far end, 6 to 12.
 - Hard covers all three workings: columns, long multiplication and long
   division. Nothing is ever chosen for the child, not even the first box,
   and nothing is chosen for them after each answer either — `si`/`pi` go
@@ -177,6 +181,8 @@ Recently done, in case something looks unfamiliar:
   question with smaller numbers, with the individual sums inside the
   working drawn as dots. `easyQuestion` is gone; the ranges live in
   `generateLessonQuestion` beside the medium ones.
+- The mental lessons finally differ on hard, where before they were
+  identical to medium: bigger numbers, and ones that carry or borrow.
 - The easy pictures for taking away and for sharing are tapped rather
   than read, because arriving already crossed out or already shared
   answered the question for the child.
