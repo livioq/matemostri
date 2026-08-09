@@ -3,9 +3,17 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<meta name="theme-color" content="#1B3A8C">
+<meta name="theme-color" content="#50319A">
 <meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Matemostri">
 <title>Matemostri</title>
+<!-- Home-screen icon. The manifest is what Android reads when the game is added to the
+     home screen; the link tags cover the cases where it is not, such as opening the file
+     directly. Without these the shortcut falls back to a grey square. -->
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/webp" sizes="512x512" href="assets/ui/icon-512.webp">
+<link rel="icon" type="image/webp" sizes="192x192" href="assets/ui/icon-192.webp">
+<link rel="apple-touch-icon" href="assets/ui/icon-512.webp">
 <style>
 :root{
   --ink:#50319A; --ink-soft:#8069B5; --pen:#D94B92; --graphite:#4A4357;
