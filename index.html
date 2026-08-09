@@ -99,6 +99,13 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
 .dot-row i{width:13px;height:13px;border-radius:50%;background:var(--pen);display:block}
 .dot-row i.gone{background:transparent;border:2px dashed rgba(217,75,146,.5)}
 .dot-op{font-size:20px;font-weight:900;color:var(--ink)}
+/* the same picture, shrunk, when it sits above a working rather than above a bare question:
+   the grid below it will not go under 19px a cell, so the strip has to give way instead */
+#colDots{margin:2px 0 4px;gap:5px}
+#colDots .dot-group{padding:3px;gap:2px;border-radius:8px}
+#colDots .dot-row{gap:2px}
+#colDots .dot-row i{width:9px;height:9px}
+#colDots .dot-op{font-size:15px}
 .tagline{text-align:center;font-size:12px;font-weight:700;color:var(--ink-soft);margin-top:5px}
 .prompt{text-align:center;font-weight:800;color:var(--ink);font-size:14px;min-height:30px;margin:1px 0 4px;line-height:1.22}
 .feedback{text-align:center;font-weight:800;font-size:17px;min-height:20px;margin-top:5px}
@@ -444,6 +451,7 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
       </div>
       <div id="colQ" style="display:none">
         <div class="prompt" id="colPrompt"></div>
+        <div class="dots" id="colDots" style="display:none"></div>
         <div class="gridwrap"><div class="wgrid" id="colGrid"></div></div>
         <div class="hintstrip" id="colHint" style="display:none"></div>
         <button class="link" id="hintBtn" style="display:none;margin:2px auto 0">need a hint?</button>
@@ -613,6 +621,19 @@ function badgesFor(p,stageId){
   return p.stageProgress.badges[stageId];
 }
 const badgeCount=(p,stageId)=>DIFFICULTY_IDS.filter(d=>badgesFor(p,stageId)[d]).length;
+/* A harder sit proves the easier ones, so a lesson passed on hard wins all three badges.
+   Applied to saved games too, so a badge won before this rule existed lights the ones below. */
+function cascadeBadges(badges){
+  const top=DIFFICULTY_IDS.reduce((high,d,i)=>badges[d]?i:high,-1);
+  DIFFICULTY_IDS.forEach((d,i)=>{ if(i<=top) badges[d]=true; });
+  return badges;
+}
+function awardBadges(p,stageId,difficulty){
+  const badges=badgesFor(p,stageId);
+  const fresh=DIFFICULTY_IDS.slice(0,DIFFICULTY_IDS.indexOf(difficulty)+1).some(d=>!badges[d]);
+  badges[difficulty]=true; cascadeBadges(badges);
+  return fresh;
+}
 const MONSTER_STAGE_DATA=[
   {stage:1,slug:'magical-egg',name:'Magical Egg',image:'stage-01-magical-egg.webp',ready:true},
   {stage:2,slug:'first-crack',name:'First Crack',image:'stage-02-first-crack.webp',ready:true,intermediate:true},
@@ -798,6 +819,7 @@ function normalizeStageProgress(progress){
   });
   // a lesson finished before difficulties existed was the medium game, which is what it was
   MATH_STAGES.forEach(s=>{ if(clean.completed[s.id]&&!DIFFICULTY_IDS.some(d=>clean.badges[s.id][d])) clean.badges[s.id].medium=true; });
+  MATH_STAGES.forEach(s=>cascadeBadges(clean.badges[s.id]));
   clean.available[MATH_STAGES[0].id]=true;
   let furthest=-1;
   MATH_STAGES.forEach((s,i)=>{ if(clean.completed[s.id]) furthest=Math.max(furthest,i); });
@@ -1119,10 +1141,11 @@ function buildLongMultiplication(a,b){
     ent:{partials:[{},{}],partialCarries:[null,null],sum:{},sumCarry:{}}};
 }
 
-function twoDigitColumnAddition(questionIndex){
+function twoDigitColumnAddition(questionIndex,easy){
   const phase=questionIndex<=3?'no-carry':questionIndex<=6?'one-carry':'mixed';
+  const hi=easy?49:89;
   for(let guard=0;guard<300;guard++){
-    const a=rnd(10,89),b=rnd(10,89),ones=a%10+b%10,tens=Math.floor(a/10)+Math.floor(b/10)+(ones>=10?1:0);
+    const a=rnd(10,hi),b=rnd(10,hi),ones=a%10+b%10,tens=Math.floor(a/10)+Math.floor(b/10)+(ones>=10?1:0);
     const carries=(ones>=10?1:0)+(tens>=10?1:0);
     if((phase==='no-carry'&&carries===0)||(phase==='one-carry'&&ones>=10&&tens<10)||phase==='mixed')
       return {kind:'col',a:a,b:b,M:buildColumn('add',a,b),phase:phase};
@@ -1131,10 +1154,10 @@ function twoDigitColumnAddition(questionIndex){
 }
 /* the lesson 84-16 is written for: take-aways that need no crossing out first, then
    ones that do, then a mix. The answer fills both columns so no leading 0 is written. */
-function twoDigitColumnSubtraction(questionIndex){
+function twoDigitColumnSubtraction(questionIndex,easy){
   const phase=questionIndex<=3?'no-regroup':questionIndex<=6?'regroup':'mixed';
   for(let guard=0;guard<300;guard++){
-    const a=rnd(21,99),b=rnd(11,a-10);
+    const a=rnd(21,easy?59:99),b=rnd(11,a-10);
     const M=buildColumn('sub',a,b);
     if(!colValid(M)) continue;
     const regroups=M.steps.some(s=>s.t==='ann');
@@ -1154,13 +1177,15 @@ function longDivisionPhase(questionIndex){
   const leftover=i===3||i===6||i>=9;
   return {digits:i<=3?2:i<=6?3:4,exact:!leftover};
 }
-function genDivision(tr,phase){
+function genDivision(tr,phase,maxDivisor){
   const tier=Math.max(0,Math.min(3,tr|0));
   const digits=phase&&phase.digits?Math.max(2,Math.min(4,phase.digits|0)):0;
   const exact=phase?phase.exact!==false:tier<=1;
+  // easy divides by 2 to 4, so the working is the same one but every fact inside it is known
+  const top=Math.max(2,Math.min(9,maxDivisor||9));
   for(let guard=0;guard<400;guard++){
     // the divisor stays a single digit: the lesson teaches the process, not two new things at once
-    const d = rnd(2,digits?9:[5,9,9,9][tier]);
+    const d = rnd(2,Math.min(top,digits?9:[5,9,9,9][tier]));
     // a lesson question that is not exact really does leave something over, never a sneaky 0
     const rest = exact?0:rnd(phase?1:0,d-1);
     let q;
@@ -1182,74 +1207,107 @@ function genDivision(tr,phase){
   }
   return {div:true,N:'126',d:6,steps:divSteps('126',6),quot:'21',rest:0};
 }
-/* Easy is for a seven-year-old. It keeps every lesson recognisable — the same operation,
-   the same place on the map — but shrinks the numbers to ones that can be counted, and
-   where counting genuinely helps it draws them: dots in rows of five, because five is a
-   handful and a child can see three fives without counting to fifteen. Times tables stop
-   at four, so the largest question in the game on easy is 4 x 9. */
+/* Easy is for a seven-year-old, and it is the same lesson, not a different one. Two-digit
+   column addition on easy is still two-digit column addition: the same working, the same
+   carrying, the same place on the map. What changes is that the numbers are smaller and
+   that every individual sum inside the working is drawn as dots — rows of five, because
+   five is a handful and a child can see three fives without counting to fifteen. Times
+   tables stop at four, so the largest fact on easy is 4 x 9.
+
+   A picture only helps while it can be taken in at a glance, so anything over DOT_LIMIT
+   is left undrawn rather than turned into a wall of dots. That is why the two-digit mental
+   lessons get smaller numbers but no picture: 29 + 19 as fifty dots teaches nothing. */
+const DOT_LIMIT=36;
 function dotRows(count){
   const rows=[];
   for(let left=count;left>0;left-=5) rows.push(Math.min(5,left));
   return rows;
 }
-function easyQuestion(stage){
-  const gid=stage.gid;
-  if(gid==='mul'){
-    const a=rnd(2,4),b=rnd(2,9);
-    return {kind:'dots',txt:a+' \u00D7 '+b,ans:a*b,groups:a,per:b,
-      words:a+' groups of '+b+'. How many altogether?'};
-  }
-  if(gid==='div'){
-    const b=rnd(2,4),q=rnd(2,6),a=b*q;
-    return {kind:'dots',txt:a+' \u00F7 '+b,ans:q,groups:b,per:q,
-      words:a+' shared into '+b+' equal groups. How many in each group?'};
-  }
-  if(gid==='add'){
-    const a=rnd(1,9),b=rnd(1,9);
-    return {kind:'dots',txt:a+' + '+b,ans:a+b,groups:2,per:0,parts:[a,b],
-      words:a+' and '+b+' more. How many altogether?'};
-  }
-  const a=rnd(3,10),b=rnd(1,a);
-  return {kind:'dots',txt:a+' \u2212 '+b,ans:a-b,groups:1,per:a,take:b,
-    words:'Start with '+a+' and take away '+b+'. How many are left?'};
+const dotTotal=shape=>shape.parts?shape.parts.reduce((a,b)=>a+b,0)
+  :shape.groups!==undefined?shape.groups*shape.per:shape.per;
+const dotsWorthDrawing=shape=>!!shape&&dotTotal(shape)<=DOT_LIMIT;
+/* The individual sum inside a step of column working, as dots. Null for a step that is not
+   a sum at all — a carry to copy down, a crossing-out — because there is nothing to count. */
+function stepDots(op,st){
+  if(!st||st.t!=='res') return null;
+  // nothing is worth drawing as no dots at all, so a column with a 0 in it simply loses
+  // that group rather than showing an empty box
+  if(op==='mul') return st.x?{groups:st.x,per:st.m,words:st.x+' groups of '+st.m+'.'}:null;
+  if(op==='sub') return st.x?{per:st.x,take:st.y,words:'Start with '+st.x+' and take away '+st.y+'.'}:null;
+  const parts=[st.x,st.y,st.carry].filter(n=>n>0);
+  return parts.length<2?null:{parts:parts,words:parts.join(' and ')+' altogether.'};
 }
-function generateLessonQuestion(stage,questionIndex,difficulty){
-  if(difficulty==='easy') return easyQuestion(stage);
-  if(stage.id==='add_1digit'){
-    const a=rnd(0,9),b=rnd(0,9); return {kind:'n',txt:a+' + '+b,ans:a+b};
+function longMulStepDots(st){
+  if(!st) return null;
+  if(st.t==='partial'&&!st.leading) return {groups:st.digit,per:st.multiplier,words:st.digit+' groups of '+st.multiplier+'.'};
+  if(st.t==='sum'){
+    const parts=[st.x,st.y].concat(st.carry?[st.carry]:[]).filter(n=>n>0);
+    return parts.length<2?null:{parts:parts,words:parts.join(' and ')+' altogether.'};
   }
-  if(stage.id==='add_2column') return twoDigitColumnAddition(questionIndex||1);
+  return null;
+}
+function divStepDots(st,d){
+  if(!st||st.t!=='prod') return null;
+  return {groups:st.q,per:d,words:st.q+' groups of '+d+'.'};
+}
+/* Difficulty moves the numbers, never the lesson. Easy sits the same question with smaller
+   ones; hard sits the same question with the talking taken away, and on the very first
+   lesson — where there is no working to take the talking out of — with both digits big,
+   or hard would be medium under another name. */
+function generateLessonQuestion(stage,questionIndex,difficulty){
+  const easy=difficulty==='easy',hard=difficulty==='hard';
+  const picture=shape=>easy?shape:undefined;
+  if(stage.id==='add_1digit'){
+    const lo=hard?4:easy?1:0,hi=easy?5:9,a=rnd(lo,hi),b=rnd(lo,hi);
+    return {kind:'n',txt:a+' + '+b,ans:a+b,
+      dots:picture({parts:[a,b],words:a+' and '+b+' more. How many altogether?'})};
+  }
+  if(stage.id==='add_2column') return twoDigitColumnAddition(questionIndex||1,easy);
   if(stage.id==='add_2mental'){
-    const a=rnd(12,58),b=rnd(11,39); return {kind:'n',txt:a+' + '+b,ans:a+b};
+    const a=easy?rnd(11,29):rnd(12,58),b=easy?rnd(11,19):rnd(11,39);
+    return {kind:'n',txt:a+' + '+b,ans:a+b};
   }
   if(stage.id==='sub_1digit'){
-    const a=rnd(2,9),b=rnd(0,a); return {kind:'n',txt:a+' \u2212 '+b,ans:a-b};
+    const a=easy?rnd(2,6):rnd(2,9),b=easy?rnd(1,a):rnd(0,a);
+    return {kind:'n',txt:a+' − '+b,ans:a-b,
+      dots:picture({per:a,take:b,words:'Start with '+a+' and take away '+b+'. How many are left?'})};
   }
-  if(stage.id==='sub_2column') return twoDigitColumnSubtraction(questionIndex||1);
+  if(stage.id==='sub_2column') return twoDigitColumnSubtraction(questionIndex||1,easy);
   if(stage.id==='sub_2mental'){
     // in the head now, after the columns taught it: never below zero, never a single digit
-    const a=rnd(25,95),b=rnd(11,Math.min(49,a-10)); return {kind:'n',txt:a+' − '+b,ans:a-b};
+    const a=easy?rnd(21,49):rnd(25,95),b=easy?rnd(11,Math.min(29,a-10)):rnd(11,Math.min(49,a-10));
+    return {kind:'n',txt:a+' − '+b,ans:a-b};
   }
   if(stage.id==='mul_1x1'){
-    const a=rnd(2,12),b=rnd(2,12); return {kind:'n',txt:a+' \u00D7 '+b,ans:a*b};
+    const a=easy?rnd(2,4):rnd(2,12),b=easy?rnd(2,9):rnd(2,12);
+    return {kind:'n',txt:a+' × '+b,ans:a*b,
+      dots:picture({groups:a,per:b,words:a+' groups of '+b+'. How many altogether?'})};
   }
   if(stage.id==='div_simple'){
-    const d=rnd(2,12),q=rnd(2,12); return {kind:'n',txt:(d*q)+' \u00F7 '+d,ans:q};
+    const d=easy?rnd(2,4):rnd(2,12),q=easy?rnd(2,6):rnd(2,12);
+    return {kind:'n',txt:(d*q)+' ÷ '+d,ans:q,
+      dots:picture({groups:d,per:q,words:(d*q)+' shared into '+d+' equal groups. How many in each group?'})};
   }
-  if(stage.mode==='division') return {kind:'div',made:genDivision(3,longDivisionPhase(questionIndex))};
+  if(stage.mode==='division') return {kind:'div',made:genDivision(3,longDivisionPhase(questionIndex),easy?4:9)};
   if(stage.gid==='add'){
-    const lo=stage.digits===4?1000:100,hi=stage.digits===4?8999:899;
+    const lo=stage.digits===4?1000:100;
+    const hi=stage.digits===4?(easy?4999:8999):(easy?499:899);
     for(let i=0;i<250;i++){ const a=rnd(lo,hi),b=rnd(lo,hi),M=buildColumn('add',a,b); if(M.steps.some(s=>s.t==='carry')&&colValid(M)) return {kind:'col',a,b,M}; }
   }
   if(stage.gid==='sub'){
-    const lo=stage.digits===4?1000:100,hi=stage.digits===4?9999:999;
+    const lo=stage.digits===4?1000:100;
+    const hi=stage.digits===4?(easy?4999:9999):(easy?499:999);
     for(let i=0;i<350;i++){ const a=rnd(lo,hi),b=rnd(lo,a-1),M=buildColumn('sub',a,b); if(M.steps.some(s=>s.t==='ann')&&colValid(M)) return {kind:'col',a,b,M}; }
   }
   if(stage.id==='mul_1x2'){
-    const a=rnd(12,99),b=rnd(2,9); return {kind:'col',a,b,M:buildColumn('mul',a,b)};
+    const a=easy?rnd(12,49):rnd(12,99),b=easy?rnd(2,4):rnd(2,9);
+    return {kind:'col',a,b,M:buildColumn('mul',a,b)};
   }
   if(stage.id==='mul_2x2'){
-    const a=rnd(12,99),b=rnd(12,99); return {kind:'longmul',a:a,b:b,L:buildLongMultiplication(a,b)};
+    // easy keeps the working whole and only shrinks the multiplier, so every fact inside
+    // it is a times table the seven-year-old has met
+    const a=easy?rnd(12,49):rnd(12,99),b=easy?rnd(1,4)*10+rnd(2,4):rnd(12,99);
+    return {kind:'longmul',a:a,b:b,L:buildLongMultiplication(a,b)};
   }
   return {kind:'n',txt:'1 + 1',ans:2};
 }
@@ -1505,23 +1563,15 @@ function nextQuestion(){
   renderStars(false);
   const made=generateLessonQuestion(S.stage,S.i,S.difficulty);
   $('colHint').style.display='none'; $('hintBtn').style.display='none';
-  if(made.kind==='dots'){
+  if(made.kind==='n'){
     S.q={kind:'n',ans:made.ans};
     $('normalQ').style.display='block'; $('colQ').style.display='none';
     $('qText').textContent=made.txt+' =';
-    $('dots').innerHTML=easyDotsMarkup(made);
-    $('dots').style.display='block';
+    const drawn=paintDots($('dots'),made.dots);
     S.input=''; paintAns();
-    $('qTag').textContent=made.words;
-  }else if(made.kind==='n'){
-    S.q={kind:'n',ans:made.ans};
-    $('normalQ').style.display='block'; $('colQ').style.display='none';
-    $('dots').style.display='none';
-    $('qText').textContent=made.txt+' =';
-    S.input=''; paintAns();
-    $('qTag').textContent=S.stage.magic+' · help '+petName()+' find the answer';
+    $('qTag').textContent=drawn?made.dots.words:S.stage.magic+' · help '+petName()+' find the answer';
   }else{
-    $('dots').style.display='none';
+    paintDots($('dots'),null);
     if(made.kind==='div'){
       S.q={kind:'div'};
       // on hard the "does it go into the first digit? no" steps are dropped: they are the
@@ -1568,14 +1618,22 @@ function nextQuestion(){
 }
 /* The picture under an easy question. Counters in rows of five, grouped the way the words
    describe them, so the child can count what the sum is asking rather than decode it. */
-function easyDotsMarkup(made){
+function easyDotsMarkup(shape){
   const group=(n,cls)=>'<span class="dot-group '+(cls||'')+'">'+
     dotRows(n).map(row=>'<span class="dot-row">'+'<i></i>'.repeat(row)+'</span>').join('')+'</span>';
-  if(made.parts) return made.parts.map(n=>group(n)).join('<span class="dot-op">+</span>');
-  if(made.take!==undefined)
-    return '<span class="dot-group">'+dotRows(made.per).map((row,ri)=>'<span class="dot-row">'+
-      Array.from({length:row},(_,i)=>(ri*5+i)>=made.per-made.take?'<i class="gone"></i>':'<i></i>').join('')+'</span>').join('')+'</span>';
-  return Array.from({length:made.groups},()=>group(made.per)).join('');
+  if(shape.parts) return shape.parts.map(n=>group(n)).join('<span class="dot-op">+</span>');
+  if(shape.take!==undefined)
+    return '<span class="dot-group">'+dotRows(shape.per).map((row,ri)=>'<span class="dot-row">'+
+      Array.from({length:row},(_,i)=>(ri*5+i)>=shape.per-shape.take?'<i class="gone"></i>':'<i></i>').join('')+'</span>').join('')+'</span>';
+  return Array.from({length:shape.groups},()=>group(shape.per)).join('');
+}
+/* Draws a picture, or nothing if there is no picture worth drawing. Returns whether it drew,
+   because the caption under the question only makes sense when there are dots above it. */
+function paintDots(el,shape){
+  const draw=dotsWorthDrawing(shape);
+  el.innerHTML=draw?easyDotsMarkup(shape):'';
+  el.style.display=draw?'flex':'none';
+  return draw;
 }
 function paintAns(){ const b=$('ansBox'); b.textContent=S.input; b.classList.toggle('empty',S.input===''); }
 function praise(){ return PRAISE[Math.floor(Math.random()*PRAISE.length)]; }
@@ -1672,9 +1730,7 @@ function awardCollectible(){
 
 function maybeCompleteStage(){
   if(!S.stageId||S.mastered<S.pass) return false;
-  const badges=badgesFor(P,S.stageId);
-  S.newBadge=!badges[S.difficulty];
-  badges[S.difficulty]=true;
+  S.newBadge=awardBadges(P,S.stageId,S.difficulty);
   if(S.wasCompleted){ S.reward=awardCollectible(); save(); return 'collectible'; }
   const beforeArt=P.monsterStage;
   const next=completeMathStage(P,S.stageId);
@@ -1761,7 +1817,9 @@ function colPrompt(M){
    carry they wrote if it is above the fold. The cell size is worked out from the room
    actually left once the question, the prompt and the keypad have taken theirs. */
 function fitCell(rows){
-  const chrome=$('pad').getBoundingClientRect().height+288;
+  // the dots, when easy is drawing them, are part of the chrome the grid has to fit inside,
+  // so they must already be painted when this runs
+  const chrome=$('pad').getBoundingClientRect().height+$('colDots').getBoundingClientRect().height+288;
   const room=Math.max(120,window.innerHeight-chrome);
   const wide=Math.min(40,Math.floor(window.innerWidth*0.1));
   return Math.max(19,Math.min(wide,Math.floor(room/Math.max(1,rows))));
@@ -1769,6 +1827,7 @@ function fitCell(rows){
 function setGridCell(g,rows){ g.style.setProperty('--cell',fitCell(rows)+'px'); }
 function renderCol(){
   const M=S.col, g=$('colGrid'), cols=M.wid+1, st=M.steps[M.si];
+  paintDots($('colDots'),S.difficulty==='easy'?stepDots(M.op,st):null);
   setGridCell(g,4);
   g.style.gridTemplateColumns='repeat('+cols+', var(--cell))'+(M.op==='mul'?' 50px':'');
   g.style.gridTemplateRows='calc(var(--cell) * 1.35) repeat(3, var(--cell))';
@@ -1921,6 +1980,7 @@ function longMulSlot(st,cols){
 }
 function renderLongMul(){
   const L=S.longMul,st=L.steps[L.si],grid=$('colGrid'),cols=L.width+1;
+  paintDots($('colDots'),S.difficulty==='easy'?longMulStepDots(st):null);
   setGridCell(grid,9);
   grid.style.gridTemplateColumns='repeat('+cols+', var(--cell)) 50px';
   grid.style.gridTemplateRows='repeat(9, var(--cell))'; grid.innerHTML='';
@@ -2028,6 +2088,7 @@ function renderDiv(){
   const D=S.div, g=D.g, L=g.N.length, st=D.plan[D.pi];
   const rightCols=Math.max(String(g.d).length,g.quot.length);
   const grid=$('colGrid');
+  paintDots($('colDots'),S.difficulty==='easy'?divStepDots(st,g.d):null);
   setGridCell(grid,1+2*g.steps.length);
   grid.style.gridTemplateColumns='repeat('+(L+1+rightCols)+', var(--cell))';
   grid.style.gridTemplateRows='repeat('+(1+2*g.steps.length)+', var(--cell))';
