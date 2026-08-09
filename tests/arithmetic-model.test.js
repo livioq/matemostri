@@ -820,11 +820,82 @@ assert.equal(diffCtx.plan({digits:4}, 'easy').total, 5, 'easy never makes a less
 // hard takes the talking out and lets the child choose the box
 assert.match(functionSource('colPrompt'), /if\(M\.free\)/,
   'hard says nothing about which step comes next');
-assert.match(source, /S\.col\.free=S\.difficulty==='hard'/, 'hard is what turns free order on');
+// all three workings turn free order on, and only hard does it
+assert.match(source, /S\.col\.free=true/, 'columns let the child choose the box on hard');
+assert.match(source, /S\.longMul\.free=true/, 'so does long multiplication');
+assert.match(source, /const free=S\.difficulty==='hard'/, 'and long division');
+assert.equal((source.match(/S\.difficulty==='hard'/g) || []).length, 3,
+  'hard is the only difficulty that turns free order on, once per working');
 assert.match(functionSource('selectColumnStep'), /M\.doneSteps\[index\]/,
   'a box already filled cannot be chosen again');
 assert.match(functionSource('commitColumnStep'), /M\.doneSteps\[M\.si\]=true/,
   'each box is marked done in its own right, so order does not matter');
+
+// on hard nothing is chosen for the child: every box is theirs to pick, first one included
+['commitColumnStep', 'commitLongMultiplicationStep'].forEach(name => {
+  assert.match(functionSource(name), /\.si=[A-Z]\.free\?-1:/,
+    `${name} leaves nothing selected on hard`);
+});
+assert.match(functionSource('pressDiv'), /D\.pi=D\.free\?-1:/,
+  'long division leaves nothing selected on hard either');
+assert.match(source, /S\.col\.si=-1/, 'a hard column starts with no box chosen');
+assert.match(source, /S\.longMul\.si=-1/, 'so does a hard long multiplication');
+assert.match(source, /pi:free\?-1:0/, 'and a hard long division');
+
+// the steps that are only talk have no box to tap, so hard drops them rather than
+// leaving the child stuck in front of a working they cannot finish
+assert.match(source, /S\.col\.steps\.filter\(s=>s\.t!=='seek'\)/,
+  "hard drops the 'this column has a 0, follow the borrow left' step");
+assert.match(source, /divPlan\(made\.made\)\.filter\(s=>!free\|\|s\.t!=='skip'\)/,
+  "hard drops the 'not even once, take one more digit' step");
+// every other step type must have somewhere to tap, or a hard question can never be finished
+const renderSources = functionSource('renderCol') + functionSource('renderLongMul') + functionSource('renderDiv');
+['res', 'carry', 'mulCarry', 'ann', 'partial', 'partialCarry', 'sum', 'sumCarry', 'fit', 'prod', 'rem']
+  .forEach(kind => assert.ok(renderSources.includes(kind), `${kind} steps are drawn a box`));
+
+// the hard prompts have to read before a box is tapped, and fall silent once the last is filled
+assert.equal(context.colPrompt({free:true, doneSteps:[false], steps:[], si:-1}),
+  'Tap a box, then write what belongs in it.');
+assert.equal(context.colPrompt({free:true, doneSteps:[true], steps:[], si:-1}), '');
+assert.equal(context.longMulPrompt({free:true, doneSteps:[false], steps:[], si:-1}),
+  'Tap a box, then write what belongs in it.');
+assert.equal(context.longMulPrompt({free:true, doneSteps:[true], steps:[], si:-1}), '');
+assert.equal(context.divPromptText({free:true, doneSteps:[false], plan:[], pi:-1, g:{d:3}}),
+  'Tap a box, then write what belongs in it.');
+assert.equal(context.divPromptText({free:true, doneSteps:[true], plan:[], pi:-1, g:{d:3}}), '');
+
+// and a working filled backwards has to end up the same as one filled forwards
+function fillEveryBox(model, commit, order) {
+  model.free = true;
+  order.forEach(i => { model.si = i; commit(model); });
+  assert.ok(model.doneSteps.every(Boolean), 'every box was filled');
+  return plain(model.ent);
+}
+const indices = n => [...Array(n).keys()];
+[[23, 58], [45, 40], [99, 99]].forEach(([a, b]) => {
+  const forwards = fillEveryBox(context.buildLongMultiplication(a, b),
+    context.commitLongMultiplicationStep, indices(context.buildLongMultiplication(a, b).steps.length));
+  const backwards = fillEveryBox(context.buildLongMultiplication(a, b),
+    context.commitLongMultiplicationStep, indices(context.buildLongMultiplication(a, b).steps.length).reverse());
+  assert.deepEqual(backwards, forwards, `${a} × ${b} works out the same filled backwards`);
+});
+// a column can be crossed out twice — it receives a ten, then lends one on — and hard offers
+// only the next one waiting, because you cannot cross out what is not yet written. So the
+// order hard allows reverses everything except the crossings-out, which stay in sequence.
+function reverseAsHardAllows(steps) {
+  const backwards = indices(steps.length).reverse();
+  const crossings = backwards.filter(i => steps[i].t === 'ann').sort((x, y) => x - y);
+  let next = 0;
+  return backwards.map(i => steps[i].t === 'ann' ? crossings[next++] : i);
+}
+[['add', 63, 71], ['sub', 84, 16], ['sub', 5002, 1834], ['mul', 47, 6]].forEach(([op, a, b]) => {
+  const steps = context.buildColumn(op, a, b).steps;
+  const forwards = fillEveryBox(context.buildColumn(op, a, b), context.commitColumnStep, indices(steps.length));
+  const backwards = fillEveryBox(context.buildColumn(op, a, b), context.commitColumnStep, reverseAsHardAllows(steps));
+  assert.deepEqual(backwards, forwards, `${a} ${op} ${b} works out the same filled backwards`);
+});
+assert.match(functionSource('renderCol'), /s\.t==='ann'&&s\.col===i&&!M\.doneSteps\[k\]/,
+  'and only that next crossing-out is offered, which is what makes the order above the only one');
 
 // the trail: it wanders between stops, and what has been walked looks different from
 // what is still ahead

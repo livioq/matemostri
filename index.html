@@ -123,6 +123,7 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
 .dc.annotations span{display:inline-flex;min-width:calc(var(--cell)*.38);height:calc(var(--cell)*.48);align-items:center;justify-content:center;color:var(--pen);font-size:calc(var(--cell)*.34);position:relative}
 .dc.annotations .ann-struck{color:var(--ink-soft);text-decoration:line-through;text-decoration-color:var(--pen);text-decoration-thickness:2px}
 .dc.annotations .ann-input{border:2px solid var(--gold);border-radius:5px;background:#fff7d9}
+.dc.annotations .ann-input.pick{border:2px dashed var(--pen);background:rgba(217,75,146,.07);cursor:pointer}
 .dc.mul-carry-note{width:auto;min-width:46px;height:auto;align-self:center;padding:3px 5px;border:1.5px solid var(--gold);border-radius:999px;background:#fff7d9;color:#9a6400;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;font-size:10px;font-weight:900;line-height:1.1}
 .dc.mul-carry-note.retired{opacity:.45;border-style:dashed}
 .dc.slot{border:2px dashed rgba(214,48,58,.5);border-radius:6px;color:var(--pen)}
@@ -1113,7 +1114,8 @@ function buildLongMultiplication(a,b){
     carry=Math.floor(total/10);
     if(carry&&col>0) steps.push({t:'sumCarry',col:col-1,want:String(carry)});
   }
-  return {a:a,b:b,width:width,partials:partials,total:a*b,steps:steps,si:0,buf:'',tries:0,err:0,hint:false,
+  return {a:a,b:b,width:width,partials:partials,total:a*b,steps:steps,doneSteps:steps.map(()=>false),free:false,
+    si:0,buf:'',tries:0,err:0,hint:false,
     ent:{partials:[{},{}],partialCarries:[null,null],sum:{},sumCarry:{}}};
 }
 
@@ -1522,7 +1524,12 @@ function nextQuestion(){
     $('dots').style.display='none';
     if(made.kind==='div'){
       S.q={kind:'div'};
-      S.div={g:made.made,plan:divPlan(made.made),pi:0,buf:'',done:{},err:0,tries:0,hint:false};
+      // on hard the "does it go into the first digit? no" steps are dropped: they are the
+      // teaching talk, and hard is the same working with the talking taken away
+      const free=S.difficulty==='hard';
+      const plan=divPlan(made.made).filter(s=>!free||s.t!=='skip');
+      S.div={g:made.made,plan:plan,doneSteps:plan.map(()=>false),free:free,
+             pi:free?-1:0,buf:'',done:{},err:0,tries:0,hint:false};
       S.col=null;
       $('normalQ').style.display='none'; $('colQ').style.display='block';
       $('hintBtn').style.display='block'; $('hintBtn').textContent='need a hint?';
@@ -1530,12 +1537,21 @@ function nextQuestion(){
     }else if(made.kind==='longmul'){
       S.q={kind:'longmul'};
       S.longMul=made.L; S.col=null; S.div=null; S.colB=made.b;
+      if(S.difficulty==='hard'){ S.longMul.free=true; S.longMul.si=-1; }
       $('normalQ').style.display='none'; $('colQ').style.display='block';
       $('hintBtn').style.display='block'; $('hintBtn').textContent='open a multiplication spell?';
       renderLongMul();
     }else{
       S.q={kind:'col'};
-      S.col=made.M; S.col.free=S.difficulty==='hard'; S.longMul=null; S.div=null;
+      S.col=made.M; S.longMul=null; S.div=null;
+      if(S.difficulty==='hard'){
+        S.col.free=true;
+        // "the tens column has a 0, so follow the borrow one column left" is teaching talk
+        // with no box of its own. Hard has no talk, so the step goes with it.
+        S.col.steps=S.col.steps.filter(s=>s.t!=='seek');
+        S.col.doneSteps=S.col.steps.map(()=>false);
+        S.col.si=-1;
+      }
       S.colB=made.b;
       $('normalQ').style.display='none'; $('colQ').style.display='block';
       if(S.stage.gid==='mul'){ $('hintBtn').style.display='block'; $('hintBtn').textContent='open a multiplication spell?'; }
@@ -1719,8 +1735,10 @@ function endSession(){
 /* ---------------- columns: addition, subtraction, multiplication ---------------- */
 function colPrompt(M){
   const st=M.steps[M.si];
+  // on hard nothing is chosen for the child, so the prompt has to read before a box is tapped
+  if(M.free) return M.doneSteps.every(Boolean)?'':
+    (st&&st.t==='ann'?'Cross out and write what it becomes.':'Tap a box, then write what belongs in it.');
   if(!st) return '';
-  if(M.free) return st.t==='ann'?'Cross out and write what it becomes.':'Tap a box, then write what belongs in it.';
   if(M.op==='add'){
     if(st.t==='carry') return 'Carry the '+st.want+' into the next column.';
     if(st.x===null&&st.y===null&&st.carry) return 'Nothing left to add. Write the carried '+st.carry+'.';
@@ -1764,10 +1782,18 @@ function renderCol(){
     const gc=i+2;
     if(M.op==='sub'){
       const history=M.ent.annotations[i];
-      if(history.length||(st&&st.t==='ann'&&st.col===i)){
+      const active=st&&st.t==='ann'&&st.col===i;
+      // a column can be crossed out twice (it receives a ten, then lends one on), so hard
+      // offers only the next one waiting — you cannot cross out what is not yet written
+      const openAnn=M.free&&!active?M.steps.findIndex((s,k)=>s.t==='ann'&&s.col===i&&!M.doneSteps[k]):-1;
+      if(history.length||active||openAnn>=0){
         const d=cell(1,gc,'','small annotations');
         history.forEach((entry,index)=>{ const span=document.createElement('span'); span.textContent=entry.value; if(index<history.length-1) span.className='ann-struck'; d.appendChild(span); });
-        if(st&&st.t==='ann'&&st.col===i){ const span=document.createElement('span'); span.textContent=M.buf; span.className='ann-input slot act'+(st.want.length>1?' wide':''); d.appendChild(span); }
+        if(active){ const span=document.createElement('span'); span.textContent=M.buf; span.className='ann-input slot act'+(st.want.length>1?' wide':''); d.appendChild(span); }
+        else if(openAnn>=0){
+          const span=document.createElement('span'); span.className='ann-input pick'+(M.steps[openAnn].want.length>1?' wide':'');
+          d.appendChild(span); d.onclick=()=>selectColumnStep(openAnn);
+        }
       }
     }else{
       if(M.ent.carry[i]!==undefined) cell(1,gc,M.ent.carry[i],'small');
@@ -1796,9 +1822,12 @@ function renderCol(){
   // on hard the carry boxes are drawn empty from the start, so the child can see every
   // box the working has and decide which to fill
   if(M.free&&M.op!=='sub') M.steps.forEach((step,i)=>{
-    if(M.doneSteps[i]||step.t!=='carry') return;
-    const active=st===step,d=cell(1,step.col+2,active?M.buf:'','small slot '+(active?'act':'pick'));
-    d.onclick=()=>selectColumnStep(i);
+    if(M.doneSteps[i]||step===st) return;
+    // the multiplication carry is kept beside the row rather than above a column, so it
+    // needs its own empty box or hard would have a step with nowhere to tap
+    const d=step.t==='mulCarry'?cell(2,cols+1,'carry','mul-carry-note pick')
+      :step.t==='carry'?cell(1,step.col+2,'','small slot pick'):null;
+    if(d) d.onclick=()=>selectColumnStep(i);
   });
   if(M.op==='mul'){
     const carry=M.ent.mulCarries[0],activeCarry=st&&st.t==='mulCarry';
@@ -1814,7 +1843,9 @@ function renderCol(){
 }
 /* On hard the child chooses which box to fill, so a step is marked done in its own right
    rather than by a pointer walking the list. Every step's answer is worked out when the
-   question is built, so no step depends on another having been done first. */
+   question is built, so no step depends on another having been done first. All three
+   workings use this — columns, long multiplication and long division — so it takes only
+   a steps list and the tally of which are done. */
 function nextOpenColumnStep(M,from){
   for(let i=from+1;i<M.steps.length;i++) if(!M.doneSteps[i]) return i;
   for(let i=0;i<=from&&i<M.steps.length;i++) if(!M.doneSteps[i]) return i;
@@ -1828,7 +1859,7 @@ function commitColumnStep(M){
   else if(st.t==='ann') M.ent.annotations[st.col].push({value:st.want,role:st.role});
   if(!M.doneSteps) M.doneSteps=M.steps.map(()=>false);
   M.doneSteps[M.si]=true;
-  M.buf=''; M.si=nextOpenColumnStep(M,M.si); return st;
+  M.buf=''; M.si=M.free?-1:nextOpenColumnStep(M,M.si); return st;
 }
 function selectColumnStep(index){
   const M=S.col;
@@ -1869,6 +1900,7 @@ function finishCol(){
 
 /* ---------------- two-digit long multiplication ---------------- */
 function longMulPrompt(L){
+  if(L.free) return L.doneSteps.every(Boolean)?'':'Tap a box, then write what belongs in it.';
   const st=L.steps[L.si]; if(!st) return '';
   if(st.t==='placeholder') return 'The tens row is worth tens. Put a 0 in the ones place.';
   if(st.t==='partialCarry') return 'Keep the carried '+st.want+' beside this partial-product step.';
@@ -1878,6 +1910,14 @@ function longMulPrompt(L){
   }
   if(st.t==='sumCarry') return 'Carry the '+st.want+' while adding the partial rows.';
   return st.x+' + '+st.y+(st.carry?' + '+st.carry:'')+'. Add the partial rows in this column.';
+}
+/* where a step's box sits in the grid, so hard can draw the empty ones as well as the
+   one being answered */
+function longMulSlot(st,cols){
+  if(st.t==='partialCarry') return {r:5+st.row,c:cols+1,carry:true};
+  if(st.t==='sumCarry') return {r:7,c:st.col+2,small:true};
+  if(st.t==='sum') return {r:9,c:st.col+2};
+  return {r:5+st.row,c:st.col+2};
 }
 function renderLongMul(){
   const L=S.longMul,st=L.steps[L.si],grid=$('colGrid'),cols=L.width+1;
@@ -1904,6 +1944,14 @@ function renderLongMul(){
   rule(8);
   Object.entries(L.ent.sum).forEach(([col,value])=>cell(9,Number(col)+2,value,'typed'));
   if(st&&st.t==='sum') cell(9,st.col+2,L.buf,'slot act');
+  // on hard every box the working has is drawn empty from the start, so the child can see
+  // the whole shape of it and choose which one to fill next
+  if(L.free) L.steps.forEach((step,i)=>{
+    if(L.doneSteps[i]||step===st) return;
+    const p=longMulSlot(step,cols);
+    const d=cell(p.r,p.c,p.carry?'carry':'',(p.carry?'mul-carry-note':p.small?'small slot':'slot')+' pick');
+    d.onclick=()=>selectLongMulStep(i);
+  });
   $('colPrompt').textContent=longMulPrompt(L);
   if(L.hint){
     const strip=$('colHint'); strip.style.display='grid'; strip.innerHTML='';
@@ -1918,7 +1966,14 @@ function commitLongMultiplicationStep(L){
   else if(st.t==='partialCarry') L.ent.partialCarries[st.row]={value:st.want,anchorCol:st.anchorCol};
   else if(st.t==='sum') L.ent.sum[st.col]=st.want;
   else if(st.t==='sumCarry') L.ent.sumCarry[st.col]=st.want;
-  L.buf=''; L.si++; return st;
+  if(!L.doneSteps) L.doneSteps=L.steps.map(()=>false);
+  L.doneSteps[L.si]=true;
+  L.buf=''; L.si=L.free?-1:nextOpenColumnStep(L,L.si); return st;
+}
+function selectLongMulStep(index){
+  const L=S.longMul;
+  if(!L||!L.free||S.locked||L.doneSteps[index]) return;
+  L.si=index; L.buf=''; sTap(); renderLongMul();
 }
 function pressLongMul(k){
   const L=S.longMul,st=L.steps[L.si]; if(!st) return;
@@ -1929,7 +1984,7 @@ function pressLongMul(k){
   if(L.buf===st.want){
     sStep(); L.tries=0;
     commitLongMultiplicationStep(L);
-    if(L.si>=L.steps.length){ renderLongMul(); finishLongMul(); return; }
+    if(L.doneSteps.every(Boolean)){ renderLongMul(); finishLongMul(); return; }
     renderLongMul(); return;
   }
   sBad(); L.tries++;
@@ -1961,6 +2016,7 @@ function divPlan(g){
 }
 function divPromptText(D){
   const st=D.plan[D.pi], d=D.g.d;
+  if(D.free) return D.doneSteps.every(Boolean)?'':'Tap a box, then write what belongs in it.';
   if(!st) return '';
   if(st.t==='skip'||st.t==='fit') return 'How many times does '+d+' go into '+st.into+'?';
   if(st.t==='prod') return st.q+' \u00D7 '+d+'. Write it underneath.';
@@ -1977,7 +2033,8 @@ function renderDiv(){
   grid.style.gridTemplateRows='repeat('+(1+2*g.steps.length)+', var(--cell))';
   grid.innerHTML='';
   const foc={};
-  if(st){
+  // the lit-up chunk says which digits are being divided into; hard leaves that unsaid
+  if(st&&!D.free){
     if(st.t==='skip') for(let c=0;c<=st.end;c++) foc['1,'+(c+1)]=1;
     else if(st.k===0) for(let c=0;c<=g.steps[0].end;c++) foc['1,'+(c+1)]=1;
     else{
@@ -2015,8 +2072,17 @@ function renderDiv(){
     if(e.rem!==undefined) for(let j=0;j<rs.length;j++) cell(remRow,rstart+j,e.rem[j],'typed');
     else if(st&&st.t==='rem'&&st.k===k)
       for(let j=0;j<rs.length;j++) cell(remRow,rstart+j,D.buf[j]||'',j<D.buf.length?'slot typed':(j===D.buf.length?'slot act':'slot'));
-    if(e.rem!==undefined&&k+1<g.steps.length)
+    if((e.rem!==undefined||D.free)&&k+1<g.steps.length)
       for(let c2=c.end+1;c2<=g.steps[k+1].end;c2++) cell(remRow,c2+1,g.N[c2],'brought');
+  });
+  // on hard every box is drawn empty from the start and the child picks which to fill
+  if(D.free) D.plan.forEach((step,i)=>{
+    if(D.doneSteps[i]||step===st) return;
+    const pick=d=>{ d.onclick=()=>selectDivStep(i); };
+    if(step.t==='fit'){ pick(cell(2,L+2+step.k,'','slot pick')); return; }
+    const c=g.steps[step.k], txt=String(step.t==='prod'?c.prod:c.rem);
+    const row=(step.t==='prod'?2:3)+2*step.k, start=c.end+1-txt.length+1;
+    for(let j=0;j<txt.length;j++) pick(cell(row,start+j,'',(step.t==='prod'?'sub ':'')+'slot pick'));
   });
   $('colPrompt').textContent=divPromptText(D);
   if(D.hint){
@@ -2024,6 +2090,11 @@ function renderDiv(){
     for(let i=1;i<=9;i++){ const e=document.createElement('span'); e.textContent=g.d+'\u00D7'+i+'='+(g.d*i); strip.appendChild(e); }
     $('hintBtn').style.display='none';
   }
+}
+function selectDivStep(index){
+  const D=S.div;
+  if(!D||!D.free||S.locked||D.doneSteps[index]) return;
+  D.pi=index; D.buf=''; sTap(); renderDiv();
 }
 function pressDiv(k){
   const D=S.div, st=D.plan[D.pi];
@@ -2041,12 +2112,16 @@ function pressDiv(k){
       else if(st.t==='prod') D.done[st.k].prod=st.want;
       else D.done[st.k].rem=st.want;
     }
-    D.buf=''; D.pi++;
+    D.buf='';
+    if(!D.doneSteps) D.doneSteps=D.plan.map(()=>false);
+    D.doneSteps[D.pi]=true;
+    D.pi=D.free?-1:nextOpenColumnStep({steps:D.plan,doneSteps:D.doneSteps},D.pi);
     const nx=D.plan[D.pi];
-    if(st.t==='skip') $('fb').innerHTML='<span class="ok">Not even once. Take one more digit.</span>';
+    if(D.free) $('fb').textContent='';
+    else if(st.t==='skip') $('fb').innerHTML='<span class="ok">Not even once. Take one more digit.</span>';
     else if(st.t==='rem'&&nx) $('fb').innerHTML='<span class="ok">Bring the next digit down.</span>';
     else $('fb').textContent='';
-    if(D.pi>=D.plan.length){ renderDiv(); finishDiv(); return; }
+    if(D.doneSteps.every(Boolean)){ renderDiv(); finishDiv(); return; }
     renderDiv(); return;
   }
   sBad(); D.tries++;
