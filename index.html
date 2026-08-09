@@ -233,12 +233,18 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
 .scene-art-slot.has-art img{position:relative;z-index:2;width:100%;height:100%;object-fit:contain}
 .scene-art-label{display:none;position:relative;z-index:2;padding:8px 10px;border:2px dashed rgba(80,49,154,.28);border-radius:14px;background:rgba(255,255,255,.62)}
 .adventure-map.show-art-debug .scene-art-label{display:block}
-.adventure-path{position:absolute;inset:0;z-index:4;overflow:visible;pointer-events:none}
+/* width and height must be stated. An <svg> with a viewBox has an intrinsic aspect ratio,
+   and inset:0 alone leaves the height to resolve from it: 100 wide by 6798 tall against a
+   318px-wide map gives a 21618px-tall element, so the whole trail was drawn at 3.18x and
+   clipped, never lining up with the stops it was meant to join. */
+.adventure-path{position:absolute;inset:0;width:100%;height:100%;z-index:4;overflow:visible;pointer-events:none}
 .adventure-path path{fill:none;stroke-linecap:round;stroke-linejoin:round}
-/* the road ahead is a faint glow; the part already walked is a dotted trail, the way a
-   route is marked on a paper map once you have been along it */
-.adventure-path .path-ahead{stroke:rgba(242,185,59,.34);stroke-width:10;filter:drop-shadow(0 0 7px rgba(242,185,59,.5))}
-.adventure-path .path-walked{stroke:rgba(242,185,59,.9);stroke-width:6;stroke-dasharray:2 13;filter:drop-shadow(0 1px 1px rgba(120,80,10,.35))}
+/* Two very different things. The road ahead is only a hint: faint, soft, no edge at all.
+   The part already walked is a firm dashed trail with a dark outline around every dash,
+   drawn as two paths sharing one d so the dashes line up exactly. */
+.adventure-path .path-ahead{stroke:rgba(255,231,168,.5);stroke-width:11;filter:drop-shadow(0 0 5px rgba(242,185,59,.75)) drop-shadow(0 0 12px rgba(255,206,84,.5))}
+.adventure-path .path-walked-edge{stroke:rgba(84,52,8,.62);stroke-width:13;stroke-dasharray:16 12}
+.adventure-path .path-walked{stroke:rgba(255,206,84,.98);stroke-width:7;stroke-dasharray:16 12}
 .map-location{position:absolute;width:min(190px,43vw);min-height:142px;padding:12px;border:2px solid rgba(80,49,154,.22);border-radius:24px;background:rgba(255,255,255,.94);box-shadow:0 8px 18px rgba(80,49,154,.14);text-align:center;transform:translate(-50%,-50%);transition:transform .12s,box-shadow .12s,opacity .12s;z-index:8}
 .map-location:active:not(:disabled){transform:translate(-50%,-50%) scale(.98)}
 .map-location.completed{border-color:#65b782;background:linear-gradient(145deg,#fff,#effff6)}
@@ -682,17 +688,39 @@ function mapSceneLayout(mapWidth){
 /* The trail wanders. Between one stop and the next it bows out to one side and then back,
    alternating, so it reads as a path someone walked rather than a rope pulled taut between
    two pegs. One point on its own draws nothing, which is what the ends of the journey want. */
-function mapPathD(layouts){
-  if(!layouts||layouts.length<2) return layouts&&layouts.length?'M '+layouts[0].x+' '+layouts[0].y:'';
-  const pts=layouts.map(l=>({x:l.x,y:l.y}));
-  let d='M '+pts[0].x+' '+pts[0].y;
-  for(let i=1;i<pts.length;i++){
-    const a=pts[i-1],b=pts[i],dy=b.y-a.y;
-    const bow=(i%2?1:-1)*Math.min(26,Math.max(13,dy*0.05));
-    const midX=Math.min(86,Math.max(14,(a.x+b.x)/2+bow)),midY=a.y+dy/2;
-    const soft=Math.max(80,Math.min(200,dy*0.28));
-    d+=' C '+a.x+' '+(a.y+soft)+', '+midX+' '+(midY-soft*0.62)+', '+midX+' '+midY;
-    d+=' C '+midX+' '+(midY+soft*0.62)+', '+b.x+' '+(b.y-soft)+', '+b.x+' '+b.y;
+/* The trail wanders. Between one stop and the next it swings from side to side, more times
+   on a longer stretch, and the whole thing is drawn as one smooth curve through every one
+   of those swings — and through every stop, which are waypoints like any other. That is
+   what a Catmull-Rom spline gives: it passes through its points rather than being merely
+   pulled towards them, so the trail always starts on the first stop, ends on the last, and
+   goes through each one on the way. `fromGap` keeps the swings identical whether the whole
+   trail is drawn or only the part behind or ahead of the child. */
+const MAP_TRAIL_SWING=23;
+function mapTrailPoints(layouts,fromGap){
+  const pts=[{x:layouts[0].x,y:layouts[0].y}];
+  for(let i=1;i<layouts.length;i++){
+    const a=layouts[i-1],b=layouts[i],dy=b.y-a.y;
+    const swings=Math.max(2,Math.min(5,Math.round(dy/200)));
+    const lead=((fromGap||0)+i)%2?1:-1;
+    for(let k=1;k<=swings;k++){
+      const t=k/(swings+1),side=(k%2?lead:-lead);
+      const x=a.x+(b.x-a.x)*t+side*MAP_TRAIL_SWING;
+      pts.push({x:Math.min(92,Math.max(8,x)),y:a.y+dy*t});
+    }
+    pts.push({x:b.x,y:b.y});
+  }
+  return pts;
+}
+function mapPathD(layouts,fromGap){
+  if(!layouts||!layouts.length) return '';
+  if(layouts.length<2) return 'M '+layouts[0].x+' '+layouts[0].y;
+  const p=mapTrailPoints(layouts,fromGap);
+  let d='M '+p[0].x.toFixed(1)+' '+p[0].y.toFixed(1);
+  for(let i=0;i<p.length-1;i++){
+    const p0=p[i-1]||p[0],p1=p[i],p2=p[i+1],p3=p[i+2]||p[p.length-1];
+    const c1x=p1.x+(p2.x-p0.x)/6,c1y=p1.y+(p2.y-p0.y)/6;
+    const c2x=p2.x-(p3.x-p1.x)/6,c2y=p2.y-(p3.y-p1.y)/6;
+    d+=' C '+c1x.toFixed(1)+' '+c1y.toFixed(1)+', '+c2x.toFixed(1)+' '+c2y.toFixed(1)+', '+p2.x.toFixed(1)+' '+p2.y.toFixed(1);
   }
   return d;
 }
@@ -1219,10 +1247,12 @@ function renderMenu(){
   L.style.setProperty('--map-height',mapHeight+'px');
   L.classList.toggle('show-art-debug',!!DB.mapArtDebug);
   const currentIndex=Math.min(count,PROGRESSION_NODES.length-1);
+  const walkedD=mapPathD(layouts.slice(0,currentIndex+1),0);
   L.innerHTML='<div class="map-art" aria-hidden="true">'+MAP_ART_PANELS.map(p=>'<img src="'+p.src+'" alt="" loading="lazy">').join('')+'</div>'+
     '<svg class="adventure-path" aria-hidden="true" viewBox="0 0 100 '+mapHeight+'" preserveAspectRatio="none">'+
-      '<path class="path-ahead" vector-effect="non-scaling-stroke" d="'+mapPathD(layouts.slice(currentIndex))+'"></path>'+
-      '<path class="path-walked" vector-effect="non-scaling-stroke" d="'+mapPathD(layouts.slice(0,currentIndex+1))+'"></path>'+
+      '<path class="path-ahead" vector-effect="non-scaling-stroke" d="'+mapPathD(layouts.slice(currentIndex),currentIndex)+'"></path>'+
+      '<path class="path-walked-edge" vector-effect="non-scaling-stroke" d="'+walkedD+'"></path>'+
+      '<path class="path-walked" vector-effect="non-scaling-stroke" d="'+walkedD+'"></path>'+
     '</svg>';
   layouts.forEach((layout,i)=>{
     const node=layout.node,pos=layout.pos,artwork=pos.artwork||{};

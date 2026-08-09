@@ -760,26 +760,66 @@ stageImages.forEach((file, i) => {
 // what is still ahead
 const pathCtx = {Math};
 vm.createContext(pathCtx);
-vm.runInContext(functionSource('mapPathD') + ';this.mapPathD=mapPathD;', pathCtx);
+vm.runInContext([
+  source.match(/const MAP_TRAIL_SWING=\d+;/)[0],
+  functionSource('mapTrailPoints'),
+  functionSource('mapPathD'),
+  'this.mapPathD=mapPathD;this.mapTrailPoints=mapTrailPoints;'
+].join('\n'), pathCtx);
 assert.equal(pathCtx.mapPathD([]), '', 'no stops, no path');
 assert.equal(pathCtx.mapPathD([{x:50, y:100}]), 'M 50 100',
   'a single stop draws nothing, which is what the ends of the journey need');
-const wander = pathCtx.mapPathD([{x:50, y:0}, {x:29, y:600}, {x:71, y:1200}]);
-assert.equal((wander.match(/C/g) || []).length, 4,
-  'each gap is two curves, so the trail can bow out and come back rather than run straight');
-const xs = [...wander.matchAll(/(?:M|C|,)\s*(-?[\d.]+)\s/g)].map(m => Number(m[1]));
-assert.ok(Math.max(...xs) > 71 || Math.min(...xs) < 29,
-  'the trail reaches outside the columns the stops sit in');
-assert.ok(Math.min(...xs) >= 0 && Math.max(...xs) <= 100, 'but stays on the map');
+
+const stops = [{x:50, y:0}, {x:29, y:520}, {x:71, y:1060}, {x:50, y:1620}];
+const waypoints = plain(pathCtx.mapTrailPoints(stops, 0));
+assert.ok(waypoints.length > stops.length * 2,
+  'the trail swings several times between one stop and the next');
+stops.forEach(stop => {
+  assert.ok(waypoints.some(w => w.x === stop.x && w.y === stop.y),
+    `the stop at ${stop.x},${stop.y} is a waypoint on the trail, not merely near it`);
+});
+const wanderXs = waypoints.map(w => w.x);
+assert.ok(Math.max(...wanderXs) > 71 && Math.min(...wanderXs) < 29,
+  'the trail reaches outside the columns the stops sit in, on both sides');
+assert.ok(Math.min(...wanderXs) >= 8 && Math.max(...wanderXs) <= 92, 'but stays on the map');
+
+const wander = pathCtx.mapPathD(stops, 0);
+assert.ok(wander.startsWith('M 50.0 0.0'), 'the trail starts on the first stop');
+assert.ok(wander.trimEnd().endsWith('50.0 1620.0'), 'and ends on the last');
+stops.forEach(stop => {
+  assert.ok(wander.includes(`${stop.x.toFixed(1)} ${stop.y.toFixed(1)}`),
+    `the curve passes through ${stop.x},${stop.y} rather than being pulled towards it`);
+});
+// split anywhere and the two halves must meet on the stop they were split at. A spline's
+// tangent depends on the point after it, so the halves are not byte-identical to the whole
+// trail there; what matters is that neither leaves a gap.
+[1, 2].forEach(cut => {
+  const walked = pathCtx.mapPathD(stops.slice(0, cut + 1), 0);
+  const ahead = pathCtx.mapPathD(stops.slice(cut), cut);
+  const joint = `${stops[cut].x.toFixed(1)} ${stops[cut].y.toFixed(1)}`;
+  assert.ok(walked.trimEnd().endsWith(joint), `the walked half ends on stop ${cut}`);
+  assert.ok(ahead.startsWith('M ' + joint), `and the half ahead starts on stop ${cut}`);
+});
 
 const menuPathSrc = functionSource('renderMenu');
-assert.match(menuPathSrc, /path-ahead[^]*mapPathD\(layouts\.slice\(currentIndex\)\)/,
-  'the road ahead runs from the current stop onward');
-assert.match(menuPathSrc, /path-walked[^]*mapPathD\(layouts\.slice\(0,currentIndex\+1\)\)/,
+assert.match(menuPathSrc, /path-ahead[^]*mapPathD\(layouts\.slice\(currentIndex\),currentIndex\)/,
+  'the road ahead runs from the current stop onward, with its swings kept in step');
+assert.match(menuPathSrc, /walkedD=mapPathD\(layouts\.slice\(0,currentIndex\+1\),0\)/,
   'the walked trail runs from the start up to the current stop');
+assert.equal((menuPathSrc.match(/walkedD/g) || []).length, 3,
+  'the outline and the dashes share one d, so their dashes line up exactly');
 assert.ok(menuPathSrc.indexOf('const currentIndex') < menuPathSrc.indexOf('path-ahead'),
   'currentIndex is worked out before the paths that need it');
 assert.match(source, /\.path-walked\{[^}]*stroke-dasharray/, 'the walked trail is dashed');
+assert.match(source, /\.path-walked-edge\{[^}]*stroke-dasharray/, 'and its dark outline is dashed to match');
+const dashOf = cls => (source.match(new RegExp('\\.' + cls + '\\{[^}]*stroke-dasharray:([^;}]*)')) || [])[1];
+assert.equal(dashOf('path-walked'), dashOf('path-walked-edge'),
+  'both walked strokes use one dash pattern, or the outline would slide off the dashes');
+// the svg must be told its size. It has an intrinsic aspect ratio from the viewBox, so
+// inset:0 alone leaves the height to resolve from that and the trail is drawn at 3x,
+// stretched away from the stops it is meant to join
+assert.match(source, /\.adventure-path\{[^}]*width:100%[^}]*height:100%/,
+  'the path layer is given an explicit width and height');
 assert.equal(/\.path-ahead\{[^}]*stroke-dasharray/.test(source), false, 'the road ahead is not');
 assert.match(source, /\.path-ahead\{[^}]*drop-shadow/, 'the road ahead glows');
 assert.match(source, /vector-effect="non-scaling-stroke"/,
