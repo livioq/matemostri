@@ -51,6 +51,8 @@ vm.runInContext([
   'const rnd=(a,b)=>a+Math.floor(Math.random()*(b-a+1));',
   "const columnPlace=(wid,col)=>['ones','tens','hundreds','thousands','ten-thousands'][wid-1-col]||'next';",
   'const colValid=M=>M.steps.every(s=>/^\\d+$/.test(s.want));',
+  source.match(/const dotWord=.*;\n/)[0],
+  functionSource('easyNumber'),
   functionSource('buildColumn'),
   functionSource('buildLongMultiplication'),
   functionSource('twoDigitColumnAddition'),
@@ -401,7 +403,11 @@ assert.equal(String(fallback.d).length, 1, 'the built-in fallback question also 
 assert.equal(Number(fallback.N), fallback.d * Number(fallback.quot) + fallback.rest);
 
 class FakeElement {
-  constructor() { this.children = []; this.style = {}; this.className = ''; this.textContent = ''; this.attrs = {}; }
+  constructor() {
+    this.children = []; this.style = {}; this.className = ''; this.textContent = ''; this.attrs = {};
+    this.classes = new Set();
+    this.classList = {toggle: (name, on) => { if (on) this.classes.add(name); else this.classes.delete(name); }};
+  }
   appendChild(child) { this.children.push(child); return child; }
   setAttribute(name, value) { this.attrs[name] = value; }
   set innerHTML(value) { this.children = []; this._innerHTML = value; }
@@ -422,8 +428,16 @@ vm.runInContext([
   'const setGridCell=()=>{};const selectColumnStep=()=>{};const selectLongMulStep=()=>{};',
   'const DOT_LIMIT=36;',
   functionSource('dotRows'),
+  source.match(/const dotSplits=.*;\n/)[0],
+  functionSource('dotShareGroups'),
   source.match(/const dotTotal=[\s\S]*?;\n/)[0],
+  source.match(/const dotTallest=[\s\S]*?;\n/)[0],
+  source.match(/const DOT_ROWS_IN_WORKING=\d+;/)[0],
   source.match(/const dotsWorthDrawing=.*;\n/)[0],
+  source.match(/const dotWord=.*;\n/)[0],
+  source.match(/const dotsAreTappable=.*;\n/)[0],
+  functionSource('advanceDots'),
+  functionSource('toggleStruck'),
   functionSource('easyDotsMarkup'),
   functionSource('paintDots'),
   functionSource('stepDots'),
@@ -435,7 +449,8 @@ vm.runInContext([
   functionSource('renderLongMul'),
   functionSource('renderStars'),
   functionSource('markQuestion'),
-  'this.dotsWorthDrawing=dotsWorthDrawing;this.stepDots=stepDots;' +
+  'this.dotsWorthDrawing=dotsWorthDrawing;this.dotTallest=dotTallest;this.ROWS=DOT_ROWS_IN_WORKING;this.stepDots=stepDots;this.dotsAreTappable=dotsAreTappable;' +
+  'this.easyDotsMarkup=easyDotsMarkup;this.advanceDots=advanceDots;this.toggleStruck=toggleStruck;this.shareGroups=dotShareGroups;' + +
   'this.longMulStepDots=longMulStepDots;this.divStepDots=divStepDots;this.paintDots=paintDots;'
 ].join('\n'), uiContext);
 
@@ -883,6 +898,48 @@ for (let i = 1; i <= 10; i += 1) {
   }
 }
 
+// every digit on easy is 1 to 9, never 0: a step reading "0 + 5" has nothing to draw, and
+// a child on easy would be left without help exactly where they need it
+for (let i = 0; i < 200; i += 1) {
+  const n = context.easyNumber(4, 4);
+  assert.equal(String(n).length, 4, 'easyNumber keeps the length it was asked for');
+  assert.equal(String(n).includes('0'), false, 'and never puts a 0 in it');
+  assert.ok(Number(String(n)[0]) <= 4, 'the leading digit is capped');
+}
+context.MATH_STAGES.forEach(stage => {
+  for (let i = 1; i <= 10; i += 1) {
+    const q = context.generateLessonQuestion(stage, i, 'easy');
+    [q.a, q.b].filter(v => v !== undefined).forEach(v =>
+      assert.equal(String(v).includes('0'), false, `${stage.id} on easy avoids 0 digits (got ${v})`));
+  }
+});
+
+// the two-digit lessons done in the head carry nothing and borrow nothing on easy
+for (let i = 0; i < 200; i += 1) {
+  const add = context.generateLessonQuestion(stageById('add_2mental'), 1, 'easy');
+  const [aa, ab] = add.txt.split(' + ').map(Number);
+  assert.ok(aa % 10 + ab % 10 < 10, `easy ${add.txt} needs no carrying`);
+  assert.ok(aa >= 11 && ab >= 11, 'but both are still two-digit numbers');
+  const sub = context.generateLessonQuestion(stageById('sub_2mental'), 1, 'easy');
+  const [sa, sb] = sub.txt.split(' \u2212 ').map(Number);
+  assert.ok(sa % 10 >= sb % 10, `easy ${sub.txt} needs no borrowing`);
+  assert.ok(sa - sb >= 10 && sb >= 11, 'and stays a two-digit take-away with a two-digit answer');
+}
+
+// simple division arrives as one pile to share, not as the groups already shared out
+for (let i = 0; i < 100; i += 1) {
+  const shared = context.generateLessonQuestion(stageById('div_simple'), 1, 'easy');
+  const [total, by] = shared.txt.split(' \u00F7 ').map(Number);
+  assert.deepEqual(plain(shared.dots), {share:total, by:by, words:total + ' shared into ' + by + '. Tap to share them out.'});
+  assert.ok(total / by >= 3, 'and it is worth sharing: never 4 into 2');
+}
+// one-digit take-aways are worth doing, and never leave nothing
+for (let i = 0; i < 200; i += 1) {
+  const q = context.generateLessonQuestion(stageById('sub_1digit'), 1, 'easy');
+  const [a, b] = q.txt.split(' \u2212 ').map(Number);
+  assert.ok(a >= 4 && b >= 1 && b < a, `easy ${q.txt} takes something away and leaves something`);
+}
+
 // hard on the first lesson has no working to take the talking out of, so it takes the
 // small digits out instead, or hard would be medium under another name
 for (let i = 0; i < 300; i += 1) {
@@ -901,13 +958,34 @@ assert.equal(uiContext.dotsWorthDrawing({groups:4, per:9}), true, 'the biggest f
 assert.equal(uiContext.dotsWorthDrawing({groups:5, per:9}), false);
 assert.equal(uiContext.dotsWorthDrawing(null), false, 'and a step that is not a sum gets none');
 
+// height, not count, is what makes a picture too big to stand above a working: nine fours
+// wrap sideways, thirty-six in one pile is eight rows deep
+assert.equal(uiContext.dotTallest({groups:9, per:4}), 1, 'a group of four is one row');
+assert.equal(uiContext.dotTallest({per:36, chunk:4}), 8, 'a pile of thirty-six is eight');
+assert.equal(uiContext.dotTallest({parts:[9, 9, 1]}), 2);
+assert.equal(uiContext.dotsWorthDrawing({per:36, chunk:4}), true, 'thirty-six is inside the count limit');
+assert.equal(uiContext.dotsWorthDrawing({per:36, chunk:4}, uiContext.ROWS), false,
+  'but it will not stand above a working');
+assert.equal(uiContext.dotsWorthDrawing({groups:9, per:4}, uiContext.ROWS), true,
+  'while the same thirty-six as nine little groups will');
+assert.equal(uiContext.dotsWorthDrawing({per:20, chunk:4}, uiContext.ROWS), true);
+assert.equal(uiContext.dotsWorthDrawing({share:24, by:4}), true,
+  'and a question with no working underneath it can stand taller');
+assert.equal((source.match(/DOT_ROWS_IN_WORKING\)/g) || []).length, 3,
+  'all three workings cap the height of the picture above them');
+
+// choosing a difficulty is the same act as starting the lesson
+assert.equal(source.includes('id="nodeStart"'), false, 'there is no second button asking again');
+assert.match(functionSource('renderDifficultyChoice'), /startSession\(stage\.id,d\.id\)/,
+  'tapping a difficulty starts the lesson on it');
+
 // it is the individual sum inside the working that gets the dots, not the whole question
 assert.deepEqual(plain(uiContext.stepDots('add', {t:'res', x:4, y:7, carry:0})),
   {parts:[4, 7], words:'4 and 7 altogether.'});
 assert.deepEqual(plain(uiContext.stepDots('add', {t:'res', x:6, y:3, carry:1})),
   {parts:[6, 3, 1], words:'6 and 3 and 1 altogether.'}, 'the carry is counted in too');
 assert.deepEqual(plain(uiContext.stepDots('sub', {t:'res', x:14, y:6})),
-  {per:14, take:6, words:'Start with 14 and take away 6.'});
+  {per:14, take:6, words:'Tap 6 dots to cross out.'});
 assert.deepEqual(plain(uiContext.stepDots('mul', {t:'res', x:7, m:3, carry:0})),
   {groups:7, per:3, words:'7 groups of 3.'});
 assert.equal(uiContext.stepDots('add', {t:'res', x:0, y:5, carry:0}), null,
@@ -926,7 +1004,54 @@ assert.deepEqual(plain(uiContext.longMulStepDots({t:'partial', digit:3, multipli
 assert.equal(uiContext.longMulStepDots({t:'placeholder'}), null, 'the placeholder 0 is not a sum');
 assert.deepEqual(plain(uiContext.divStepDots({t:'prod', q:3}, 4)),
   {groups:3, per:4, words:'3 groups of 4.'});
-assert.equal(uiContext.divStepDots({t:'fit'}, 4), null, 'and neither is deciding how many times it goes');
+assert.deepEqual(plain(uiContext.divStepDots({t:'fit', into:9}, 4)),
+  {per:9, chunk:4, words:'Tap to take away 4 at a time.'},
+  'how many times 4 goes into 9 is answered by taking 4 away as often as it will go');
+assert.deepEqual(plain(uiContext.divStepDots({t:'skip', into:3}, 4)), {per:3, chunk:4, words:'Tap to take away 4 at a time.'});
+assert.equal(uiContext.divStepDots({t:'rem', into:9, prod:8}, 4), null, 'what is left is not a picture');
+
+// a picture must not answer the question for the child
+assert.equal(uiContext.dotsAreTappable({per:6, take:4}), true, 'the crossing-out is the child to do');
+assert.equal(uiContext.dotsAreTappable({share:24, by:4}), true, 'and so is the sharing');
+assert.equal(uiContext.dotsAreTappable({per:9, chunk:4}), true);
+assert.equal(uiContext.dotsAreTappable({parts:[4, 5]}), false, 'but two piles to add are just two piles');
+assert.equal(uiContext.dotsAreTappable({groups:3, per:4}), false);
+assert.deepEqual(plain(uiContext.stepDots('sub', {t:'res', x:9, y:1})),
+  {per:9, take:1, words:'Tap 1 dot to cross out.'}, 'one dot, not one dots');
+
+// six take away four arrives as six dots, not as two
+const takeAway = uiContext.easyDotsMarkup({per:6, take:4}, {struck:[], splits:0, rings:0});
+assert.equal((takeAway.match(/<i /g) || []).length, 6, 'all six dots are there to start with');
+assert.equal(takeAway.includes('class="gone"'), false, 'and none of them is crossed out yet');
+let struck = {struck:[], splits:0, rings:0};
+[5, 4, 3, 2].forEach(i => { struck = uiContext.toggleStruck(struck, i); });
+assert.deepEqual(plain(struck.struck), [5, 4, 3, 2], 'four taps cross four dots out');
+assert.equal((uiContext.easyDotsMarkup({per:6, take:4}, struck).match(/class="gone"/g) || []).length, 4);
+struck = uiContext.toggleStruck(struck, 5);
+assert.deepEqual(plain(struck.struck), [4, 3, 2], 'and tapping one again brings it back');
+
+// 24 shared into 4 is halve, then halve again
+assert.deepEqual(plain(uiContext.shareGroups({share:24, by:4}, 0)), [24], 'it starts as one pile');
+assert.deepEqual(plain(uiContext.shareGroups({share:24, by:4}, 1)), [12, 12], 'one tap halves it');
+assert.deepEqual(plain(uiContext.shareGroups({share:24, by:4}, 2)), [6, 6, 6, 6], 'and the second halves it again');
+assert.deepEqual(plain(uiContext.shareGroups({share:12, by:3}, 1)), [4, 4, 4], 'sharing into three is one tap');
+assert.deepEqual(plain(uiContext.shareGroups({share:10, by:2}, 1)), [5, 5]);
+let share = {struck:[], splits:0, rings:0};
+share = uiContext.advanceDots({share:24, by:4}, share);
+assert.equal(share.splits, 1);
+share = uiContext.advanceDots({share:24, by:4}, share);
+assert.equal(share.splits, 2, 'two taps reach four groups');
+share = uiContext.advanceDots({share:24, by:4}, share);
+assert.equal(share.splits, 0, 'and a third puts the pile back together rather than getting stuck');
+
+// taking 4 away from 9 goes twice
+let rings = {struck:[], splits:0, rings:0};
+rings = uiContext.advanceDots({per:9, chunk:4}, rings);
+assert.equal((uiContext.easyDotsMarkup({per:9, chunk:4}, rings).match(/class="gone"/g) || []).length, 4);
+rings = uiContext.advanceDots({per:9, chunk:4}, rings);
+assert.equal((uiContext.easyDotsMarkup({per:9, chunk:4}, rings).match(/class="gone"/g) || []).length, 8);
+rings = uiContext.advanceDots({per:9, chunk:4}, rings);
+assert.equal(rings.rings, 0, 'a third tap starts over, because a third four does not fit');
 
 assert.deepEqual(plain(diffCtx.rows(12)), [5, 5, 2], 'dots are laid out in rows of five');
 assert.deepEqual(plain(diffCtx.rows(5)), [5]);
