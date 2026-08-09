@@ -7,7 +7,9 @@ public release.
 ## Hard constraints
 
 - The whole app is a single self-contained index.html. Keep it that way:
-  no build step, no bundler, no external dependencies at runtime.
+  no build step, no bundler, no external dependencies at runtime. The only
+  files beside it are the images in assets and `manifest.webmanifest`,
+  which Android reads to give the home-screen shortcut its icon.
 - It runs on an Android phone. Check layouts at ~360px wide.
 - Run `node tests/arithmetic-model.test.js` before every commit. Add
   tests for any change to arithmetic or question generation.

@@ -756,6 +756,26 @@ stageImages.forEach((file, i) => {
     `${file} is numbered in order and shipped as webp`);
 });
 
+// the home-screen icon: without a manifest and a maskable icon, adding the game to an
+// Android home screen gives a grey square
+const manifest = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'manifest.webmanifest'), 'utf8'));
+assert.match(source, /<link rel="manifest" href="manifest\.webmanifest">/,
+  'index.html links the manifest');
+assert.equal(manifest.name, 'Matemostri');
+assert.ok(manifest.icons.length >= 2, 'more than one icon size is offered');
+manifest.icons.forEach(icon => {
+  assert.equal(fs.existsSync(path.join(__dirname, '..', icon.src)), true,
+    `${icon.src} exists for the home-screen icon`);
+  assert.equal(icon.type, 'image/webp');
+  assert.match(icon.sizes, /^\d+x\d+$/);
+});
+assert.ok(manifest.icons.some(icon => icon.purpose === 'maskable'),
+  'one icon is maskable, so Android can crop it to the launcher shape without clipping the title');
+assert.ok(manifest.icons.some(icon => icon.purpose === 'any' && icon.sizes === '512x512'),
+  'a full-size unmasked icon is offered too');
+[/rel="icon"/, /rel="apple-touch-icon"/].forEach(re => assert.match(source, re,
+  'icon link tags cover the case where the manifest is not read'));
+
 // nothing anywhere still points at a png
 assert.equal(/\.png\b/.test(source), false, 'index.html references no png files');
 const strayPngs = fs.readdirSync(path.join(__dirname, '..', 'assets'), {recursive: true})
