@@ -44,6 +44,35 @@ public release.
   the pass mark moves with the length — `sessionPlan` owns both, and
   they must never drift apart or a lesson becomes impossible to
   complete.
+- Every lesson can be sat on three difficulties, chosen on its map stop.
+  Easy is aimed at the seven-year-old: small numbers drawn as dots in
+  rows of five, times tables no further than four, eight questions
+  rather than ten. Medium is the game as it was. Hard is medium with the
+  talking removed — the working is laid out with its boxes empty and the
+  child taps whichever one to fill next.
+- Hard covers all three workings: columns, long multiplication and long
+  division. Nothing is ever chosen for the child, not even the first box,
+  and nothing is chosen for them after each answer either — `si`/`pi` go
+  to -1 and the prompt says only "Tap a box, then write what belongs in
+  it." Two rules make that safe. Every step type needs a box to tap, or a
+  question can be started and never finished: that is why `mulCarry` and
+  `partialCarry` get an empty box beside their row. And the steps that
+  are only talk have no box at all, so hard drops them — `seek` ("this
+  column has a 0, so follow the borrow one left") from columns, `skip`
+  ("not even once, take one more digit") from division. A column that is
+  crossed out twice offers only the next crossing-out waiting, because
+  you cannot cross out what is not yet written.
+- Passing a difficulty wins a badge. Every map stop shows all three
+  slots, the unwon ones greyed, so a lesson does not read as finished
+  until all three are won. Finishing any one of them lights the path and
+  unlocks the next stop; the badges are what say how thoroughly.
+- Finishing a difficulty offers the next one up on the end screen.
+- The column working must fit the screen without scrolling. `fitCell`
+  sizes the grid from the room left once the keypad is built, which is
+  why the working is rendered again after `buildPad`.
+- Who is playing, girl or boy, is remembered on the player. It will
+  choose the artwork one day; today it only stores the choice. Age used
+  to be asked for and never changed anything, so it is gone.
 - The player names the creature. Default is Momo. All story and
   evolution text uses the player-chosen name, and the name can be
   changed at any time in settings, not only during the opening story.
@@ -91,6 +120,16 @@ Nothing outstanding.
 
 Recently done, in case something looks unfamiliar:
 
+- Every lesson can now be sat on easy, medium or hard, each with its own
+  badge, and hard reaches all three workings rather than columns alone.
+  All 45 lesson-by-difficulty combinations were played through in a
+  browser at 360x740; the hard ones were played backwards, last box
+  first, and every one of them finished.
+- The working fits a phone without scrolling. Long multiplication used
+  to overflow by 151px and long division by 7px; `fitCell` now sizes the
+  grid from the room the keypad leaves.
+- Age is gone from setup, replaced by boy or girl, which is stored and
+  nothing reads yet.
 - XP is removed rather than merely unused. The points table, the `xp`
   field and the `level` it fed are gone from the code and from saved
   games, and `softXP` — which never awarded anything — is now

@@ -93,16 +93,22 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
 .stars .star.won{color:var(--gold);text-shadow:0 0 6px rgba(242,185,59,.55)}
 .stars .star.fresh{animation:starPop .45s ease-out}
 @keyframes starPop{0%{transform:scale(.4) rotate(-25deg)}60%{transform:scale(1.35) rotate(8deg)}100%{transform:scale(1) rotate(0)}}
-.tagline{text-align:center;font-size:12px;font-weight:700;color:var(--ink-soft);margin-top:8px}
-.prompt{text-align:center;font-weight:800;color:var(--ink);font-size:15px;min-height:38px;margin:2px 0 6px;line-height:1.25}
-.feedback{text-align:center;font-weight:800;font-size:18px;min-height:24px;margin-top:8px}
+.dots{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;align-items:flex-start;margin:4px 0 8px}
+.dot-group{flex:0 0 auto;display:flex;flex-direction:column;gap:3px;padding:6px;border:2px dashed rgba(80,49,154,.25);border-radius:12px;background:rgba(255,255,255,.6)}
+.dot-row{display:flex;gap:3px}
+.dot-row i{width:13px;height:13px;border-radius:50%;background:var(--pen);display:block}
+.dot-row i.gone{background:transparent;border:2px dashed rgba(217,75,146,.5)}
+.dot-op{font-size:20px;font-weight:900;color:var(--ink)}
+.tagline{text-align:center;font-size:12px;font-weight:700;color:var(--ink-soft);margin-top:5px}
+.prompt{text-align:center;font-weight:800;color:var(--ink);font-size:14px;min-height:30px;margin:1px 0 4px;line-height:1.22}
+.feedback{text-align:center;font-weight:800;font-size:17px;min-height:20px;margin-top:5px}
 .ok{color:var(--grass)}.no{color:var(--pen)}
 .stamp{display:inline-block;border:2px solid var(--gold);color:#9a6b04;border-radius:8px;padding:1px 7px;font-size:13px;font-weight:800;transform:rotate(-4deg)}
 .shake{animation:sh .3s}
 @keyframes sh{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
 /* keypad */
 .pad{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:12px}
-.key{padding:15px 0;border-radius:14px;background:#fff;border:2px solid var(--ink);font-size:23px;font-weight:800;color:var(--ink);box-shadow:0 4px 0 rgba(27,58,140,.25)}
+.key{padding:11px 0;border-radius:14px;background:#fff;border:2px solid var(--ink);font-size:23px;font-weight:800;color:var(--ink);box-shadow:0 4px 0 rgba(27,58,140,.25)}
 .key:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(27,58,140,.25)}
 .key.go{background:var(--grass);border-color:#1d7845;color:#fff;box-shadow:0 4px 0 #1d7845}
 .key.del{background:#fff;color:var(--pen);border-color:var(--pen);box-shadow:0 4px 0 rgba(214,48,58,.3)}
@@ -117,9 +123,11 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
 .dc.annotations span{display:inline-flex;min-width:calc(var(--cell)*.38);height:calc(var(--cell)*.48);align-items:center;justify-content:center;color:var(--pen);font-size:calc(var(--cell)*.34);position:relative}
 .dc.annotations .ann-struck{color:var(--ink-soft);text-decoration:line-through;text-decoration-color:var(--pen);text-decoration-thickness:2px}
 .dc.annotations .ann-input{border:2px solid var(--gold);border-radius:5px;background:#fff7d9}
+.dc.annotations .ann-input.pick{border:2px dashed var(--pen);background:rgba(217,75,146,.07);cursor:pointer}
 .dc.mul-carry-note{width:auto;min-width:46px;height:auto;align-self:center;padding:3px 5px;border:1.5px solid var(--gold);border-radius:999px;background:#fff7d9;color:#9a6400;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;font-size:10px;font-weight:900;line-height:1.1}
 .dc.mul-carry-note.retired{opacity:.45;border-style:dashed}
 .dc.slot{border:2px dashed rgba(214,48,58,.5);border-radius:6px;color:var(--pen)}
+.dc.pick{border-style:dashed;cursor:pointer;background:rgba(217,75,146,.07)}
 .dc.slot.act{border-style:solid;background:rgba(242,185,59,.22);animation:pulse 1.1s ease-in-out infinite}
 .dc.typed{color:var(--pen)}
 .dc.brought{color:var(--ink-soft)}
@@ -205,6 +213,22 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
 .story-dots{display:flex;justify-content:center;gap:7px;margin:10px}.story-dots i{width:9px;height:9px;border-radius:50%;background:#c8c9dd}.story-dots i.on{background:var(--pen)}
 .journey-hero{text-align:center;margin:10px 0 14px}.journey-hero p{margin:5px 0 0;font-size:13px;font-weight:700;color:var(--ink-soft)}
 .journey{display:grid;gap:10px}
+/* Three badges per stop, always all three shown: the two not yet won sit there greyed so
+   the lesson reads as unfinished until every difficulty has been sat. */
+.badge-row{display:flex;gap:5px;align-items:center;margin-top:4px}
+.badge-row.end{justify-content:center;margin:8px 0 0;font-size:20px}
+.badge{font-size:13px;line-height:1;color:rgba(80,49,154,.2);transition:color .2s,transform .2s}
+.badge.won{color:var(--gold);text-shadow:0 0 6px rgba(242,185,59,.6)}
+.badge-row.end .badge{font-size:22px}
+.badge-caption{margin-left:8px;font-size:12px;font-weight:800;color:var(--ink-soft)}
+.difficulty-row{display:grid;gap:8px;margin-bottom:12px}
+.difficulty{display:grid;grid-template-columns:30px 1fr;gap:4px 10px;text-align:left;padding:10px 12px;border:2px solid var(--grid);border-radius:14px;background:#fff}
+.difficulty .difficulty-badge{grid-row:1 / span 2;align-self:center;font-size:20px;color:rgba(80,49,154,.28);text-align:center}
+.difficulty .difficulty-name{font-weight:900;color:var(--ink);font-size:16px}
+.difficulty .difficulty-blurb{font-size:12px;font-weight:700;color:var(--ink-soft);line-height:1.25}
+.difficulty.sel{border-color:var(--pen);box-shadow:0 0 0 3px rgba(217,75,146,.14)}
+.difficulty.won .difficulty-badge{color:var(--gold)}
+.difficulty-won{grid-column:2;font-size:11px;font-weight:800;color:var(--grass);text-transform:uppercase;letter-spacing:.08em}
 .journey-stage{display:grid;grid-template-columns:78px 1fr;gap:12px;align-items:center;min-height:98px;padding:9px 12px;background:#fff;border:2px solid var(--grid);border-radius:16px;overflow:hidden}
 .journey-stage.current{border-color:var(--gold);box-shadow:0 0 0 3px rgba(242,185,59,.2)}
 .journey-stage.locked{background:linear-gradient(145deg,#f3f1f7,#e2e5ee);border-color:#a7aec1}
@@ -352,8 +376,8 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
     <div class="card" id="newBox" style="display:none">
       <div class="eyebrow">name</div>
       <input type="text" id="newName" maxlength="12" autocomplete="off">
-      <div class="eyebrow" style="margin-top:12px">age</div>
-      <div class="row wrap" id="ageRow" style="margin-top:6px"></div>
+      <div class="eyebrow" style="margin-top:12px">who is playing</div>
+      <div class="row wrap" id="lookRow" style="margin-top:6px"></div>
       <div class="row" style="margin-top:12px">
         <button class="btn small ghost" id="cancelNew">Cancel</button>
         <button class="btn small" id="saveNew">Create</button>
@@ -401,6 +425,8 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
       <div class="pet-stage" id="nodePet"></div>
       <p id="nodeStory"></p>
     </div>
+    <div class="eyebrow" style="margin:14px 0 6px">choose how hard</div>
+    <div class="difficulty-row" id="nodeDifficulty"></div>
     <button class="btn" id="nodeStart">Start lesson</button>
   </section>
 
@@ -413,6 +439,7 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
     <div class="card" id="qcard">
       <div id="normalQ" style="display:none">
         <div class="question mono" id="qText">1 + 1</div>
+        <div class="dots" id="dots" style="display:none"></div>
         <div class="answer mono empty" id="ansBox"></div>
       </div>
       <div id="colQ" style="display:none">
@@ -444,6 +471,7 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
     <div class="card">
       <div class="pet-stage" id="endPet"></div>
       <div class="stats" id="endStats"></div>
+      <div class="badge-row end" id="endBadges"></div>
       <div class="reward-line" id="endReward" style="margin-top:12px"></div>
     </div>
     <button class="btn" id="againBtn">Continue Adventure</button>
@@ -462,8 +490,8 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
       <input type="text" id="setFriendName" maxlength="12" autocomplete="off" aria-label="Your magical friend's name">
     </div>
     <div class="card">
-      <div class="eyebrow">age</div>
-      <div class="row wrap" id="setAge" style="margin:6px 0 4px"></div>
+      <div class="eyebrow">who is playing</div>
+      <div class="row wrap" id="setLook" style="margin:6px 0 4px"></div>
     </div>
     <div class="card">
       <div class="eyebrow" style="margin-bottom:4px">glowing path</div>
@@ -565,6 +593,26 @@ const MATH_STAGES=[
   {id:'div_long',gid:'div',label:'Long division',mode:'division',magic:'Guardian Castle'}
 ];
 const STAGE_BY_ID=id=>MATH_STAGES.find(s=>s.id===id);
+/* Every lesson can be sat three ways. Easy is for a seven-year-old: small numbers, and
+   where it helps, the sum drawn in dots rather than written. Medium is the game as it was.
+   Hard is medium with the talking taken out — the working is laid out empty and the child
+   decides what to fill in and in what order. Finishing any one of them lights the path;
+   the three badges are what says whether a lesson is really finished. */
+const DIFFICULTIES=[
+  {id:'easy',label:'Easy',badge:'\u25CF',blurb:'Small numbers, with pictures to help.'},
+  {id:'medium',label:'Medium',badge:'\u25C6',blurb:'The full lesson, one step at a time.'},
+  {id:'hard',label:'Hard',badge:'\u2605',blurb:'No steps and no hints. You decide what to write.'}
+];
+const DIFFICULTY_IDS=DIFFICULTIES.map(d=>d.id);
+const difficultyOf=id=>DIFFICULTIES.find(d=>d.id===id)||DIFFICULTIES[1];
+const nextDifficulty=id=>DIFFICULTY_IDS[DIFFICULTY_IDS.indexOf(id)+1]||null;
+function blankBadges(){ const o={}; DIFFICULTY_IDS.forEach(d=>o[d]=false); return o; }
+function badgesFor(p,stageId){
+  if(!p.stageProgress.badges) p.stageProgress.badges={};
+  if(!p.stageProgress.badges[stageId]) p.stageProgress.badges[stageId]=blankBadges();
+  return p.stageProgress.badges[stageId];
+}
+const badgeCount=(p,stageId)=>DIFFICULTY_IDS.filter(d=>badgesFor(p,stageId)[d]).length;
 const MONSTER_STAGE_DATA=[
   {stage:1,slug:'magical-egg',name:'Magical Egg',image:'stage-01-magical-egg.webp',ready:true},
   {stage:2,slug:'first-crack',name:'First Crack',image:'stage-02-first-crack.webp',ready:true,intermediate:true},
@@ -732,9 +780,9 @@ let P=null;
 const save=()=>store.set(DB);
 
 function blankStageProgress(){
-  const available={},completed={};
-  MATH_STAGES.forEach((s,i)=>{ available[s.id]=i===0; completed[s.id]=false; });
-  return {available,completed};
+  const available={},completed={},badges={};
+  MATH_STAGES.forEach((s,i)=>{ available[s.id]=i===0; completed[s.id]=false; badges[s.id]=blankBadges(); });
+  return {available,completed,badges};
 }
 function progressFromCount(count){
   const progress=blankStageProgress(),safe=Math.max(0,Math.min(MATH_STAGES.length,Number(count)||0));
@@ -745,6 +793,11 @@ function normalizeStageProgress(progress){
   const clean=blankStageProgress();
   if(progress&&progress.available) MATH_STAGES.forEach(s=>clean.available[s.id]=!!progress.available[s.id]);
   if(progress&&progress.completed) MATH_STAGES.forEach(s=>clean.completed[s.id]=!!progress.completed[s.id]);
+  if(progress&&progress.badges) MATH_STAGES.forEach(s=>{
+    const saved=progress.badges[s.id]; if(saved) DIFFICULTY_IDS.forEach(d=>clean.badges[s.id][d]=!!saved[d]);
+  });
+  // a lesson finished before difficulties existed was the medium game, which is what it was
+  MATH_STAGES.forEach(s=>{ if(clean.completed[s.id]&&!DIFFICULTY_IDS.some(d=>clean.badges[s.id][d])) clean.badges[s.id].medium=true; });
   clean.available[MATH_STAGES[0].id]=true;
   let furthest=-1;
   MATH_STAGES.forEach((s,i)=>{ if(clean.completed[s.id]) furthest=Math.max(furthest,i); });
@@ -790,7 +843,7 @@ function migrateV4StageProgress(progress){
 }
 /* XP and the level it fed are gone. An old save is read for its legacy progress first,
    in migrate, and only then are the fields dropped — so nothing is lost on the way out. */
-const RETIRED_PLAYER_FIELDS=['xp','level','ease'];
+const RETIRED_PLAYER_FIELDS=['xp','level','ease','age'];
 function dropRetiredPlayerFields(p){
   RETIRED_PLAYER_FIELDS.forEach(field=>{ delete p[field]; });
   return p;
@@ -804,20 +857,19 @@ function completeMathStage(p,id){
   return next||null;
 }
 
-function newPlayer(name,age){
-  const young=age<=7;
-  return {id:'p'+Date.now(),name:name,age:age,total:0,right:0,best:0,
-          groups:{add:true,sub:true,mul:true,div:!young},
+function newPlayer(name,look){
+  return {id:'p'+Date.now(),name:name,look:look==='boy'?'boy':'girl',total:0,right:0,best:0,
+          groups:{add:true,sub:true,mul:true,div:true},
           unlocked:{add2:false,sub2:false,mul2:false,div2:false},
-          stageProgress:blankStageProgress(),monsterStage:1,momoName:'Momo',collectibles:{},accessories:[],storySeen:false,storyProgress:{firstCrackSeen:false,mapSeen:{}},migrationVersion:8};
+          stageProgress:blankStageProgress(),monsterStage:1,momoName:'Momo',collectibles:{},accessories:[],storySeen:false,storyProgress:{firstCrackSeen:false,mapSeen:{}},migrationVersion:9};
 }
 function migrate(p){
   const version=Number(p.migrationVersion)||0,wasLegacy=version<3;
-  if(!p.groups) p.groups={add:true,sub:true,mul:true,div:(p.age||9)>=8};
+  if(!p.groups) p.groups={add:true,sub:true,mul:true,div:true};
   if(!p.unlocked) p.unlocked={add2:false,sub2:false,mul2:false,div2:false};
   if(p.unlocked.add!==undefined){ p.unlocked.add2=!!p.unlocked.add; p.unlocked.sub2=!!p.unlocked.sub; p.unlocked.mul2=!!p.unlocked.mul; p.unlocked.div2=!!p.unlocked.div; }
   ['add2','sub2','mul2','div2'].forEach(k=>{ if(p.unlocked[k]===undefined) p.unlocked[k]=false; });
-  if(p.age===undefined) p.age=9;
+  if(p.look!=='boy'&&p.look!=='girl') p.look='girl';
   if(wasLegacy){
     const legacyCount=legacyCompletedCount(p);
     const hasNewProgress=p.stageProgress&&p.stageProgress.completed&&Object.prototype.hasOwnProperty.call(p.stageProgress.completed,'add_1digit');
@@ -840,7 +892,7 @@ function migrate(p){
   p.monsterStage=p.devMonsterOverride||artForPlayer(p);
   if(p.storySeen===undefined) p.storySeen=true;
   dropRetiredPlayerFields(p);
-  p.migrationVersion=8;
+  p.migrationVersion=9;
   return p;
 }
 
@@ -1029,7 +1081,7 @@ function buildColumn(op,a,b){
       steps.push({t:'res',col:i,want:String(x-y),x:x,y:y});
     }
   }
-  return {op:op,wid:wid,ad:ad,bd:bd,steps:steps,
+  return {op:op,wid:wid,ad:ad,bd:bd,steps:steps,doneSteps:steps.map(()=>false),free:false,
           ent:{carry:{},mulCarries:{},annotations:Array.from({length:wid},()=>[]),res:{}},si:0,buf:'',tries:0,err:0,hint:false};
 }
 const colValid=M=>M.steps.every(s=>/^\d+$/.test(s.want));
@@ -1062,7 +1114,8 @@ function buildLongMultiplication(a,b){
     carry=Math.floor(total/10);
     if(carry&&col>0) steps.push({t:'sumCarry',col:col-1,want:String(carry)});
   }
-  return {a:a,b:b,width:width,partials:partials,total:a*b,steps:steps,si:0,buf:'',tries:0,err:0,hint:false,
+  return {a:a,b:b,width:width,partials:partials,total:a*b,steps:steps,doneSteps:steps.map(()=>false),free:false,
+    si:0,buf:'',tries:0,err:0,hint:false,
     ent:{partials:[{},{}],partialCarries:[null,null],sum:{},sumCarry:{}}};
 }
 
@@ -1129,7 +1182,39 @@ function genDivision(tr,phase){
   }
   return {div:true,N:'126',d:6,steps:divSteps('126',6),quot:'21',rest:0};
 }
-function generateLessonQuestion(stage,questionIndex){
+/* Easy is for a seven-year-old. It keeps every lesson recognisable — the same operation,
+   the same place on the map — but shrinks the numbers to ones that can be counted, and
+   where counting genuinely helps it draws them: dots in rows of five, because five is a
+   handful and a child can see three fives without counting to fifteen. Times tables stop
+   at four, so the largest question in the game on easy is 4 x 9. */
+function dotRows(count){
+  const rows=[];
+  for(let left=count;left>0;left-=5) rows.push(Math.min(5,left));
+  return rows;
+}
+function easyQuestion(stage){
+  const gid=stage.gid;
+  if(gid==='mul'){
+    const a=rnd(2,4),b=rnd(2,9);
+    return {kind:'dots',txt:a+' \u00D7 '+b,ans:a*b,groups:a,per:b,
+      words:a+' groups of '+b+'. How many altogether?'};
+  }
+  if(gid==='div'){
+    const b=rnd(2,4),q=rnd(2,6),a=b*q;
+    return {kind:'dots',txt:a+' \u00F7 '+b,ans:q,groups:b,per:q,
+      words:a+' shared into '+b+' equal groups. How many in each group?'};
+  }
+  if(gid==='add'){
+    const a=rnd(1,9),b=rnd(1,9);
+    return {kind:'dots',txt:a+' + '+b,ans:a+b,groups:2,per:0,parts:[a,b],
+      words:a+' and '+b+' more. How many altogether?'};
+  }
+  const a=rnd(3,10),b=rnd(1,a);
+  return {kind:'dots',txt:a+' \u2212 '+b,ans:a-b,groups:1,per:a,take:b,
+    words:'Start with '+a+' and take away '+b+'. How many are left?'};
+}
+function generateLessonQuestion(stage,questionIndex,difficulty){
+  if(difficulty==='easy') return easyQuestion(stage);
   if(stage.id==='add_1digit'){
     const a=rnd(0,9),b=rnd(0,9); return {kind:'n',txt:a+' + '+b,ans:a+b};
   }
@@ -1279,7 +1364,10 @@ function renderMenu(){
     b.disabled=locked;
     const art=locked?'<span class="silhouette" aria-hidden="true"></span>':monsterMarkup(done?node.stage:P.monsterStage,'idle',i===currentIndex?'bob':'',petName());
     const statusText=locked?'Locked':done?'Visited':i===currentIndex?'Continue here':'Practise';
-    b.innerHTML=art+'<span class="map-region">'+esc(node.region)+'</span><h3>'+esc(node.title)+'</h3><p>'+esc(stage.label)+'</p><span class="map-pin-status">'+statusText+'</span>';
+    const badges=badgesFor(P,node.lessonId);
+    const badgeRow='<span class="badge-row" aria-label="'+badgeCount(P,node.lessonId)+' of 3 badges">'+
+      DIFFICULTIES.map(d=>'<span class="badge'+(badges[d.id]?' won':'')+'" title="'+d.label+'">'+d.badge+'</span>').join('')+'</span>';
+    b.innerHTML=art+'<span class="map-region">'+esc(node.region)+'</span><h3>'+esc(node.title)+'</h3><p>'+esc(stage.label)+'</p>'+badgeRow+'<span class="map-pin-status">'+statusText+'</span>';
     if(!locked) b.onclick=()=>openMapNode(node.id);
     L.appendChild(b);
   });
@@ -1316,8 +1404,24 @@ function openMapNode(nodeId){
   $('nodeTitle').textContent=node.title;
   $('nodePet').innerHTML=monsterMarkup(stageStatus(P,stage.id)==='completed'?node.stage:P.monsterStage,'curious','bob',petName());
   $('nodeStory').textContent=node.storyBefore.replaceAll('{name}',petName());
-  $('nodeStart').textContent=stageStatus(P,stage.id)==='completed'?'Practise Again':'Start Lesson';
+  renderDifficultyChoice(stage);
   show('s-node');
+}
+let selectedDifficulty='medium';
+function renderDifficultyChoice(stage){
+  const badges=badgesFor(P,stage.id),row=$('nodeDifficulty');
+  if(!DIFFICULTY_IDS.includes(selectedDifficulty)) selectedDifficulty='medium';
+  row.innerHTML='';
+  DIFFICULTIES.forEach(d=>{
+    const b=document.createElement('button');
+    b.className='difficulty'+(d.id===selectedDifficulty?' sel':'')+(badges[d.id]?' won':'');
+    b.innerHTML='<span class="difficulty-badge">'+d.badge+'</span><span class="difficulty-name">'+d.label+'</span>'+
+      '<span class="difficulty-blurb">'+d.blurb+'</span>'+(badges[d.id]?'<span class="difficulty-won">badge won</span>':'');
+    b.onclick=()=>{ selectedDifficulty=d.id; renderDifficultyChoice(stage); sTap(); };
+    row.appendChild(b);
+  });
+  const done=stageStatus(P,stage.id)==='completed';
+  $('nodeStart').textContent=(done?'Practise Again':'Start Lesson')+' \u00B7 '+difficultyOf(selectedDifficulty).label;
 }
 
 
@@ -1333,11 +1437,11 @@ function captureSettingsName(){
 function renderSettings(){
   $('setWho').textContent=P.name;
   $('setFriendName').value=petName();
-  const ar=$('setAge'); ar.innerHTML='';
-  [6,7,8,9,10,11].forEach(a=>{
+  const ar=$('setLook'); ar.innerHTML='';
+  [['girl','Girl'],['boy','Boy']].forEach(([id,label])=>{
     const b=document.createElement('button');
-    b.className='agebtn'+(a===P.age?' sel':''); b.textContent=a;
-    b.onclick=()=>{ P.age=a; save(); renderSettings(); sTap(); };
+    b.className='agebtn'+(id===P.look?' sel':''); b.textContent=label;
+    b.onclick=()=>{ P.look=id; save(); renderSettings(); sTap(); };
     ar.appendChild(b);
   });
   const L=$('opList'); L.innerHTML='';
@@ -1353,8 +1457,9 @@ function renderSettings(){
 const SESSION=10;
 /* A four-digit column is a lot of work for one question, so the harder lessons ask for
    fewer of them. The share needed to light the path stays the same 8 in 10 throughout. */
-function sessionPlan(stage){
-  const total=stage&&stage.digits===4?5:stage&&stage.digits===3?7:SESSION;
+function sessionPlan(stage,difficulty){
+  let total=stage&&stage.digits===4?5:stage&&stage.digits===3?7:SESSION;
+  if(difficulty==='easy') total=Math.min(total,8);
   return {total:total,pass:Math.ceil(total*0.8)};
 }
 let S=null;
@@ -1384,12 +1489,13 @@ function renderStars(justWon){
   box.setAttribute('aria-label',won+' of '+S.total+' stars, '+S.pass+' needed');
 }
 function markQuestion(mark){ if(S.marks.length<S.total) S.marks.push(mark); renderStars(true); }
-function startSession(stageId){
+function startSession(stageId,difficulty){
   const stage=STAGE_BY_ID(stageId);
   if(!stage||stageStatus(P,stage.id)==='locked') return;
-  const plan=sessionPlan(stage);
+  const level=DIFFICULTY_IDS.includes(difficulty)?difficulty:'medium';
+  const plan=sessionPlan(stage,level);
   const cracked=stage.id==='add_1digit'&&!P.stageProgress.completed[stage.id]&&!!storyProgressOf(P).firstCrackSeen;
-  S={gid:stage.gid,vid:stage.id,stageId:stage.id,stage:stage,wasCompleted:P.stageProgress.completed[stage.id],i:0,right:0,mastered:0,streak:0,best:0,q:null,input:'',col:null,longMul:null,div:null,locked:false,attempt:0,mode:'answer',crackMoment:false,crackSeen:cracked,reward:null,total:plan.total,pass:plan.pass,marks:[]};
+  S={gid:stage.gid,vid:stage.id,stageId:stage.id,stage:stage,wasCompleted:P.stageProgress.completed[stage.id],i:0,right:0,mastered:0,streak:0,best:0,q:null,input:'',col:null,longMul:null,div:null,locked:false,attempt:0,mode:'answer',crackMoment:false,crackSeen:cracked,reward:null,total:plan.total,pass:plan.pass,marks:[],difficulty:level,newBadge:false};
   show('s-play'); nextQuestion();
 }
 function nextQuestion(){
@@ -1397,18 +1503,33 @@ function nextQuestion(){
   S.i++; S.input=''; S.locked=false; S.attempt=0; S.mode='answer'; S.crackMoment=false; $('fb').textContent='';
   setPlayMood('beforeQuestion');
   renderStars(false);
-  const made=generateLessonQuestion(S.stage,S.i);
+  const made=generateLessonQuestion(S.stage,S.i,S.difficulty);
   $('colHint').style.display='none'; $('hintBtn').style.display='none';
-  if(made.kind==='n'){
+  if(made.kind==='dots'){
     S.q={kind:'n',ans:made.ans};
     $('normalQ').style.display='block'; $('colQ').style.display='none';
+    $('qText').textContent=made.txt+' =';
+    $('dots').innerHTML=easyDotsMarkup(made);
+    $('dots').style.display='block';
+    S.input=''; paintAns();
+    $('qTag').textContent=made.words;
+  }else if(made.kind==='n'){
+    S.q={kind:'n',ans:made.ans};
+    $('normalQ').style.display='block'; $('colQ').style.display='none';
+    $('dots').style.display='none';
     $('qText').textContent=made.txt+' =';
     S.input=''; paintAns();
     $('qTag').textContent=S.stage.magic+' · help '+petName()+' find the answer';
   }else{
+    $('dots').style.display='none';
     if(made.kind==='div'){
       S.q={kind:'div'};
-      S.div={g:made.made,plan:divPlan(made.made),pi:0,buf:'',done:{},err:0,tries:0,hint:false};
+      // on hard the "does it go into the first digit? no" steps are dropped: they are the
+      // teaching talk, and hard is the same working with the talking taken away
+      const free=S.difficulty==='hard';
+      const plan=divPlan(made.made).filter(s=>!free||s.t!=='skip');
+      S.div={g:made.made,plan:plan,doneSteps:plan.map(()=>false),free:free,
+             pi:free?-1:0,buf:'',done:{},err:0,tries:0,hint:false};
       S.col=null;
       $('normalQ').style.display='none'; $('colQ').style.display='block';
       $('hintBtn').style.display='block'; $('hintBtn').textContent='need a hint?';
@@ -1416,12 +1537,21 @@ function nextQuestion(){
     }else if(made.kind==='longmul'){
       S.q={kind:'longmul'};
       S.longMul=made.L; S.col=null; S.div=null; S.colB=made.b;
+      if(S.difficulty==='hard'){ S.longMul.free=true; S.longMul.si=-1; }
       $('normalQ').style.display='none'; $('colQ').style.display='block';
       $('hintBtn').style.display='block'; $('hintBtn').textContent='open a multiplication spell?';
       renderLongMul();
     }else{
       S.q={kind:'col'};
       S.col=made.M; S.longMul=null; S.div=null;
+      if(S.difficulty==='hard'){
+        S.col.free=true;
+        // "the tens column has a 0, so follow the borrow one column left" is teaching talk
+        // with no box of its own. Hard has no talk, so the step goes with it.
+        S.col.steps=S.col.steps.filter(s=>s.t!=='seek');
+        S.col.doneSteps=S.col.steps.map(()=>false);
+        S.col.si=-1;
+      }
       S.colB=made.b;
       $('normalQ').style.display='none'; $('colQ').style.display='block';
       if(S.stage.gid==='mul'){ $('hintBtn').style.display='block'; $('hintBtn').textContent='open a multiplication spell?'; }
@@ -1430,6 +1560,22 @@ function nextQuestion(){
     $('qTag').textContent=S.stage.magic+' · work the magic one step at a time';
   }
   buildPad();
+  // the working is sized from the room the keypad leaves, so it must be measured after the
+  // keypad exists — on the first question of a lesson it does not yet
+  if(S.q.kind==='longmul') renderLongMul();
+  else if(S.q.kind==='div') renderDiv();
+  else if(S.q.kind==='col') renderCol();
+}
+/* The picture under an easy question. Counters in rows of five, grouped the way the words
+   describe them, so the child can count what the sum is asking rather than decode it. */
+function easyDotsMarkup(made){
+  const group=(n,cls)=>'<span class="dot-group '+(cls||'')+'">'+
+    dotRows(n).map(row=>'<span class="dot-row">'+'<i></i>'.repeat(row)+'</span>').join('')+'</span>';
+  if(made.parts) return made.parts.map(n=>group(n)).join('<span class="dot-op">+</span>');
+  if(made.take!==undefined)
+    return '<span class="dot-group">'+dotRows(made.per).map((row,ri)=>'<span class="dot-row">'+
+      Array.from({length:row},(_,i)=>(ri*5+i)>=made.per-made.take?'<i class="gone"></i>':'<i></i>').join('')+'</span>').join('')+'</span>';
+  return Array.from({length:made.groups},()=>group(made.per)).join('');
 }
 function paintAns(){ const b=$('ansBox'); b.textContent=S.input; b.classList.toggle('empty',S.input===''); }
 function praise(){ return PRAISE[Math.floor(Math.random()*PRAISE.length)]; }
@@ -1526,6 +1672,9 @@ function awardCollectible(){
 
 function maybeCompleteStage(){
   if(!S.stageId||S.mastered<S.pass) return false;
+  const badges=badgesFor(P,S.stageId);
+  S.newBadge=!badges[S.difficulty];
+  badges[S.difficulty]=true;
   if(S.wasCompleted){ S.reward=awardCollectible(); save(); return 'collectible'; }
   const beforeArt=P.monsterStage;
   const next=completeMathStage(P,S.stageId);
@@ -1549,6 +1698,7 @@ function maybeCompleteStage(){
   sLvl(); return 'completed';
 }
 
+let endRetryDifficulty='medium';
 function endSession(){
   lastSessionStageId=S.stageId;
   const result=maybeCompleteStage(); save();
@@ -1566,8 +1716,18 @@ function endSession(){
     const node=NODE_BY_LESSON(S.stageId);
     $('endReward').textContent=node?node.storyAfter.replaceAll('{name}',petName()):petName()+' has grown because you learned together.';
   }
+  const up=S.mastered>=S.pass?nextDifficulty(S.difficulty):null;
+  if(up&&!badgesFor(P,S.stageId)[up]){
+    $('endHome').textContent='Try it on '+difficultyOf(up).label;
+    endRetryDifficulty=up;
+  }else{
+    $('endHome').textContent='Practise Again';
+    endRetryDifficulty=S.difficulty;
+  }
+  const won=badgeCount(P,S.stageId);
+  $('endBadges').innerHTML=DIFFICULTIES.map(d=>'<span class="badge'+(badgesFor(P,S.stageId)[d.id]?' won':'')+'">'+d.badge+'</span>').join('')+
+    '<span class="badge-caption">'+(won===3?'All three badges won!':won+' of 3 badges'+(S.newBadge?' \u00B7 new badge!':''))+'</span>';
   $('againBtn').textContent='Continue Adventure';
-  $('endHome').textContent='Practise Again';
   show('s-end');
 }
 </script>
@@ -1575,6 +1735,9 @@ function endSession(){
 /* ---------------- columns: addition, subtraction, multiplication ---------------- */
 function colPrompt(M){
   const st=M.steps[M.si];
+  // on hard nothing is chosen for the child, so the prompt has to read before a box is tapped
+  if(M.free) return M.doneSteps.every(Boolean)?'':
+    (st&&st.t==='ann'?'Cross out and write what it becomes.':'Tap a box, then write what belongs in it.');
   if(!st) return '';
   if(M.op==='add'){
     if(st.t==='carry') return 'Carry the '+st.want+' into the next column.';
@@ -1594,8 +1757,19 @@ function colPrompt(M){
   if(st.t==='ann') return 'The '+st.from+' receives a ten and becomes '+st.want+'. Write '+st.want+' above it.';
   return st.x+' \u2212 '+st.y+'. Write the answer.';
 }
+/* The paper working has to fit on the phone without scrolling: a child cannot see the
+   carry they wrote if it is above the fold. The cell size is worked out from the room
+   actually left once the question, the prompt and the keypad have taken theirs. */
+function fitCell(rows){
+  const chrome=$('pad').getBoundingClientRect().height+288;
+  const room=Math.max(120,window.innerHeight-chrome);
+  const wide=Math.min(40,Math.floor(window.innerWidth*0.1));
+  return Math.max(19,Math.min(wide,Math.floor(room/Math.max(1,rows))));
+}
+function setGridCell(g,rows){ g.style.setProperty('--cell',fitCell(rows)+'px'); }
 function renderCol(){
   const M=S.col, g=$('colGrid'), cols=M.wid+1, st=M.steps[M.si];
+  setGridCell(g,4);
   g.style.gridTemplateColumns='repeat('+cols+', var(--cell))'+(M.op==='mul'?' 50px':'');
   g.style.gridTemplateRows='calc(var(--cell) * 1.35) repeat(3, var(--cell))';
   g.innerHTML='';
@@ -1608,10 +1782,18 @@ function renderCol(){
     const gc=i+2;
     if(M.op==='sub'){
       const history=M.ent.annotations[i];
-      if(history.length||(st&&st.t==='ann'&&st.col===i)){
+      const active=st&&st.t==='ann'&&st.col===i;
+      // a column can be crossed out twice (it receives a ten, then lends one on), so hard
+      // offers only the next one waiting — you cannot cross out what is not yet written
+      const openAnn=M.free&&!active?M.steps.findIndex((s,k)=>s.t==='ann'&&s.col===i&&!M.doneSteps[k]):-1;
+      if(history.length||active||openAnn>=0){
         const d=cell(1,gc,'','small annotations');
         history.forEach((entry,index)=>{ const span=document.createElement('span'); span.textContent=entry.value; if(index<history.length-1) span.className='ann-struck'; d.appendChild(span); });
-        if(st&&st.t==='ann'&&st.col===i){ const span=document.createElement('span'); span.textContent=M.buf; span.className='ann-input slot act'+(st.want.length>1?' wide':''); d.appendChild(span); }
+        if(active){ const span=document.createElement('span'); span.textContent=M.buf; span.className='ann-input slot act'+(st.want.length>1?' wide':''); d.appendChild(span); }
+        else if(openAnn>=0){
+          const span=document.createElement('span'); span.className='ann-input pick'+(M.steps[openAnn].want.length>1?' wide':'');
+          d.appendChild(span); d.onclick=()=>selectColumnStep(openAnn);
+        }
       }
     }else{
       if(M.ent.carry[i]!==undefined) cell(1,gc,M.ent.carry[i],'small');
@@ -1631,7 +1813,21 @@ function renderCol(){
     let typed='';
     if(M.ent.res[col]!==undefined) typed=M.ent.res[col];
     else if(active) typed=(st.t==='res'?M.buf:M.buf[st.cols.indexOf(col)])||'';
-    cell(4,gc,typed,(M.ent.res[col]!==undefined?'typed ':'slot ')+(active?'act':''));
+    const d=cell(4,gc,typed,(M.ent.res[col]!==undefined?'typed ':'slot ')+(active?'act':'')+(M.free&&M.ent.res[col]===undefined?' pick':''));
+    if(M.free&&M.ent.res[col]===undefined){
+      const idx=M.steps.findIndex((step,i)=>step.t==='res'&&step.col===col&&!M.doneSteps[i]);
+      if(idx>=0) d.onclick=()=>selectColumnStep(idx);
+    }
+  });
+  // on hard the carry boxes are drawn empty from the start, so the child can see every
+  // box the working has and decide which to fill
+  if(M.free&&M.op!=='sub') M.steps.forEach((step,i)=>{
+    if(M.doneSteps[i]||step===st) return;
+    // the multiplication carry is kept beside the row rather than above a column, so it
+    // needs its own empty box or hard would have a step with nowhere to tap
+    const d=step.t==='mulCarry'?cell(2,cols+1,'carry','mul-carry-note pick')
+      :step.t==='carry'?cell(1,step.col+2,'','small slot pick'):null;
+    if(d) d.onclick=()=>selectColumnStep(i);
   });
   if(M.op==='mul'){
     const carry=M.ent.mulCarries[0],activeCarry=st&&st.t==='mulCarry';
@@ -1645,13 +1841,30 @@ function renderCol(){
     $('hintBtn').style.display='none';
   }
 }
+/* On hard the child chooses which box to fill, so a step is marked done in its own right
+   rather than by a pointer walking the list. Every step's answer is worked out when the
+   question is built, so no step depends on another having been done first. All three
+   workings use this — columns, long multiplication and long division — so it takes only
+   a steps list and the tally of which are done. */
+function nextOpenColumnStep(M,from){
+  for(let i=from+1;i<M.steps.length;i++) if(!M.doneSteps[i]) return i;
+  for(let i=0;i<=from&&i<M.steps.length;i++) if(!M.doneSteps[i]) return i;
+  return M.steps.length;
+}
 function commitColumnStep(M){
   const st=M.steps[M.si]; if(!st) return null;
   if(st.t==='res') M.ent.res[st.col]=st.want;
   else if(st.t==='carry') M.ent.carry[st.col]=st.want;
   else if(st.t==='mulCarry') M.ent.mulCarries[st.row]={value:st.want,anchorCol:st.anchorCol};
   else if(st.t==='ann') M.ent.annotations[st.col].push({value:st.want,role:st.role});
-  M.buf=''; M.si++; return st;
+  if(!M.doneSteps) M.doneSteps=M.steps.map(()=>false);
+  M.doneSteps[M.si]=true;
+  M.buf=''; M.si=M.free?-1:nextOpenColumnStep(M,M.si); return st;
+}
+function selectColumnStep(index){
+  const M=S.col;
+  if(!M||!M.free||S.locked||M.doneSteps[index]) return;
+  M.si=index; M.buf=''; sTap(); renderCol();
 }
 function pressCol(k){
   const M=S.col, st=M.steps[M.si];
@@ -1664,7 +1877,7 @@ function pressCol(k){
   if(M.buf===st.want){
     sStep(); M.tries=0;
     commitColumnStep(M);
-    if(M.si>=M.steps.length){ renderCol(); finishCol(); return; }
+    if(M.doneSteps.every(Boolean)){ renderCol(); finishCol(); return; }
     renderCol(); return;
   }
   sBad(); M.tries++;
@@ -1687,6 +1900,7 @@ function finishCol(){
 
 /* ---------------- two-digit long multiplication ---------------- */
 function longMulPrompt(L){
+  if(L.free) return L.doneSteps.every(Boolean)?'':'Tap a box, then write what belongs in it.';
   const st=L.steps[L.si]; if(!st) return '';
   if(st.t==='placeholder') return 'The tens row is worth tens. Put a 0 in the ones place.';
   if(st.t==='partialCarry') return 'Keep the carried '+st.want+' beside this partial-product step.';
@@ -1697,8 +1911,17 @@ function longMulPrompt(L){
   if(st.t==='sumCarry') return 'Carry the '+st.want+' while adding the partial rows.';
   return st.x+' + '+st.y+(st.carry?' + '+st.carry:'')+'. Add the partial rows in this column.';
 }
+/* where a step's box sits in the grid, so hard can draw the empty ones as well as the
+   one being answered */
+function longMulSlot(st,cols){
+  if(st.t==='partialCarry') return {r:5+st.row,c:cols+1,carry:true};
+  if(st.t==='sumCarry') return {r:7,c:st.col+2,small:true};
+  if(st.t==='sum') return {r:9,c:st.col+2};
+  return {r:5+st.row,c:st.col+2};
+}
 function renderLongMul(){
   const L=S.longMul,st=L.steps[L.si],grid=$('colGrid'),cols=L.width+1;
+  setGridCell(grid,9);
   grid.style.gridTemplateColumns='repeat('+cols+', var(--cell)) 50px';
   grid.style.gridTemplateRows='repeat(9, var(--cell))'; grid.innerHTML='';
   const cell=(r,c,txt,cls)=>{ const d=document.createElement('div'); d.className='dc '+(cls||''); d.textContent=txt; d.style.gridRow=r; d.style.gridColumn=c; grid.appendChild(d); return d; };
@@ -1721,6 +1944,14 @@ function renderLongMul(){
   rule(8);
   Object.entries(L.ent.sum).forEach(([col,value])=>cell(9,Number(col)+2,value,'typed'));
   if(st&&st.t==='sum') cell(9,st.col+2,L.buf,'slot act');
+  // on hard every box the working has is drawn empty from the start, so the child can see
+  // the whole shape of it and choose which one to fill next
+  if(L.free) L.steps.forEach((step,i)=>{
+    if(L.doneSteps[i]||step===st) return;
+    const p=longMulSlot(step,cols);
+    const d=cell(p.r,p.c,p.carry?'carry':'',(p.carry?'mul-carry-note':p.small?'small slot':'slot')+' pick');
+    d.onclick=()=>selectLongMulStep(i);
+  });
   $('colPrompt').textContent=longMulPrompt(L);
   if(L.hint){
     const strip=$('colHint'); strip.style.display='grid'; strip.innerHTML='';
@@ -1735,7 +1966,14 @@ function commitLongMultiplicationStep(L){
   else if(st.t==='partialCarry') L.ent.partialCarries[st.row]={value:st.want,anchorCol:st.anchorCol};
   else if(st.t==='sum') L.ent.sum[st.col]=st.want;
   else if(st.t==='sumCarry') L.ent.sumCarry[st.col]=st.want;
-  L.buf=''; L.si++; return st;
+  if(!L.doneSteps) L.doneSteps=L.steps.map(()=>false);
+  L.doneSteps[L.si]=true;
+  L.buf=''; L.si=L.free?-1:nextOpenColumnStep(L,L.si); return st;
+}
+function selectLongMulStep(index){
+  const L=S.longMul;
+  if(!L||!L.free||S.locked||L.doneSteps[index]) return;
+  L.si=index; L.buf=''; sTap(); renderLongMul();
 }
 function pressLongMul(k){
   const L=S.longMul,st=L.steps[L.si]; if(!st) return;
@@ -1746,7 +1984,7 @@ function pressLongMul(k){
   if(L.buf===st.want){
     sStep(); L.tries=0;
     commitLongMultiplicationStep(L);
-    if(L.si>=L.steps.length){ renderLongMul(); finishLongMul(); return; }
+    if(L.doneSteps.every(Boolean)){ renderLongMul(); finishLongMul(); return; }
     renderLongMul(); return;
   }
   sBad(); L.tries++;
@@ -1778,6 +2016,7 @@ function divPlan(g){
 }
 function divPromptText(D){
   const st=D.plan[D.pi], d=D.g.d;
+  if(D.free) return D.doneSteps.every(Boolean)?'':'Tap a box, then write what belongs in it.';
   if(!st) return '';
   if(st.t==='skip'||st.t==='fit') return 'How many times does '+d+' go into '+st.into+'?';
   if(st.t==='prod') return st.q+' \u00D7 '+d+'. Write it underneath.';
@@ -1789,11 +2028,13 @@ function renderDiv(){
   const D=S.div, g=D.g, L=g.N.length, st=D.plan[D.pi];
   const rightCols=Math.max(String(g.d).length,g.quot.length);
   const grid=$('colGrid');
+  setGridCell(grid,1+2*g.steps.length);
   grid.style.gridTemplateColumns='repeat('+(L+1+rightCols)+', var(--cell))';
   grid.style.gridTemplateRows='repeat('+(1+2*g.steps.length)+', var(--cell))';
   grid.innerHTML='';
   const foc={};
-  if(st){
+  // the lit-up chunk says which digits are being divided into; hard leaves that unsaid
+  if(st&&!D.free){
     if(st.t==='skip') for(let c=0;c<=st.end;c++) foc['1,'+(c+1)]=1;
     else if(st.k===0) for(let c=0;c<=g.steps[0].end;c++) foc['1,'+(c+1)]=1;
     else{
@@ -1831,8 +2072,17 @@ function renderDiv(){
     if(e.rem!==undefined) for(let j=0;j<rs.length;j++) cell(remRow,rstart+j,e.rem[j],'typed');
     else if(st&&st.t==='rem'&&st.k===k)
       for(let j=0;j<rs.length;j++) cell(remRow,rstart+j,D.buf[j]||'',j<D.buf.length?'slot typed':(j===D.buf.length?'slot act':'slot'));
-    if(e.rem!==undefined&&k+1<g.steps.length)
+    if((e.rem!==undefined||D.free)&&k+1<g.steps.length)
       for(let c2=c.end+1;c2<=g.steps[k+1].end;c2++) cell(remRow,c2+1,g.N[c2],'brought');
+  });
+  // on hard every box is drawn empty from the start and the child picks which to fill
+  if(D.free) D.plan.forEach((step,i)=>{
+    if(D.doneSteps[i]||step===st) return;
+    const pick=d=>{ d.onclick=()=>selectDivStep(i); };
+    if(step.t==='fit'){ pick(cell(2,L+2+step.k,'','slot pick')); return; }
+    const c=g.steps[step.k], txt=String(step.t==='prod'?c.prod:c.rem);
+    const row=(step.t==='prod'?2:3)+2*step.k, start=c.end+1-txt.length+1;
+    for(let j=0;j<txt.length;j++) pick(cell(row,start+j,'',(step.t==='prod'?'sub ':'')+'slot pick'));
   });
   $('colPrompt').textContent=divPromptText(D);
   if(D.hint){
@@ -1840,6 +2090,11 @@ function renderDiv(){
     for(let i=1;i<=9;i++){ const e=document.createElement('span'); e.textContent=g.d+'\u00D7'+i+'='+(g.d*i); strip.appendChild(e); }
     $('hintBtn').style.display='none';
   }
+}
+function selectDivStep(index){
+  const D=S.div;
+  if(!D||!D.free||S.locked||D.doneSteps[index]) return;
+  D.pi=index; D.buf=''; sTap(); renderDiv();
 }
 function pressDiv(k){
   const D=S.div, st=D.plan[D.pi];
@@ -1857,12 +2112,16 @@ function pressDiv(k){
       else if(st.t==='prod') D.done[st.k].prod=st.want;
       else D.done[st.k].rem=st.want;
     }
-    D.buf=''; D.pi++;
+    D.buf='';
+    if(!D.doneSteps) D.doneSteps=D.plan.map(()=>false);
+    D.doneSteps[D.pi]=true;
+    D.pi=D.free?-1:nextOpenColumnStep({steps:D.plan,doneSteps:D.doneSteps},D.pi);
     const nx=D.plan[D.pi];
-    if(st.t==='skip') $('fb').innerHTML='<span class="ok">Not even once. Take one more digit.</span>';
+    if(D.free) $('fb').textContent='';
+    else if(st.t==='skip') $('fb').innerHTML='<span class="ok">Not even once. Take one more digit.</span>';
     else if(st.t==='rem'&&nx) $('fb').innerHTML='<span class="ok">Bring the next digit down.</span>';
     else $('fb').textContent='';
-    if(D.pi>=D.plan.length){ renderDiv(); finishDiv(); return; }
+    if(D.doneSteps.every(Boolean)){ renderDiv(); finishDiv(); return; }
     renderDiv(); return;
   }
   sBad(); D.tries++;
@@ -1895,25 +2154,27 @@ function openDeveloper(){ renderDeveloper(); show('s-dev'); }
 function resetPlayerProgress(){
   P.stageProgress=blankStageProgress(); P.monsterStage=1; delete P.devMonsterOverride;
   P.collectibles={}; COLLECTIBLES.forEach(c=>P.collectibles[c.id]=0); P.accessories=[];
-  P.right=0; P.best=0; P.total=0; P.storySeen=false; P.storyProgress={firstCrackSeen:false,mapSeen:{}}; P.migrationVersion=7; save();
+  P.right=0; P.best=0; P.total=0; P.storySeen=false; P.storyProgress={firstCrackSeen:false,mapSeen:{}}; P.migrationVersion=9; save();
 }
 
 /* ---------------- wiring ---------------- */
-let newAge=9;
-function renderAges(){
-  const r=$('ageRow'); r.innerHTML='';
-  [6,7,8,9,10,11].forEach(a=>{
+/* Age never changed anything, so it is gone. Who is playing will choose the artwork one
+   day; for now it is only remembered. */
+let newLook='girl';
+function renderLooks(){
+  const r=$('lookRow'); r.innerHTML='';
+  [['girl','Girl'],['boy','Boy']].forEach(([id,label])=>{
     const b=document.createElement('button');
-    b.className='agebtn'+(a===newAge?' sel':''); b.textContent=a;
-    b.onclick=()=>{ newAge=a; renderAges(); sTap(); };
+    b.className='agebtn'+(id===newLook?' sel':''); b.textContent=label;
+    b.onclick=()=>{ newLook=id; renderLooks(); sTap(); };
     r.appendChild(b);
   });
 }
-$('addPlayer').onclick=()=>{ $('newBox').style.display='block'; renderAges(); $('newName').focus(); };
+$('addPlayer').onclick=()=>{ $('newBox').style.display='block'; renderLooks(); $('newName').focus(); };
 $('cancelNew').onclick=()=>{ $('newBox').style.display='none'; $('newName').value=''; };
 $('saveNew').onclick=()=>{
   const n=$('newName').value.trim(); if(!n) return;
-  const pl=newPlayer(n,newAge); DB.players.push(pl); DB.current=pl.id; P=pl; save();
+  const pl=newPlayer(n,newLook); DB.players.push(pl); DB.current=pl.id; P=pl; save();
   $('newName').value=''; $('newBox').style.display='none';
   renderPlayers(); openStory();
 };
@@ -1929,14 +2190,14 @@ window.addEventListener('resize',()=>{
   mapResizeTimer=setTimeout(renderMenu,150);
 });
 $('nodeBack').onclick=()=>{ show('s-menu'); renderMenu(); };
-$('nodeStart').onclick=()=>{ if(selectedMapNode) startSession(selectedMapNode.lessonId); };
+$('nodeStart').onclick=()=>{ if(selectedMapNode) startSession(selectedMapNode.lessonId,selectedDifficulty); };
 $('setBtn').onclick=()=>{ renderSettings(); show('s-set'); };
 $('setFriendName').onchange=()=>{ captureSettingsName(); renderSettings(); };
 $('setBack').onclick=()=>{ captureSettingsName(); renderHome(); show('s-home'); };
 $('quitPlay').onclick=()=>{ save(); renderHome(); show('s-home'); };
 $('crackContinue').onclick=()=>{ sTap(); show('s-play'); nextQuestion(); };
 $('againBtn').onclick=()=>{ show('s-menu'); renderMenu(); };
-$('endHome').onclick=()=>{ if(lastSessionStageId) startSession(lastSessionStageId); };
+$('endHome').onclick=()=>{ if(lastSessionStageId) startSession(lastSessionStageId,endRetryDifficulty); };
 $('luOk').onclick=()=>{ $('lvUp').classList.remove('on'); };
 $('unlockOk').onclick=()=>{
   $('unlockBox').classList.remove('on');

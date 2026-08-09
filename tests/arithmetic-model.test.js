@@ -55,6 +55,7 @@ vm.runInContext([
   functionSource('buildLongMultiplication'),
   functionSource('twoDigitColumnAddition'),
   functionSource('twoDigitColumnSubtraction'),
+  functionSource('nextOpenColumnStep'),
   functionSource('commitColumnStep'),
   functionSource('commitLongMultiplicationStep'),
   functionSource('colPrompt'),
@@ -416,6 +417,7 @@ const uiContext = {
 };
 vm.createContext(uiContext);
 vm.runInContext([
+  'const setGridCell=()=>{};const selectColumnStep=()=>{};',
   functionSource('colPrompt'),
   functionSource('renderCol'),
   functionSource('longMulPrompt'),
@@ -505,6 +507,9 @@ const stagesSource = source.match(/const MATH_STAGES=\[[\s\S]*?\n\];/)[0];
 const retiredSource = source.match(/const RETIRED_STAGE_IDS=\{[^}]*\};/)[0];
 vm.runInContext([
   stagesSource,
+  source.match(/const DIFFICULTIES=\[[\s\S]*?\n\];/)[0],
+  'const DIFFICULTY_IDS=DIFFICULTIES.map(d=>d.id);',
+  functionSource('blankBadges'),
   retiredSource,
   functionSource('blankStageProgress'),
   functionSource('progressFromCount'),
@@ -596,9 +601,9 @@ vm.runInContext([
   functionSource('dropRetiredPlayerFields'),
   'this.dropRetired=dropRetiredPlayerFields;this.retiredFields=RETIRED_PLAYER_FIELDS;'
 ].join('\n'), migrationContext);
-assert.deepEqual(plain(migrationContext.retiredFields), ['xp', 'level', 'ease']);
+assert.deepEqual(plain(migrationContext.retiredFields), ['xp', 'level', 'ease', 'age']);
 const saved = {
-  id:'p1', name:'Ada', age:9, xp:340, level:12, total:88, right:70, best:9,
+  id:'p1', name:'Ada', age:9, xp:340, level:12, total:88, right:70, best:9, look:'girl',
   momoName:'Sparkle', monsterStage:9,
   collectibles:{stars:3}, accessories:['scarf'], storySeen:true,
   stageProgress:{completed:{add_1digit:true}, available:{add_2column:true}}
@@ -607,9 +612,10 @@ const cleaned = migrationContext.dropRetired(saved);
 assert.equal('xp' in cleaned, false, 'xp is gone from the save');
 assert.equal('level' in cleaned, false, 'the level it fed is gone too');
 assert.deepEqual(Object.keys(cleaned).sort(), [
-  'accessories', 'age', 'best', 'collectibles', 'id', 'momoName',
+  'accessories', 'best', 'collectibles', 'id', 'look', 'momoName',
   'monsterStage', 'name', 'right', 'stageProgress', 'storySeen', 'total'
 ], 'nothing else is dropped');
+assert.equal('age' in cleaned, false, 'age is gone: it never changed anything');
 assert.equal(cleaned.momoName, 'Sparkle');
 assert.equal(cleaned.best, 9);
 assert.deepEqual(plain(cleaned.stageProgress.completed), {add_1digit:true},
@@ -676,7 +682,7 @@ const currentSave = saveContext.migrate({
 });
 assert.equal('xp' in currentSave, false, 'xp is dropped from a current save');
 assert.equal('level' in currentSave, false);
-assert.equal(currentSave.migrationVersion, 8);
+assert.equal(currentSave.migrationVersion, 9);
 assert.equal(currentSave.momoName, 'Sparkle', 'the chosen name survives');
 assert.equal(currentSave.best, 9, 'play stats survive');
 assert.deepEqual(plain(currentSave.collectibles).stars, 3, 'collectibles survive');
@@ -755,6 +761,141 @@ stageImages.forEach((file, i) => {
   assert.match(file, new RegExp(`^stage-${String(i + 1).padStart(2, '0')}-[a-z-]+\\.webp$`),
     `${file} is numbered in order and shipped as webp`);
 });
+
+// three difficulties per lesson, and three badge slots so a lesson reads as unfinished
+// until every one of them has been sat
+const diffCtx = {Math};
+vm.createContext(diffCtx);
+vm.runInContext([
+  source.match(/const DIFFICULTIES=\[[\s\S]*?\n\];/)[0],
+  'const DIFFICULTY_IDS=DIFFICULTIES.map(d=>d.id);',
+  source.match(/const difficultyOf=[^\n]*/)[0],
+  source.match(/const nextDifficulty=[^\n]*/)[0],
+  functionSource('blankBadges'),
+  functionSource('easyQuestion'),
+  functionSource('dotRows'),
+  source.match(/const SESSION=\d+;/)[0],
+  functionSource('sessionPlan'),
+  'const rnd=(a,b)=>a+Math.floor(Math.random()*(b-a+1));',
+  'this.D=DIFFICULTIES;this.ids=DIFFICULTY_IDS;this.next=nextDifficulty;this.blank=blankBadges;this.easy=easyQuestion;this.rows=dotRows;this.plan=sessionPlan;'
+].join('\n'), diffCtx);
+assert.deepEqual(plain(diffCtx.ids), ['easy', 'medium', 'hard'], 'easy, medium, hard, in that order');
+assert.deepEqual(plain(diffCtx.blank()), {easy:false, medium:false, hard:false});
+assert.equal(diffCtx.next('easy'), 'medium', 'finishing easy points at medium');
+assert.equal(diffCtx.next('medium'), 'hard');
+assert.equal(diffCtx.next('hard'), null, 'hard is the end of the ladder');
+
+// easy: small enough to count, and multiplication never past the four times table
+for (let i = 0; i < 300; i += 1) {
+  const q = diffCtx.easy({gid:'mul'});
+  const [a, b] = q.txt.split(' \u00D7 ').map(Number);
+  assert.ok(a >= 2 && a <= 4, `easy multiplication stays inside the four times table (got ${a})`);
+  assert.ok(b >= 2 && b <= 9, `and the other factor is a single digit (got ${b})`);
+  assert.equal(q.ans, a * b);
+  assert.equal(q.kind, 'dots', 'easy questions come with a picture');
+  assert.match(q.words, /groups of/, 'and are described in words a child can follow');
+}
+for (const gid of ['add', 'sub', 'div']) {
+  for (let i = 0; i < 200; i += 1) {
+    const q = diffCtx.easy({gid});
+    assert.equal(q.kind, 'dots');
+    assert.ok(q.ans >= 0, `easy ${gid} never goes below zero`);
+    assert.ok(q.ans <= 36, `easy ${gid} stays countable (got ${q.ans})`);
+  }
+}
+assert.deepEqual(plain(diffCtx.rows(12)), [5, 5, 2], 'dots are laid out in rows of five');
+assert.deepEqual(plain(diffCtx.rows(5)), [5]);
+assert.deepEqual(plain(diffCtx.rows(3)), [3]);
+
+// easy is a shorter sit; medium and hard are the lesson as it was
+assert.equal(diffCtx.plan({digits:2}, 'easy').total, 8);
+assert.equal(diffCtx.plan({digits:2}, 'medium').total, 10);
+assert.equal(diffCtx.plan({digits:2}, 'hard').total, 10);
+assert.equal(diffCtx.plan({digits:4}, 'easy').total, 5, 'easy never makes a lesson longer');
+['easy', 'medium', 'hard'].forEach(d => {
+  const plan = diffCtx.plan({digits:3}, d);
+  assert.ok(plan.pass <= plan.total && plan.pass >= 1, `${d} stays possible to pass`);
+});
+
+// hard takes the talking out and lets the child choose the box
+assert.match(functionSource('colPrompt'), /if\(M\.free\)/,
+  'hard says nothing about which step comes next');
+// all three workings turn free order on, and only hard does it
+assert.match(source, /S\.col\.free=true/, 'columns let the child choose the box on hard');
+assert.match(source, /S\.longMul\.free=true/, 'so does long multiplication');
+assert.match(source, /const free=S\.difficulty==='hard'/, 'and long division');
+assert.equal((source.match(/S\.difficulty==='hard'/g) || []).length, 3,
+  'hard is the only difficulty that turns free order on, once per working');
+assert.match(functionSource('selectColumnStep'), /M\.doneSteps\[index\]/,
+  'a box already filled cannot be chosen again');
+assert.match(functionSource('commitColumnStep'), /M\.doneSteps\[M\.si\]=true/,
+  'each box is marked done in its own right, so order does not matter');
+
+// on hard nothing is chosen for the child: every box is theirs to pick, first one included
+['commitColumnStep', 'commitLongMultiplicationStep'].forEach(name => {
+  assert.match(functionSource(name), /\.si=[A-Z]\.free\?-1:/,
+    `${name} leaves nothing selected on hard`);
+});
+assert.match(functionSource('pressDiv'), /D\.pi=D\.free\?-1:/,
+  'long division leaves nothing selected on hard either');
+assert.match(source, /S\.col\.si=-1/, 'a hard column starts with no box chosen');
+assert.match(source, /S\.longMul\.si=-1/, 'so does a hard long multiplication');
+assert.match(source, /pi:free\?-1:0/, 'and a hard long division');
+
+// the steps that are only talk have no box to tap, so hard drops them rather than
+// leaving the child stuck in front of a working they cannot finish
+assert.match(source, /S\.col\.steps\.filter\(s=>s\.t!=='seek'\)/,
+  "hard drops the 'this column has a 0, follow the borrow left' step");
+assert.match(source, /divPlan\(made\.made\)\.filter\(s=>!free\|\|s\.t!=='skip'\)/,
+  "hard drops the 'not even once, take one more digit' step");
+// every other step type must have somewhere to tap, or a hard question can never be finished
+const renderSources = functionSource('renderCol') + functionSource('renderLongMul') + functionSource('renderDiv');
+['res', 'carry', 'mulCarry', 'ann', 'partial', 'partialCarry', 'sum', 'sumCarry', 'fit', 'prod', 'rem']
+  .forEach(kind => assert.ok(renderSources.includes(kind), `${kind} steps are drawn a box`));
+
+// the hard prompts have to read before a box is tapped, and fall silent once the last is filled
+assert.equal(context.colPrompt({free:true, doneSteps:[false], steps:[], si:-1}),
+  'Tap a box, then write what belongs in it.');
+assert.equal(context.colPrompt({free:true, doneSteps:[true], steps:[], si:-1}), '');
+assert.equal(context.longMulPrompt({free:true, doneSteps:[false], steps:[], si:-1}),
+  'Tap a box, then write what belongs in it.');
+assert.equal(context.longMulPrompt({free:true, doneSteps:[true], steps:[], si:-1}), '');
+assert.equal(context.divPromptText({free:true, doneSteps:[false], plan:[], pi:-1, g:{d:3}}),
+  'Tap a box, then write what belongs in it.');
+assert.equal(context.divPromptText({free:true, doneSteps:[true], plan:[], pi:-1, g:{d:3}}), '');
+
+// and a working filled backwards has to end up the same as one filled forwards
+function fillEveryBox(model, commit, order) {
+  model.free = true;
+  order.forEach(i => { model.si = i; commit(model); });
+  assert.ok(model.doneSteps.every(Boolean), 'every box was filled');
+  return plain(model.ent);
+}
+const indices = n => [...Array(n).keys()];
+[[23, 58], [45, 40], [99, 99]].forEach(([a, b]) => {
+  const forwards = fillEveryBox(context.buildLongMultiplication(a, b),
+    context.commitLongMultiplicationStep, indices(context.buildLongMultiplication(a, b).steps.length));
+  const backwards = fillEveryBox(context.buildLongMultiplication(a, b),
+    context.commitLongMultiplicationStep, indices(context.buildLongMultiplication(a, b).steps.length).reverse());
+  assert.deepEqual(backwards, forwards, `${a} × ${b} works out the same filled backwards`);
+});
+// a column can be crossed out twice — it receives a ten, then lends one on — and hard offers
+// only the next one waiting, because you cannot cross out what is not yet written. So the
+// order hard allows reverses everything except the crossings-out, which stay in sequence.
+function reverseAsHardAllows(steps) {
+  const backwards = indices(steps.length).reverse();
+  const crossings = backwards.filter(i => steps[i].t === 'ann').sort((x, y) => x - y);
+  let next = 0;
+  return backwards.map(i => steps[i].t === 'ann' ? crossings[next++] : i);
+}
+[['add', 63, 71], ['sub', 84, 16], ['sub', 5002, 1834], ['mul', 47, 6]].forEach(([op, a, b]) => {
+  const steps = context.buildColumn(op, a, b).steps;
+  const forwards = fillEveryBox(context.buildColumn(op, a, b), context.commitColumnStep, indices(steps.length));
+  const backwards = fillEveryBox(context.buildColumn(op, a, b), context.commitColumnStep, reverseAsHardAllows(steps));
+  assert.deepEqual(backwards, forwards, `${a} ${op} ${b} works out the same filled backwards`);
+});
+assert.match(functionSource('renderCol'), /s\.t==='ann'&&s\.col===i&&!M\.doneSteps\[k\]/,
+  'and only that next crossing-out is offered, which is what makes the order above the only one');
 
 // the trail: it wanders between stops, and what has been walked looks different from
 // what is still ahead
@@ -896,18 +1037,18 @@ const legacySave = saveContext.migrate({id:'p2', name:'Bo', age:8, level:12, xp:
 assert.equal('level' in legacySave, false, 'the legacy level is dropped once it has been read');
 assert.equal('xp' in legacySave, false);
 assert.ok(legacySave.stageProgress.completed.add_1digit, 'legacy level still became real progress');
-assert.equal(legacySave.migrationVersion, 8);
+assert.equal(legacySave.migrationVersion, 9);
 
 // a save already on the new version is left alone
 const fresh = saveContext.newPlayer('Cy', 7);
 assert.equal('xp' in fresh, false, 'a new player never has xp');
 assert.equal('level' in fresh, false);
-assert.equal(fresh.migrationVersion, 8);
+assert.equal(fresh.migrationVersion, 9);
 assert.equal(saveContext.artForPlayer(fresh), 1, 'new players begin with the magical egg');
 fresh.storyProgress.firstCrackSeen = true;
 assert.equal(saveContext.artForPlayer(fresh), 2, 'the saved crack milestone shows the cracked egg before hatching');
 const rerun = saveContext.migrate(saveContext.migrate(fresh));
-assert.equal(rerun.migrationVersion, 8, 'migrating twice changes nothing');
+assert.equal(rerun.migrationVersion, 9, 'migrating twice changes nothing');
 assert.equal('xp' in rerun, false);
 
 console.log('Arithmetic model tests passed.');
