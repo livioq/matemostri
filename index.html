@@ -234,8 +234,11 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
 .scene-art-label{display:none;position:relative;z-index:2;padding:8px 10px;border:2px dashed rgba(80,49,154,.28);border-radius:14px;background:rgba(255,255,255,.62)}
 .adventure-map.show-art-debug .scene-art-label{display:block}
 .adventure-path{position:absolute;inset:0;z-index:4;overflow:visible;pointer-events:none}
-.adventure-path path{fill:none;stroke:rgba(242,185,59,.68);stroke-width:11;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 8px rgba(242,185,59,.34))}
-.adventure-path path.path-glow{stroke:rgba(128,105,181,.22);stroke-width:24;filter:none}
+.adventure-path path{fill:none;stroke-linecap:round;stroke-linejoin:round}
+/* the road ahead is a faint glow; the part already walked is a dotted trail, the way a
+   route is marked on a paper map once you have been along it */
+.adventure-path .path-ahead{stroke:rgba(242,185,59,.34);stroke-width:10;filter:drop-shadow(0 0 7px rgba(242,185,59,.5))}
+.adventure-path .path-walked{stroke:rgba(242,185,59,.9);stroke-width:6;stroke-dasharray:2 13;filter:drop-shadow(0 1px 1px rgba(120,80,10,.35))}
 .map-location{position:absolute;width:min(190px,43vw);min-height:142px;padding:12px;border:2px solid rgba(80,49,154,.22);border-radius:24px;background:rgba(255,255,255,.94);box-shadow:0 8px 18px rgba(80,49,154,.14);text-align:center;transform:translate(-50%,-50%);transition:transform .12s,box-shadow .12s,opacity .12s;z-index:8}
 .map-location:active:not(:disabled){transform:translate(-50%,-50%) scale(.98)}
 .map-location.completed{border-color:#65b782;background:linear-gradient(145deg,#fff,#effff6)}
@@ -676,21 +679,25 @@ function mapSceneLayout(mapWidth){
     return layout;
   });
 }
+/* The trail wanders. Between one stop and the next it bows out to one side and then back,
+   alternating, so it reads as a path someone walked rather than a rope pulled taut between
+   two pegs. One point on its own draws nothing, which is what the ends of the journey want. */
 function mapPathD(layouts){
-  if(!layouts.length) return '';
+  if(!layouts||layouts.length<2) return layouts&&layouts.length?'M '+layouts[0].x+' '+layouts[0].y:'';
   const pts=layouts.map(l=>({x:l.x,y:l.y}));
-  return pts.map((p,i)=>{
-    if(i===0) return 'M '+p.x+' '+p.y;
-    const prev=pts[i-1],dy=p.y-prev.y,soft=Math.max(130,Math.min(280,dy*.44));
-    return ' C '+prev.x+' '+(prev.y+soft)+', '+p.x+' '+(p.y-soft)+', '+p.x+' '+p.y;
-  }).join('');
+  let d='M '+pts[0].x+' '+pts[0].y;
+  for(let i=1;i<pts.length;i++){
+    const a=pts[i-1],b=pts[i],dy=b.y-a.y;
+    const bow=(i%2?1:-1)*Math.min(26,Math.max(13,dy*0.05));
+    const midX=Math.min(86,Math.max(14,(a.x+b.x)/2+bow)),midY=a.y+dy/2;
+    const soft=Math.max(80,Math.min(200,dy*0.28));
+    d+=' C '+a.x+' '+(a.y+soft)+', '+midX+' '+(midY-soft*0.62)+', '+midX+' '+midY;
+    d+=' C '+midX+' '+(midY+soft*0.62)+', '+b.x+' '+(b.y-soft)+', '+b.x+' '+b.y;
+  }
+  return d;
 }
 const petName=()=>P&&P.momoName?P.momoName:'Momo';
 const collectibleTotal=p=>COLLECTIBLES.reduce((n,c)=>n+Number((p.collectibles&&p.collectibles[c.id])||0),0);
-const bandOf  = age => age<=7?0 : age<=9?1 : age<=10?2 : 3;
-function tierFor(vid){ const b=bandOf(P.age||9), e=(P.ease&&P.ease[vid])||0; return Math.max(0,Math.min(3,b+Math.round(e))); }
-function ease(vid,d){ if(!P.ease) P.ease={}; P.ease[vid]=Math.max(-1,Math.min(1,((P.ease[vid]||0)+d))); }
-const HARD_P=[0.35,0.65,0.85,0.95];
 
 let DB={players:[],current:null,sound:true};
 let P=null;
@@ -755,7 +762,7 @@ function migrateV4StageProgress(progress){
 }
 /* XP and the level it fed are gone. An old save is read for its legacy progress first,
    in migrate, and only then are the fields dropped — so nothing is lost on the way out. */
-const RETIRED_PLAYER_FIELDS=['xp','level'];
+const RETIRED_PLAYER_FIELDS=['xp','level','ease'];
 function dropRetiredPlayerFields(p){
   RETIRED_PLAYER_FIELDS.forEach(field=>{ delete p[field]; });
   return p;
@@ -771,15 +778,14 @@ function completeMathStage(p,id){
 
 function newPlayer(name,age){
   const young=age<=7;
-  return {id:'p'+Date.now(),name:name,age:age,total:0,ease:{},right:0,best:0,
+  return {id:'p'+Date.now(),name:name,age:age,total:0,right:0,best:0,
           groups:{add:true,sub:true,mul:true,div:!young},
           unlocked:{add2:false,sub2:false,mul2:false,div2:false},
-          stageProgress:blankStageProgress(),monsterStage:1,momoName:'Momo',collectibles:{},accessories:[],storySeen:false,storyProgress:{firstCrackSeen:false,mapSeen:{}},migrationVersion:7};
+          stageProgress:blankStageProgress(),monsterStage:1,momoName:'Momo',collectibles:{},accessories:[],storySeen:false,storyProgress:{firstCrackSeen:false,mapSeen:{}},migrationVersion:8};
 }
 function migrate(p){
   const version=Number(p.migrationVersion)||0,wasLegacy=version<3;
   if(!p.groups) p.groups={add:true,sub:true,mul:true,div:(p.age||9)>=8};
-  if(!p.ease) p.ease={};
   if(!p.unlocked) p.unlocked={add2:false,sub2:false,mul2:false,div2:false};
   if(p.unlocked.add!==undefined){ p.unlocked.add2=!!p.unlocked.add; p.unlocked.sub2=!!p.unlocked.sub; p.unlocked.mul2=!!p.unlocked.mul; p.unlocked.div2=!!p.unlocked.div; }
   ['add2','sub2','mul2','div2'].forEach(k=>{ if(p.unlocked[k]===undefined) p.unlocked[k]=false; });
@@ -806,7 +812,7 @@ function migrate(p){
   p.monsterStage=p.devMonsterOverride||artForPlayer(p);
   if(p.storySeen===undefined) p.storySeen=true;
   dropRetiredPlayerFields(p);
-  p.migrationVersion=7;
+  p.migrationVersion=8;
   return p;
 }
 
@@ -1059,40 +1065,6 @@ function twoDigitColumnSubtraction(questionIndex){
 }
 
 /* ---------------- question generation ---------------- */
-function genEasy(gid,tr){
-  if(gid==='add'){ const m=[9,12,20,30][tr]; const a=rnd(1,m),b=rnd(1,m); return{txt:a+' + '+b,ans:a+b}; }
-  if(gid==='sub'){ const m=[10,18,40,80][tr]; let a,b; do{a=rnd(3,m);b=rnd(1,a)}while(a%10<b%10); return{txt:a+' \u2212 '+b,ans:a-b}; }
-  if(gid==='mul'){ const tab=[[2,5,10],[2,3,4,5,6,10],[2,3,4,5,6,7,8,9,10],[3,4,6,7,8,9,11,12]][tr];
-    const a=tab[rnd(0,tab.length-1)],b=rnd(2,tr<=1?10:12); return{txt:a+' \u00D7 '+b,ans:a*b}; }
-  const d=rnd(2,[5,9,10,12][tr]),q=rnd(2,[6,9,12,12][tr]); return{txt:(d*q)+' \u00F7 '+d,ans:q};
-}
-function genHard(gid,tr){
-  if(gid==='add'){
-    for(let i=0;i<200;i++){
-      const a=[rnd(11,89),rnd(15,99),rnd(101,899),rnd(150,999)][tr];
-      const b=[rnd(11,89),rnd(15,99),rnd(11,99),rnd(150,999)][tr];
-      const M=buildColumn('add',a,b);
-      if(M.steps.some(s=>s.t==='carry')&&colValid(M)) return {a:a,b:b,M:M};
-    }
-    return {a:96,b:18,M:buildColumn('add',96,18)};
-  }
-  if(gid==='sub'){
-    for(let i=0;i<300;i++){
-      const a=[rnd(21,99),rnd(31,99),rnd(111,999),rnd(201,999)][tr];
-      const b=[rnd(11,a-1),rnd(11,a-1),rnd(11,99),rnd(111,a-1)][tr];
-      if(b>=a) continue;
-      const M=buildColumn('sub',a,b);
-      if(M.steps.some(s=>s.t==='ann')&&colValid(M)) return {a:a,b:b,M:M};
-    }
-    return {a:84,b:16,M:buildColumn('sub',84,16)};
-  }
-  if(gid==='mul'){
-    const a=[rnd(12,49),rnd(12,99),rnd(102,499),rnd(112,999)][tr];
-    const b=[rnd(2,5),rnd(2,9),rnd(3,9),rnd(3,9)][tr];
-    return {a:a,b:b,M:buildColumn('mul',a,b)};
-  }
-  return genDivision(tr);
-}
 /* the long division lesson starts short and grows: two-digit dividends, then three, then four.
    Each length is met dividing exactly first and only then with something left over, so a
    question never grows longer and starts leaving something over at the same time. */
@@ -1246,9 +1218,12 @@ function renderMenu(){
   const layouts=mapSceneLayout(L.clientWidth),mapHeight=layouts.reduce((n,l)=>n+l.height,0);
   L.style.setProperty('--map-height',mapHeight+'px');
   L.classList.toggle('show-art-debug',!!DB.mapArtDebug);
-  L.innerHTML='<div class="map-art" aria-hidden="true">'+MAP_ART_PANELS.map(p=>'<img src="'+p.src+'" alt="" loading="lazy">').join('')+'</div>'+
-    '<svg class="adventure-path" aria-hidden="true" viewBox="0 0 100 '+mapHeight+'" preserveAspectRatio="none"><path class="path-glow" d="'+mapPathD(layouts)+'"></path><path d="'+mapPathD(layouts)+'"></path></svg>';
   const currentIndex=Math.min(count,PROGRESSION_NODES.length-1);
+  L.innerHTML='<div class="map-art" aria-hidden="true">'+MAP_ART_PANELS.map(p=>'<img src="'+p.src+'" alt="" loading="lazy">').join('')+'</div>'+
+    '<svg class="adventure-path" aria-hidden="true" viewBox="0 0 100 '+mapHeight+'" preserveAspectRatio="none">'+
+      '<path class="path-ahead" vector-effect="non-scaling-stroke" d="'+mapPathD(layouts.slice(currentIndex))+'"></path>'+
+      '<path class="path-walked" vector-effect="non-scaling-stroke" d="'+mapPathD(layouts.slice(0,currentIndex+1))+'"></path>'+
+    '</svg>';
   layouts.forEach((layout,i)=>{
     const node=layout.node,pos=layout.pos,artwork=pos.artwork||{};
     const scene=document.createElement('div');
@@ -1287,6 +1262,17 @@ function renderMenu(){
     marker.innerHTML=monsterMarkup(P.monsterStage,'curious','bob',petName()+' travelling');
     L.appendChild(marker);
   }
+  scrollMapToCurrent(L,current);
+}
+/* The map is thousands of pixels long, so opening it at the top means scrolling to where
+   you actually are every single time. Land on the current stop instead, sitting a little
+   above the middle so the path ahead is visible. Node positions are absolute and do not
+   depend on the painted panels, which load lazily, so this is stable before the art
+   arrives. */
+function scrollMapToCurrent(map,current){
+  if(!current) return;
+  const target=map.offsetTop+current.y-Math.round(window.innerHeight*0.42);
+  window.scrollTo(0,Math.max(0,target));
 }
 
 let selectedMapNode=null;
@@ -1384,27 +1370,27 @@ function nextQuestion(){
   const made=generateLessonQuestion(S.stage,S.i);
   $('colHint').style.display='none'; $('hintBtn').style.display='none';
   if(made.kind==='n'){
-    S.q={vid:S.stage.id,kind:'n',ans:made.ans};
+    S.q={kind:'n',ans:made.ans};
     $('normalQ').style.display='block'; $('colQ').style.display='none';
     $('qText').textContent=made.txt+' =';
     S.input=''; paintAns();
     $('qTag').textContent=S.stage.magic+' · help '+petName()+' find the answer';
   }else{
     if(made.kind==='div'){
-      S.q={vid:S.stage.id,kind:'div'};
+      S.q={kind:'div'};
       S.div={g:made.made,plan:divPlan(made.made),pi:0,buf:'',done:{},err:0,tries:0,hint:false};
       S.col=null;
       $('normalQ').style.display='none'; $('colQ').style.display='block';
       $('hintBtn').style.display='block'; $('hintBtn').textContent='need a hint?';
       renderDiv();
     }else if(made.kind==='longmul'){
-      S.q={vid:S.stage.id,kind:'longmul'};
+      S.q={kind:'longmul'};
       S.longMul=made.L; S.col=null; S.div=null; S.colB=made.b;
       $('normalQ').style.display='none'; $('colQ').style.display='block';
       $('hintBtn').style.display='block'; $('hintBtn').textContent='open a multiplication spell?';
       renderLongMul();
     }else{
-      S.q={vid:S.stage.id,kind:'col'};
+      S.q={kind:'col'};
       S.col=made.M; S.longMul=null; S.div=null;
       S.colB=made.b;
       $('normalQ').style.display='none'; $('colQ').style.display='block';
@@ -1451,7 +1437,6 @@ function checkNormal(){
   }
   if(ok){
     S.locked=true;
-    if(S.attempt===0) ease(S.q.vid,0.2);
     award(S.attempt===0);
     $('fb').innerHTML='<span class="ok">'+(S.attempt===0?praise():'You fixed that one yourself.')+'</span>'+bonusStamp()+crackMessage();
     setPlayMood(S.streak>=3?'streak':'correct');
@@ -1463,7 +1448,7 @@ function checkNormal(){
     setPlayMood('wrong');
     shake(); sBad(); return;
   }
-  S.streak=0; ease(S.q.vid,-0.6);
+  S.streak=0;
   S.mode='copy'; S.input=''; paintAns();
   $('fb').innerHTML='<span class="no">Every try gives '+petName()+' more magic. It\u2019s '+S.q.ans+' · type it in</span>';
   setPlayMood('wrong');
@@ -1663,8 +1648,7 @@ function pressCol(k){
 function finishCol(){
   const M=S.col; S.locked=true;
   const clean=M.err===0&&!M.hint;
-  if(clean){ ease(S.q.vid,0.2); award(true); }
-  else { if(M.err>0) ease(S.q.vid,-0.6); awardHelped(); }
+  if(clean) award(true); else awardHelped();
   let total=''; for(let i=0;i<M.wid;i++) if(M.ent.res[i]!==undefined) total+=M.ent.res[i];
   $('fb').innerHTML='<span class="ok">'+(clean?praise():'Worked all the way through.')+' '+Number(total)+'</span>'+(clean?bonusStamp():'')+crackMessage();
   setPlayMood(S.streak>=3?'streak':'correct');
@@ -1744,7 +1728,7 @@ function pressLongMul(k){
 }
 function finishLongMul(){
   const L=S.longMul; S.locked=true; const clean=L.err===0&&!L.hint;
-  if(clean){ ease(S.q.vid,.2); award(true); } else { if(L.err>0) ease(S.q.vid,-.6); awardHelped(); }
+  if(clean) award(true); else awardHelped();
   $('fb').innerHTML='<span class="ok">'+L.a+' × '+L.b+' = '+L.total+'</span>'+(clean?bonusStamp():'');
   setPlayMood(S.streak>=3?'streak':'correct'); save(); afterAnswerDelay(2200);
 }
@@ -1861,8 +1845,7 @@ function pressDiv(k){
 function finishDiv(){
   const D=S.div; S.locked=true;
   const clean=D.err===0&&!D.hint;
-  if(clean){ ease(S.q.vid,0.2); award(true); }
-  else { if(D.err>0) ease(S.q.vid,-0.6); awardHelped(); }
+  if(clean) award(true); else awardHelped();
   // a leftover is not a mistake, so say so the first time the child sees one
   const rest=D.g.rest>0?' with '+D.g.rest+' left over. Not everything fits evenly!':'';
   $('fb').innerHTML='<span class="ok">'+D.g.N+' \u00F7 '+D.g.d+' = '+D.g.quot+rest+'</span>'+(clean?bonusStamp():'');

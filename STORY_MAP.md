@@ -37,6 +37,11 @@ The adventure map is intentionally tall on mobile. It should feel like travellin
 Each `PROGRESSION_NODES` entry owns layout metadata:
 
 - `mapPosition.side`: places the lesson node on the left, centre, or right of the winding path.
+  The path itself is two curves per gap, bowing out to alternate sides so it meanders rather
+  than running taut between stops, and it is drawn twice: a gold dotted trail for the part
+  already walked, a faint wider glow for the part still ahead, split at the current stop.
+  Both use `vector-effect="non-scaling-stroke"`, since `preserveAspectRatio="none"` scales
+  the SVG unevenly and the dashes would otherwise stretch.
 - `mapPosition.sceneHeight`: reserves vertical room for the scene, in the units the
   painted map was drawn in. These are the numbers in `docs/MAP_ART_SPEC.json`, measured
   against a 428px content box. At any other width every scene height, node offset and
@@ -80,7 +85,10 @@ Major moments use the larger transition presentation with previous and new Momo 
 ## Player Flow
 
 1. Home shows the current companion and progress.
-2. Continue opens the adventure map.
+2. Continue opens the adventure map, scrolled straight to the current stop rather than the
+   top. The map is thousands of pixels long, so opening at the top would mean scrolling to
+   find yourself every time. `scrollMapToCurrent` places the stop a little above the middle
+   so the path ahead is still visible.
 3. The current map node pulses.
 4. Tapping an unlocked node opens a short story card.
 5. Start Lesson opens the existing maths interface.
