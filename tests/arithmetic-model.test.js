@@ -53,6 +53,7 @@ vm.runInContext([
   'const colValid=M=>M.steps.every(s=>/^\\d+$/.test(s.want));',
   source.match(/const dotWord=.*;\n/)[0],
   functionSource('easyNumber'),
+  functionSource('pickPair'),
   functionSource('buildColumn'),
   functionSource('buildLongMultiplication'),
   functionSource('twoDigitColumnAddition'),
@@ -940,16 +941,59 @@ for (let i = 0; i < 200; i += 1) {
   assert.ok(a >= 4 && b >= 1 && b < a, `easy ${q.txt} takes something away and leaves something`);
 }
 
-// hard on the first lesson has no working to take the talking out of, so it takes the
-// small digits out instead, or hard would be medium under another name
-for (let i = 0; i < 300; i += 1) {
-  const q = context.generateLessonQuestion(stageById('add_1digit'), 1, 'hard');
-  const [a, b] = q.txt.split(' + ').map(Number);
-  assert.ok(a >= 4 && a <= 9 && b >= 4 && b <= 9, `hard one-digit addition keeps both digits big (got ${q.txt})`);
-  const e = context.generateLessonQuestion(stageById('add_1digit'), 1, 'easy');
-  const [ea, eb] = e.txt.split(' + ').map(Number);
-  assert.ok(ea >= 1 && ea <= 5 && eb >= 1 && eb <= 5, `and easy keeps both small (got ${e.txt})`);
+// a lesson done in the head has no working, so hard cannot take the talking out of it.
+// It takes bigger numbers instead, and ones that carry or borrow.
+const split = (txt, sign) => txt.split(' ' + sign + ' ').map(Number);
+for (let i = 0; i < 400; i += 1) {
+  const add1 = split(context.generateLessonQuestion(stageById('add_1digit'), 1, 'hard').txt, '+');
+  assert.ok(add1[0] >= 4 && add1[1] >= 4 && add1[0] <= 9 && add1[1] <= 9,
+    `hard one-digit addition keeps both digits big (got ${add1.join(' + ')})`);
+  assert.ok(add1[0] + add1[1] >= 10, `and carries into the tens (got ${add1.join(' + ')})`);
+
+  const sub1 = split(context.generateLessonQuestion(stageById('sub_1digit'), 1, 'hard').txt, '\u2212');
+  assert.ok(sub1[0] >= 11 && sub1[0] <= 18 && sub1[1] >= 4 && sub1[1] <= 9,
+    `hard one-digit subtraction takes a digit off a teen (got ${sub1.join(' \u2212 ')})`);
+  assert.ok(sub1[0] % 10 < sub1[1], `and has to borrow to do it (got ${sub1.join(' \u2212 ')})`);
+  assert.ok(sub1[0] - sub1[1] > 0, 'and never lands on or below zero');
+
+  const add2 = split(context.generateLessonQuestion(stageById('add_2mental'), 1, 'hard').txt, '+');
+  assert.ok(add2[0] >= 26 && add2[1] >= 26, `hard two-digit mental addition is bigger than medium (got ${add2.join(' + ')})`);
+  assert.ok(add2[0] % 10 + add2[1] % 10 >= 10, `and always carries (got ${add2.join(' + ')})`);
+
+  const sub2 = split(context.generateLessonQuestion(stageById('sub_2mental'), 1, 'hard').txt, '\u2212');
+  assert.ok(sub2[0] % 10 < sub2[1] % 10, `hard two-digit mental subtraction always borrows (got ${sub2.join(' \u2212 ')})`);
+  assert.ok(sub2[0] - sub2[1] >= 10, 'and still leaves a two-digit answer');
+  assert.ok(sub2[1] >= 15, 'and takes away more than medium does');
+
+  const times = split(context.generateLessonQuestion(stageById('mul_1x1'), 1, 'hard').txt, '\u00D7');
+  assert.ok(times[0] >= 6 && times[1] >= 6, `hard tables are the far end of them (got ${times.join(' x ')})`);
+  const shared = split(context.generateLessonQuestion(stageById('div_simple'), 1, 'hard').txt, '\u00F7');
+  assert.ok(shared[1] >= 6 && shared[0] / shared[1] >= 6, `hard sharing is the far end too (got ${shared.join(' / ')})`);
+
+  // easy still keeps the same lessons small
+  const e = split(context.generateLessonQuestion(stageById('add_1digit'), 1, 'easy').txt, '+');
+  assert.ok(e[0] >= 1 && e[0] <= 5 && e[1] >= 1 && e[1] <= 5, `easy keeps both small (got ${e.join(' + ')})`);
 }
+// medium is untouched by any of it: one-digit subtraction still never goes below zero
+for (let i = 0; i < 300; i += 1) {
+  const m = split(context.generateLessonQuestion(stageById('sub_1digit'), 1, 'medium').txt, '\u2212');
+  assert.ok(m[0] >= 2 && m[0] <= 9 && m[1] >= 0 && m[1] <= m[0], `medium is as it was (got ${m.join(' \u2212 ')})`);
+}
+// and every mental lesson genuinely asks for bigger numbers on hard than on medium. The
+// answer is the wrong thing to measure for a take-away — 99 - 89 is not an easy question —
+// so this weighs the number the child starts from.
+['add_1digit', 'sub_1digit', 'add_2mental', 'sub_2mental', 'mul_1x1', 'div_simple'].forEach(id => {
+  const meanStart = level => {
+    let total = 0;
+    for (let i = 0; i < 800; i += 1) {
+      total += Number(context.generateLessonQuestion(stageById(id), 1, level).txt.split(' ')[0]);
+    }
+    return total / 800;
+  };
+  const hard = meanStart('hard'), medium = meanStart('medium');
+  assert.ok(hard > medium * 1.15,
+    `${id} on hard starts from bigger numbers than medium (${hard.toFixed(1)} vs ${medium.toFixed(1)})`);
+});
 
 // the picture is drawn only while it can be taken in at a glance
 assert.equal(uiContext.dotsWorthDrawing({parts:[4, 5]}), true);
