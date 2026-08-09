@@ -1262,6 +1262,17 @@ function reverseAsHardAllows(steps) {
 assert.match(functionSource('renderCol'), /s\.t==='ann'&&s\.col===i&&!M\.doneSteps\[k\]/,
   'and only that next crossing-out is offered, which is what makes the order above the only one');
 
+// every zone on the journey board is named the same size, and reads over the painting
+assert.equal(/\.map-scene\.major \.scene-title/.test(source), false,
+  'a landmark zone is not named in a bigger size than the rest');
+assert.equal((source.match(/\.scene-title span\{/g) || []).length, 2,
+  'the zone name has one size, and one smaller one for a narrow phone — nothing else');
+assert.match(source, /\.scene-title span\{[^}]*background:rgba\(255,255,255/,
+  'the name sits on a plate, so it does not have to compete with whatever is painted under it');
+assert.match(source, /\.scene-title span\{[^}]*color:var\(--ink\)/,
+  'and is full-strength ink rather than a wash');
+assert.match(source, /<div class="scene-title"><span>/, 'the name is wrapped so the plate hugs it');
+
 // the trail: it wanders between stops, and what has been walked looks different from
 // what is still ahead
 const pathCtx = {Math};

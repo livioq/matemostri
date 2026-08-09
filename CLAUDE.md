@@ -242,6 +242,10 @@ Recently done, in case something looks unfamiliar:
   went with it, along with `S.q.vid`, which `ease` was all that read.
   `ease` is a retired save field now, so the map it left behind is
   dropped from existing games.
+- Every zone on the journey board is named the same size, landmark or
+  not, on a soft white plate. It used to be 18px, or 23px for a landmark,
+  painted at 48% opacity straight onto the artwork, which made the names
+  both uneven and hard to read.
 - The trail meanders between stops, as one spline through every stop
   rather than a curve pulled past them, and is split at the current stop:
   gold dashes with a dark outline behind the child, only a soft glow

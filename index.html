@@ -260,8 +260,12 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
 .map-scene{position:absolute;left:0;right:0;height:var(--scene-height);top:var(--scene-top);z-index:2;pointer-events:none}
 .map-scene::before{content:"";position:absolute;inset:18px 12px;border-radius:34px;background:linear-gradient(180deg,rgba(255,255,255,.16),rgba(255,255,255,0));box-shadow:inset 0 0 34px rgba(255,255,255,.22)}
 .map-scene.major::before{inset:10px 8px;background:radial-gradient(circle at 50% 42%,rgba(255,232,142,.24),transparent 42%),linear-gradient(180deg,rgba(255,255,255,.2),rgba(255,255,255,0));box-shadow:inset 0 0 44px rgba(255,226,133,.25)}
-.scene-title{position:absolute;left:18px;right:18px;top:24px;z-index:7;text-align:center;color:rgba(80,49,154,.48);font-size:18px;font-weight:950;letter-spacing:-.02em;text-transform:uppercase}
-.map-scene.major .scene-title{font-size:23px;color:rgba(80,49,154,.62)}
+/* every zone reads the same size and the same weight, whether or not it is a landmark, and
+   sits on a soft plate so it is legible over whatever the painting is doing underneath */
+.scene-title{position:absolute;left:14px;right:14px;top:20px;z-index:7;text-align:center;line-height:1.15}
+.scene-title span{display:inline-block;padding:5px 13px;border-radius:999px;
+  background:rgba(255,255,255,.86);box-shadow:0 2px 9px rgba(80,49,154,.16);
+  color:var(--ink);font-size:16px;font-weight:950;letter-spacing:.02em;text-transform:uppercase}
 .scene-art-slot{position:absolute;left:var(--art-left);top:var(--art-top);width:var(--art-width);height:var(--art-height);z-index:3;border-radius:32px;display:grid;place-items:center;color:rgba(80,49,154,.5);font-size:11px;font-weight:950;letter-spacing:.08em;text-align:center;text-transform:uppercase}
 .scene-art-slot::before{content:"";position:absolute;inset:0;border-radius:inherit;background:radial-gradient(ellipse at center,rgba(255,255,255,.18),rgba(255,255,255,0) 72%);opacity:.85}
 .scene-art-slot.has-art{background:none}
@@ -303,7 +307,7 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
 .evolution-pair{display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:center;margin:8px 0}.evolution-pair .pet-stage{min-height:150px}.evolution-pair .pet-stage::before{width:110px}.evolution-pair-wrap .arrow{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:28px;color:var(--gold);font-weight:900;text-shadow:0 2px 0 var(--ink)}
 .evolution-pair-wrap{position:relative}
 @keyframes mapPulse{0%,100%{box-shadow:0 0 0 4px rgba(242,185,59,.18),0 8px 18px rgba(80,49,154,.14)}50%{box-shadow:0 0 0 9px rgba(242,185,59,.34),0 12px 25px rgba(80,49,154,.2)}}
-@media (max-width:380px){.map-location{width:154px;padding:9px}.map-location h3{font-size:13px}.map-location.major h3{font-size:15px}.map-location img,.map-location svg{width:58px;height:58px}.map-location.major img,.map-location.major svg{width:68px;height:68px}.map-momo{width:76px;height:76px}.map-momo img,.map-momo svg{max-width:76px;max-height:76px}.scene-title{font-size:15px}.map-scene.major .scene-title{font-size:20px}}
+@media (max-width:380px){.map-location{width:154px;padding:9px}.map-location h3{font-size:13px}.map-location.major h3{font-size:15px}.map-location img,.map-location svg{width:58px;height:58px}.map-location.major img,.map-location.major svg{width:68px;height:68px}.map-momo{width:76px;height:76px}.map-momo img,.map-momo svg{max-width:76px;max-height:76px}.scene-title span{font-size:15px;padding:4px 11px}}
 .evolution-burst{animation:evolve 1s cubic-bezier(.2,.9,.3,1)}
 .egg-wiggle{animation:eggWiggle .75s ease-in-out 2}.egg-wiggle>img{filter:drop-shadow(0 0 18px rgba(255,193,72,.7))}
 @keyframes evolve{0%{opacity:0;transform:scale(.55) rotate(-8deg)}65%{opacity:1;transform:scale(1.08) rotate(2deg)}100%{transform:scale(1) rotate(0)}}
@@ -1538,7 +1542,7 @@ function renderMenu(){
     scene.className='map-scene '+(node.majorEvolution?'major':'')+' scene-'+node.slug;
     scene.style.setProperty('--scene-top',layout.top+'px');
     scene.style.setProperty('--scene-height',layout.height+'px');
-    scene.innerHTML='<div class="scene-title">'+esc(node.title)+'</div>';
+    scene.innerHTML='<div class="scene-title"><span>'+esc(node.title)+'</span></div>';
     const slot=document.createElement('div'),artX=mapSideX(artwork.position||'center')+(Number(artwork.offsetX)||0);
     slot.className='scene-art-slot'+(artwork.src?' has-art':'');
     slot.style.setProperty('--art-left',artX+'%');
