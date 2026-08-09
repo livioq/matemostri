@@ -51,23 +51,39 @@ public release.
   on easy is still two-digit column addition: same working, same carrying,
   same place on the map. What changes is that the numbers are smaller and
   that every individual sum inside the working is drawn as dots in rows of
-  five. It is eight questions rather than ten, and times tables stop at
+  five. It is eight questions rather than ten, the two-digit lessons done
+  in the head carry nothing and borrow nothing, and times tables stop at
   four, so the largest fact anywhere on easy is 4 x 9 — that is a cap on
   the multiplier, not on what it multiplies, so 9 x 4 is fine and long
   division divides by 2 to 4. Do not go back to replacing easy questions
   with a separate, simpler kind; that was the first attempt and it taught
   the wrong lesson.
+- A picture must not answer the question. A take-away whose dots arrive
+  already crossed out has done the work, and so has a share that arrives
+  already shared: both start whole and the child taps. Tapping a dot
+  crosses it out and tapping it again brings it back; tapping a pile
+  shares it out one more time, so 24 into 4 is halve, then halve again,
+  and 24 into 3 is one sharing. "How many times does 4 go into 9" takes
+  4 away as often as it will go, which is what the working does next
+  anyway. None of it is required — a child who can see the answer just
+  writes it — and every tap wraps round to the start so nothing can be
+  got wrong and stuck.
 - A picture only helps while it can be taken in at a glance, so a sum
   over `DOT_LIMIT` dots is left undrawn rather than turned into a wall of
   them. That is why the two-digit mental lessons get smaller numbers but
-  no picture: 29 + 19 as forty-eight dots teaches nothing. Zeros lose
-  their group rather than showing an empty box, and a step that is not a
-  sum at all — a carry to copy down, a crossing-out, deciding how many
-  times it goes — gets no picture either. When easy is drawing, the dots
-  are part of the room `fitCell` has to work inside, so they are painted
-  before the grid is sized, and `#colDots` draws them smaller than the
-  dots above a bare question because the grid below will not go under
-  19px a cell.
+  no picture: 29 + 19 as forty-eight dots teaches nothing. Above a
+  working there is a second limit, on height rather than count, because
+  groups wrap sideways but a single pile only grows downwards: nine fours
+  are two rows of little groups, thirty-six in one pile is eight rows of
+  five, and the grid below will not go under 19px a cell. `dotTallest`
+  and `DOT_ROWS_IN_WORKING` are that limit; the dots are painted before
+  the grid is sized so `fitCell` knows the room they take, and `#colDots`
+  draws them smaller than the dots above a bare question.
+- Zeros lose their group rather than showing an empty box, and a step
+  that is not a sum at all — a carry to copy down, a crossing-out — gets
+  no picture either. So that a step never goes without help where help is
+  the point, every digit in an easy number is 1 to 9: `easyNumber` builds
+  them, and a step reading "0 + 5" cannot arise.
 - Hard is medium with the talking removed — the working is laid out with
   its boxes empty and the child taps whichever one to fill next. The
   first lesson has no working to take the talking out of, so hard takes
@@ -96,6 +112,9 @@ public release.
   applies the same rule to saved games on load, so nothing has to be
   re-sat to catch up.
 - Finishing a difficulty offers the next one up on the end screen.
+- Choosing a difficulty on a map stop is the same act as starting the
+  lesson. There is nothing to confirm after it, so there is no second
+  button: tapping Easy starts the lesson on easy.
 - The column working must fit the screen without scrolling. `fitCell`
   sizes the grid from the room left once the keypad is built, which is
   why the working is rendered again after `buildPad`.
@@ -158,6 +177,12 @@ Recently done, in case something looks unfamiliar:
   question with smaller numbers, with the individual sums inside the
   working drawn as dots. `easyQuestion` is gone; the ranges live in
   `generateLessonQuestion` beside the medium ones.
+- The easy pictures for taking away and for sharing are tapped rather
+  than read, because arriving already crossed out or already shared
+  answered the question for the child.
+- The first stage of every easy long division now has a picture: "how
+  many times does 4 go into 9" draws the 9 and takes 4 away per tap. It
+  had none before, because only the multiply-back step was drawn.
 - The working fits a phone without scrolling. Long multiplication used
   to overflow by 151px and long division by 7px; `fitCell` now sizes the
   grid from the room the keypad leaves.

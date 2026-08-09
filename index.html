@@ -99,6 +99,11 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
 .dot-row i{width:13px;height:13px;border-radius:50%;background:var(--pen);display:block}
 .dot-row i.gone{background:transparent;border:2px dashed rgba(217,75,146,.5)}
 .dot-op{font-size:20px;font-weight:900;color:var(--ink)}
+/* a picture the child works on rather than reads: it invites the tap and answers it */
+.dots.tappable{cursor:pointer;-webkit-tap-highlight-color:transparent}
+.dots.tappable .dot-group{border-style:solid;border-color:rgba(217,75,146,.45)}
+.dots.tappable .dot-row i{transition:background .12s,border-color .12s}
+.dots.tappable:active .dot-group{background:rgba(255,255,255,.9)}
 /* the same picture, shrunk, when it sits above a working rather than above a bare question:
    the grid below it will not go under 19px a cell, so the strip has to give way instead */
 #colDots{margin:2px 0 4px;gap:5px}
@@ -233,7 +238,6 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
 .difficulty .difficulty-badge{grid-row:1 / span 2;align-self:center;font-size:20px;color:rgba(80,49,154,.28);text-align:center}
 .difficulty .difficulty-name{font-weight:900;color:var(--ink);font-size:16px}
 .difficulty .difficulty-blurb{font-size:12px;font-weight:700;color:var(--ink-soft);line-height:1.25}
-.difficulty.sel{border-color:var(--pen);box-shadow:0 0 0 3px rgba(217,75,146,.14)}
 .difficulty.won .difficulty-badge{color:var(--gold)}
 .difficulty-won{grid-column:2;font-size:11px;font-weight:800;color:var(--grass);text-transform:uppercase;letter-spacing:.08em}
 .journey-stage{display:grid;grid-template-columns:78px 1fr;gap:12px;align-items:center;min-height:98px;padding:9px 12px;background:#fff;border:2px solid var(--grid);border-radius:16px;overflow:hidden}
@@ -432,9 +436,8 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
       <div class="pet-stage" id="nodePet"></div>
       <p id="nodeStory"></p>
     </div>
-    <div class="eyebrow" style="margin:14px 0 6px">choose how hard</div>
+    <div class="eyebrow" style="margin:14px 0 6px" id="nodeChoose">tap one to begin</div>
     <div class="difficulty-row" id="nodeDifficulty"></div>
-    <button class="btn" id="nodeStart">Start lesson</button>
   </section>
 
   <section id="s-play" class="screen">
@@ -1143,9 +1146,9 @@ function buildLongMultiplication(a,b){
 
 function twoDigitColumnAddition(questionIndex,easy){
   const phase=questionIndex<=3?'no-carry':questionIndex<=6?'one-carry':'mixed';
-  const hi=easy?49:89;
   for(let guard=0;guard<300;guard++){
-    const a=rnd(10,hi),b=rnd(10,hi),ones=a%10+b%10,tens=Math.floor(a/10)+Math.floor(b/10)+(ones>=10?1:0);
+    const a=easy?easyNumber(2,4):rnd(10,89),b=easy?easyNumber(2,4):rnd(10,89);
+    const ones=a%10+b%10,tens=Math.floor(a/10)+Math.floor(b/10)+(ones>=10?1:0);
     const carries=(ones>=10?1:0)+(tens>=10?1:0);
     if((phase==='no-carry'&&carries===0)||(phase==='one-carry'&&ones>=10&&tens<10)||phase==='mixed')
       return {kind:'col',a:a,b:b,M:buildColumn('add',a,b),phase:phase};
@@ -1157,7 +1160,8 @@ function twoDigitColumnAddition(questionIndex,easy){
 function twoDigitColumnSubtraction(questionIndex,easy){
   const phase=questionIndex<=3?'no-regroup':questionIndex<=6?'regroup':'mixed';
   for(let guard=0;guard<300;guard++){
-    const a=rnd(21,easy?59:99),b=rnd(11,a-10);
+    const a=easy?easyNumber(2,5):rnd(21,99),b=easy?easyNumber(2,Math.max(1,Math.floor(a/10))):rnd(11,a-10);
+    if(b>a-10) continue;
     const M=buildColumn('sub',a,b);
     if(!colValid(M)) continue;
     const regroups=M.steps.some(s=>s.t==='ann');
@@ -1216,16 +1220,47 @@ function genDivision(tr,phase,maxDivisor){
 
    A picture only helps while it can be taken in at a glance, so anything over DOT_LIMIT
    is left undrawn rather than turned into a wall of dots. That is why the two-digit mental
-   lessons get smaller numbers but no picture: 29 + 19 as fifty dots teaches nothing. */
+   lessons get smaller numbers but no picture: 29 + 19 as fifty dots teaches nothing.
+
+   And a picture must not answer the question for the child. A take-away whose dots arrive
+   already crossed out has done the work; so has a share that arrives already shared. Those
+   two start whole and the child taps to cross out or to share, which is the doing of the
+   sum rather than the reading of it. */
 const DOT_LIMIT=36;
 function dotRows(count){
   const rows=[];
   for(let left=count;left>0;left-=5) rows.push(Math.min(5,left));
   return rows;
 }
+/* Every digit on easy is 1 to 9, never 0: a step reading "0 + 5" is not a sum, so it has no
+   picture, and a child on easy would be left without help exactly where they need it. */
+function easyNumber(digits,top){
+  let n=0;
+  for(let i=0;i<digits;i++) n=n*10+rnd(1,i===0&&top?top:9);
+  return n;
+}
+/* 24 shared into 4 is halve, then halve again. Into 3 it is one sharing. */
+const dotSplits=by=>by===4?[2,2]:by===6?[2,3]:by===8?[2,2,2]:by===9?[3,3]:[by];
+function dotShareGroups(shape,splits){
+  let groups=[shape.share];
+  dotSplits(shape.by).slice(0,splits).forEach(f=>{
+    groups=groups.reduce((all,n)=>all.concat(Array.from({length:f},()=>n/f)),[]);
+  });
+  return groups;
+}
 const dotTotal=shape=>shape.parts?shape.parts.reduce((a,b)=>a+b,0)
+  :shape.share!==undefined?shape.share
   :shape.groups!==undefined?shape.groups*shape.per:shape.per;
-const dotsWorthDrawing=shape=>!!shape&&dotTotal(shape)<=DOT_LIMIT;
+/* How tall the picture stands. Groups sit side by side and wrap, so what makes a picture
+   tall is the deepest single pile: nine fours are two rows of little groups, but thirty-six
+   in one pile is eight rows of five. Above a working that is the difference between fitting
+   and not, because the grid underneath will not go below 19px a cell. */
+const dotTallest=shape=>shape.parts?Math.max.apply(null,shape.parts.map(n=>dotRows(n).length))
+  :shape.share!==undefined?dotRows(shape.share).length:dotRows(shape.per).length;
+const DOT_ROWS_IN_WORKING=4;
+const dotsWorthDrawing=(shape,maxRows)=>!!shape&&dotTotal(shape)<=DOT_LIMIT&&(!maxRows||dotTallest(shape)<=maxRows);
+const dotWord=(n,one,many)=>n+' '+(n===1?one:many);
+const dotsAreTappable=shape=>!!shape&&(shape.take!==undefined||shape.share!==undefined||shape.chunk!==undefined);
 /* The individual sum inside a step of column working, as dots. Null for a step that is not
    a sum at all — a carry to copy down, a crossing-out — because there is nothing to count. */
 function stepDots(op,st){
@@ -1233,7 +1268,7 @@ function stepDots(op,st){
   // nothing is worth drawing as no dots at all, so a column with a 0 in it simply loses
   // that group rather than showing an empty box
   if(op==='mul') return st.x?{groups:st.x,per:st.m,words:st.x+' groups of '+st.m+'.'}:null;
-  if(op==='sub') return st.x?{per:st.x,take:st.y,words:'Start with '+st.x+' and take away '+st.y+'.'}:null;
+  if(op==='sub') return st.x?{per:st.x,take:st.y,words:'Tap '+dotWord(st.y,'dot','dots')+' to cross out.'}:null;
   const parts=[st.x,st.y,st.carry].filter(n=>n>0);
   return parts.length<2?null:{parts:parts,words:parts.join(' and ')+' altogether.'};
 }
@@ -1247,8 +1282,12 @@ function longMulStepDots(st){
   return null;
 }
 function divStepDots(st,d){
-  if(!st||st.t!=='prod') return null;
-  return {groups:st.q,per:d,words:st.q+' groups of '+d+'.'};
+  if(!st) return null;
+  if(st.t==='prod') return {groups:st.q,per:d,words:st.q+' groups of '+d+'.'};
+  // "how many times does 4 go into 9" is answered by taking 4 away as often as it will go,
+  // which is what the working does next anyway
+  if(st.t==='fit'||st.t==='skip') return {per:st.into,chunk:d,words:'Tap to take away '+d+' at a time.'};
+  return null;
 }
 /* Difficulty moves the numbers, never the lesson. Easy sits the same question with smaller
    ones; hard sits the same question with the talking taken away, and on the very first
@@ -1264,18 +1303,37 @@ function generateLessonQuestion(stage,questionIndex,difficulty){
   }
   if(stage.id==='add_2column') return twoDigitColumnAddition(questionIndex||1,easy);
   if(stage.id==='add_2mental'){
-    const a=easy?rnd(11,29):rnd(12,58),b=easy?rnd(11,19):rnd(11,39);
+    // easy is the same lesson in the head, but nothing has to be carried, which is the part
+    // that is hard to hold without paper
+    if(easy){
+      let a=23,b=15;
+      for(let i=0;i<200;i++){
+        const x=easyNumber(2,4),y=easyNumber(2,3);
+        if(x%10+y%10<10){ a=x; b=y; break; }
+      }
+      return {kind:'n',txt:a+' + '+b,ans:a+b};
+    }
+    const a=rnd(12,58),b=rnd(11,39);
     return {kind:'n',txt:a+' + '+b,ans:a+b};
   }
   if(stage.id==='sub_1digit'){
-    const a=easy?rnd(2,6):rnd(2,9),b=easy?rnd(1,a):rnd(0,a);
+    const a=easy?rnd(4,9):rnd(2,9),b=easy?rnd(1,a-1):rnd(0,a);
     return {kind:'n',txt:a+' − '+b,ans:a-b,
-      dots:picture({per:a,take:b,words:'Start with '+a+' and take away '+b+'. How many are left?'})};
+      dots:picture({per:a,take:b,words:'Start with '+a+'. Tap '+dotWord(b,'dot','dots')+' to cross out.'})};
   }
   if(stage.id==='sub_2column') return twoDigitColumnSubtraction(questionIndex||1,easy);
   if(stage.id==='sub_2mental'){
     // in the head now, after the columns taught it: never below zero, never a single digit
-    const a=easy?rnd(21,49):rnd(25,95),b=easy?rnd(11,Math.min(29,a-10)):rnd(11,Math.min(49,a-10));
+    if(easy){
+      // and on easy nothing has to be borrowed either
+      let a=48,b=13;
+      for(let i=0;i<200;i++){
+        const x=easyNumber(2,4),y=easyNumber(2,3);
+        if(x-y>=10&&x%10>=y%10){ a=x; b=y; break; }
+      }
+      return {kind:'n',txt:a+' − '+b,ans:a-b};
+    }
+    const a=rnd(25,95),b=rnd(11,Math.min(49,a-10));
     return {kind:'n',txt:a+' − '+b,ans:a-b};
   }
   if(stage.id==='mul_1x1'){
@@ -1284,29 +1342,37 @@ function generateLessonQuestion(stage,questionIndex,difficulty){
       dots:picture({groups:a,per:b,words:a+' groups of '+b+'. How many altogether?'})};
   }
   if(stage.id==='div_simple'){
-    const d=easy?rnd(2,4):rnd(2,12),q=easy?rnd(2,6):rnd(2,12);
+    const d=easy?rnd(2,4):rnd(2,12),q=easy?rnd(3,6):rnd(2,12);
     return {kind:'n',txt:(d*q)+' ÷ '+d,ans:q,
-      dots:picture({groups:d,per:q,words:(d*q)+' shared into '+d+' equal groups. How many in each group?'})};
+      dots:picture({share:d*q,by:d,words:(d*q)+' shared into '+d+'. Tap to share them out.'})};
   }
   if(stage.mode==='division') return {kind:'div',made:genDivision(3,longDivisionPhase(questionIndex),easy?4:9)};
   if(stage.gid==='add'){
-    const lo=stage.digits===4?1000:100;
-    const hi=stage.digits===4?(easy?4999:8999):(easy?499:899);
-    for(let i=0;i<250;i++){ const a=rnd(lo,hi),b=rnd(lo,hi),M=buildColumn('add',a,b); if(M.steps.some(s=>s.t==='carry')&&colValid(M)) return {kind:'col',a,b,M}; }
+    const lo=stage.digits===4?1000:100,hi=stage.digits===4?8999:899;
+    for(let i=0;i<250;i++){
+      const a=easy?easyNumber(stage.digits,4):rnd(lo,hi),b=easy?easyNumber(stage.digits,4):rnd(lo,hi);
+      const M=buildColumn('add',a,b);
+      if(M.steps.some(s=>s.t==='carry')&&colValid(M)) return {kind:'col',a,b,M};
+    }
   }
   if(stage.gid==='sub'){
-    const lo=stage.digits===4?1000:100;
-    const hi=stage.digits===4?(easy?4999:9999):(easy?499:999);
-    for(let i=0;i<350;i++){ const a=rnd(lo,hi),b=rnd(lo,a-1),M=buildColumn('sub',a,b); if(M.steps.some(s=>s.t==='ann')&&colValid(M)) return {kind:'col',a,b,M}; }
+    const lo=stage.digits===4?1000:100,hi=stage.digits===4?9999:999;
+    for(let i=0;i<350;i++){
+      const a=easy?easyNumber(stage.digits,4):rnd(lo,hi);
+      const b=easy?easyNumber(stage.digits,Math.max(1,Math.floor(a/Math.pow(10,stage.digits-1)))):rnd(lo,a-1);
+      if(b>=a) continue;                    // buildColumn cannot borrow past the front
+      const M=buildColumn('sub',a,b);
+      if(M.steps.some(s=>s.t==='ann')&&colValid(M)) return {kind:'col',a,b,M};
+    }
   }
   if(stage.id==='mul_1x2'){
-    const a=easy?rnd(12,49):rnd(12,99),b=easy?rnd(2,4):rnd(2,9);
+    const a=easy?easyNumber(2,4):rnd(12,99),b=easy?rnd(2,4):rnd(2,9);
     return {kind:'col',a,b,M:buildColumn('mul',a,b)};
   }
   if(stage.id==='mul_2x2'){
     // easy keeps the working whole and only shrinks the multiplier, so every fact inside
     // it is a times table the seven-year-old has met
-    const a=easy?rnd(12,49):rnd(12,99),b=easy?rnd(1,4)*10+rnd(2,4):rnd(12,99);
+    const a=easy?easyNumber(2,4):rnd(12,99),b=easy?rnd(1,4)*10+rnd(2,4):rnd(12,99);
     return {kind:'longmul',a:a,b:b,L:buildLongMultiplication(a,b)};
   }
   return {kind:'n',txt:'1 + 1',ans:2};
@@ -1465,21 +1531,21 @@ function openMapNode(nodeId){
   renderDifficultyChoice(stage);
   show('s-node');
 }
-let selectedDifficulty='medium';
+/* Choosing a difficulty is the same act as starting the lesson: there is nothing to confirm
+   after it, so a second button asking again was only a step in the way. */
 function renderDifficultyChoice(stage){
   const badges=badgesFor(P,stage.id),row=$('nodeDifficulty');
-  if(!DIFFICULTY_IDS.includes(selectedDifficulty)) selectedDifficulty='medium';
+  const done=stageStatus(P,stage.id)==='completed';
+  $('nodeChoose').textContent=done?'tap one to practise again':'tap one to begin';
   row.innerHTML='';
   DIFFICULTIES.forEach(d=>{
     const b=document.createElement('button');
-    b.className='difficulty'+(d.id===selectedDifficulty?' sel':'')+(badges[d.id]?' won':'');
+    b.className='difficulty'+(badges[d.id]?' won':'');
     b.innerHTML='<span class="difficulty-badge">'+d.badge+'</span><span class="difficulty-name">'+d.label+'</span>'+
       '<span class="difficulty-blurb">'+d.blurb+'</span>'+(badges[d.id]?'<span class="difficulty-won">badge won</span>':'');
-    b.onclick=()=>{ selectedDifficulty=d.id; renderDifficultyChoice(stage); sTap(); };
+    b.onclick=()=>{ sTap(); startSession(stage.id,d.id); };
     row.appendChild(b);
   });
-  const done=stageStatus(P,stage.id)==='completed';
-  $('nodeStart').textContent=(done?'Practise Again':'Start Lesson')+' \u00B7 '+difficultyOf(selectedDifficulty).label;
 }
 
 
@@ -1617,23 +1683,61 @@ function nextQuestion(){
   else if(S.q.kind==='col') renderCol();
 }
 /* The picture under an easy question. Counters in rows of five, grouped the way the words
-   describe them, so the child can count what the sum is asking rather than decode it. */
-function easyDotsMarkup(shape){
-  const group=(n,cls)=>'<span class="dot-group '+(cls||'')+'">'+
-    dotRows(n).map(row=>'<span class="dot-row">'+'<i></i>'.repeat(row)+'</span>').join('')+'</span>';
+   describe them, so the child can count what the sum is asking rather than decode it.
+   Pure: the tapping state is passed in, so the same markup can be redrawn on every tap. */
+function easyDotsMarkup(shape,state){
+  const st={struck:(state&&state.struck)||[],splits:(state&&state.splits)||0,rings:(state&&state.rings)||0};
+  const dot=(index,gone)=>'<i'+(index>=0?' data-dot="'+index+'"':'')+(gone?' class="gone"':'')+'></i>';
+  const group=(n,from)=>'<span class="dot-group">'+dotRows(n).map((row,ri)=>
+    '<span class="dot-row">'+Array.from({length:row},(_,i)=>{
+      const index=from===undefined?-1:from+ri*5+i;
+      return dot(index,index>=0&&st.struck.indexOf(index)>=0);
+    }).join('')+'</span>').join('')+'</span>';
   if(shape.parts) return shape.parts.map(n=>group(n)).join('<span class="dot-op">+</span>');
-  if(shape.take!==undefined)
+  if(shape.take!==undefined) return group(shape.per,0);
+  if(shape.chunk!==undefined){
+    const taken=st.rings*shape.chunk;
     return '<span class="dot-group">'+dotRows(shape.per).map((row,ri)=>'<span class="dot-row">'+
-      Array.from({length:row},(_,i)=>(ri*5+i)>=shape.per-shape.take?'<i class="gone"></i>':'<i></i>').join('')+'</span>').join('')+'</span>';
+      Array.from({length:row},(_,i)=>dot(-1,(ri*5+i)<taken)).join('')+'</span>').join('')+'</span>';
+  }
+  if(shape.share!==undefined) return dotShareGroups(shape,st.splits).map(n=>group(n)).join('');
   return Array.from({length:shape.groups},()=>group(shape.per)).join('');
+}
+/* One more tap on the picture: cross a dot out, share the pile again, or take away another
+   lot. Each wraps round to the start so nothing can be got wrong and stuck. */
+function advanceDots(shape,st){
+  if(shape.take!==undefined) return st;
+  if(shape.share!==undefined) return {struck:[],splits:(st.splits+1)%(dotSplits(shape.by).length+1),rings:0};
+  return {struck:[],splits:0,rings:(st.rings+1)%(Math.floor(shape.per/shape.chunk)+1)};
+}
+function toggleStruck(st,index){
+  const struck=st.struck.slice(),at=struck.indexOf(index);
+  if(at>=0) struck.splice(at,1); else struck.push(index);
+  return {struck:struck,splits:st.splits,rings:st.rings};
 }
 /* Draws a picture, or nothing if there is no picture worth drawing. Returns whether it drew,
    because the caption under the question only makes sense when there are dots above it. */
-function paintDots(el,shape){
-  const draw=dotsWorthDrawing(shape);
-  el.innerHTML=draw?easyDotsMarkup(shape):'';
+function paintDots(el,shape,maxRows){
+  const draw=dotsWorthDrawing(shape,maxRows);
+  el.dotShape=draw?shape:null;
+  el.dotState={struck:[],splits:0,rings:0};
+  el.innerHTML=draw?easyDotsMarkup(shape,el.dotState):'';
   el.style.display=draw?'flex':'none';
+  el.classList.toggle('tappable',draw&&dotsAreTappable(shape));
   return draw;
+}
+function wireDots(el){
+  el.onclick=event=>{
+    const shape=el.dotShape;
+    if(!shape||!dotsAreTappable(shape)) return;
+    if(shape.take!==undefined){
+      const hit=event.target.closest?event.target.closest('i[data-dot]'):null;
+      if(!hit) return;
+      el.dotState=toggleStruck(el.dotState,Number(hit.getAttribute('data-dot')));
+    }else el.dotState=advanceDots(shape,el.dotState);
+    sTap();
+    el.innerHTML=easyDotsMarkup(shape,el.dotState);
+  };
 }
 function paintAns(){ const b=$('ansBox'); b.textContent=S.input; b.classList.toggle('empty',S.input===''); }
 function praise(){ return PRAISE[Math.floor(Math.random()*PRAISE.length)]; }
@@ -1827,7 +1931,7 @@ function fitCell(rows){
 function setGridCell(g,rows){ g.style.setProperty('--cell',fitCell(rows)+'px'); }
 function renderCol(){
   const M=S.col, g=$('colGrid'), cols=M.wid+1, st=M.steps[M.si];
-  paintDots($('colDots'),S.difficulty==='easy'?stepDots(M.op,st):null);
+  paintDots($('colDots'),S.difficulty==='easy'?stepDots(M.op,st):null,DOT_ROWS_IN_WORKING);
   setGridCell(g,4);
   g.style.gridTemplateColumns='repeat('+cols+', var(--cell))'+(M.op==='mul'?' 50px':'');
   g.style.gridTemplateRows='calc(var(--cell) * 1.35) repeat(3, var(--cell))';
@@ -1980,7 +2084,7 @@ function longMulSlot(st,cols){
 }
 function renderLongMul(){
   const L=S.longMul,st=L.steps[L.si],grid=$('colGrid'),cols=L.width+1;
-  paintDots($('colDots'),S.difficulty==='easy'?longMulStepDots(st):null);
+  paintDots($('colDots'),S.difficulty==='easy'?longMulStepDots(st):null,DOT_ROWS_IN_WORKING);
   setGridCell(grid,9);
   grid.style.gridTemplateColumns='repeat('+cols+', var(--cell)) 50px';
   grid.style.gridTemplateRows='repeat(9, var(--cell))'; grid.innerHTML='';
@@ -2088,7 +2192,7 @@ function renderDiv(){
   const D=S.div, g=D.g, L=g.N.length, st=D.plan[D.pi];
   const rightCols=Math.max(String(g.d).length,g.quot.length);
   const grid=$('colGrid');
-  paintDots($('colDots'),S.difficulty==='easy'?divStepDots(st,g.d):null);
+  paintDots($('colDots'),S.difficulty==='easy'?divStepDots(st,g.d):null,DOT_ROWS_IN_WORKING);
   setGridCell(grid,1+2*g.steps.length);
   grid.style.gridTemplateColumns='repeat('+(L+1+rightCols)+', var(--cell))';
   grid.style.gridTemplateRows='repeat('+(1+2*g.steps.length)+', var(--cell))';
@@ -2251,11 +2355,12 @@ window.addEventListener('resize',()=>{
   mapResizeTimer=setTimeout(renderMenu,150);
 });
 $('nodeBack').onclick=()=>{ show('s-menu'); renderMenu(); };
-$('nodeStart').onclick=()=>{ if(selectedMapNode) startSession(selectedMapNode.lessonId,selectedDifficulty); };
 $('setBtn').onclick=()=>{ renderSettings(); show('s-set'); };
 $('setFriendName').onchange=()=>{ captureSettingsName(); renderSettings(); };
 $('setBack').onclick=()=>{ captureSettingsName(); renderHome(); show('s-home'); };
 $('quitPlay').onclick=()=>{ save(); renderHome(); show('s-home'); };
+// the easy pictures are tapped, not just looked at
+wireDots($('dots')); wireDots($('colDots'));
 $('crackContinue').onclick=()=>{ sTap(); show('s-play'); nextQuestion(); };
 $('againBtn').onclick=()=>{ show('s-menu'); renderMenu(); };
 $('endHome').onclick=()=>{ if(lastSessionStageId) startSession(lastSessionStageId,endRetryDifficulty); };
