@@ -1132,12 +1132,18 @@ function buildLongMultiplication(a,b){
     partials.push(a*multiplier*Math.pow(10,offset));
   });
   let carry=0;
+  // the same rule the column addition follows: a column with no digits of its own gets no
+  // carry mark above it, because the carried digit is simply written there as the answer on
+  // the next turn. Without it, 49 x 23 asks for the final 1 as a carry and then again as
+  // the answer, which reads as writing the same 1 twice.
+  const reaches=(value,col)=>String(value).length>=width-col;
   for(let col=width-1;col>=0;col--){
     const place=Math.pow(10,width-1-col);
     const x=Math.floor(partials[0]/place)%10,y=Math.floor(partials[1]/place)%10,total=x+y+carry;
     steps.push({t:'sum',col:col,want:String(total%10),x:x,y:y,carry:carry});
     carry=Math.floor(total/10);
-    if(carry&&col>0) steps.push({t:'sumCarry',col:col-1,want:String(carry)});
+    if(carry&&col>0&&(reaches(partials[0],col-1)||reaches(partials[1],col-1)))
+      steps.push({t:'sumCarry',col:col-1,want:String(carry)});
   }
   return {a:a,b:b,width:width,partials:partials,total:a*b,steps:steps,doneSteps:steps.map(()=>false),free:false,
     si:0,buf:'',tries:0,err:0,hint:false,

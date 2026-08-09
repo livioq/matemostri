@@ -88,6 +88,10 @@ public release.
 - The two digits being multiplied are ringed, so the child can see which
   pair the dots are counting: 43 x 27 rings the 3 and the 7, then the 4
   and the 7. An outline, not a border, so the grid does not move.
+- The rule that a column with no digits of its own gets no carry mark
+  above it applies to long multiplication's final addition too, not only
+  to the column additions. Without it 49 x 23 asked for the leading 1 as
+  a carry and then again as the answer, which is the same 1 twice.
 - A carry note is cleared once the multiplication that uses it is done.
   Left on screen it reads as still owing something, and when the next
   carry happens to be the same digit — 22 x 5 carries 1, then makes 11

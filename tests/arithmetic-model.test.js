@@ -521,6 +521,30 @@ assert.ok(Number(singleCarryNote.style.gridColumn) > singleUi.wid + 1, 'carry is
 assert.equal(uiElements.colGrid.children.some(child => child.style.gridRow === 1 && /carry/.test(child.textContent)), false,
   'multiplication carry is never rendered above the multiplicand');
 
+// A column with no digits of its own gets no carry mark above it: the carried digit is
+// simply written there as the answer on the next turn. Long multiplication's final addition
+// did not follow the rule, so 49 x 23 asked for the last 1 as a carry and then again as the
+// answer — the same 1 entered twice.
+const spill = context.buildLongMultiplication(49, 23);
+assert.deepEqual(
+  plain(spill.steps.filter(st => st.t === 'sum' || st.t === 'sumCarry').map(st => st.t + ':' + st.col + '=' + st.want)),
+  ['sum:3=7', 'sum:2=2', 'sumCarry:1=1', 'sum:1=1', 'sum:0=1'],
+  'the leading 1 is written once, as the answer, not as a carry and then again');
+for (let a = 12; a <= 99; a += 1) {
+  for (let b = 12; b <= 99; b += 1) {
+    const model = context.buildLongMultiplication(a, b);
+    model.steps.filter(st => st.t === 'sumCarry').forEach(st => {
+      assert.ok(model.partials.some(part => String(part).length >= model.width - st.col),
+        `${a} x ${b} marks a carry above a column neither partial row reaches`);
+    });
+    let total = '';
+    for (let col = 0; col < model.width; col += 1) {
+      total += model.steps.find(st => st.t === 'sum' && st.col === col).want;
+    }
+    assert.equal(Number(total), a * b, `${a} x ${b} still adds up`);
+  }
+}
+
 // a carry note is cleared once the multiplication that uses it is done. Left on screen it
 // reads as still owing something, and when the next carry is the same digit — 22 x 5 carries
 // 1, then makes 11 and carries 1 again — the child looks like they are writing 1 twice.
