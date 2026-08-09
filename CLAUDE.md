@@ -44,6 +44,23 @@ public release.
   the pass mark moves with the length — `sessionPlan` owns both, and
   they must never drift apart or a lesson becomes impossible to
   complete.
+- Every lesson can be sat on three difficulties, chosen on its map stop.
+  Easy is aimed at the seven-year-old: small numbers drawn as dots in
+  rows of five, times tables no further than four, eight questions
+  rather than ten. Medium is the game as it was. Hard is medium with the
+  talking removed — the working is laid out with its boxes empty and the
+  child taps whichever one to fill next.
+- Passing a difficulty wins a badge. Every map stop shows all three
+  slots, the unwon ones greyed, so a lesson does not read as finished
+  until all three are won. Finishing any one of them lights the path and
+  unlocks the next stop; the badges are what say how thoroughly.
+- Finishing a difficulty offers the next one up on the end screen.
+- The column working must fit the screen without scrolling. `fitCell`
+  sizes the grid from the room left once the keypad is built, which is
+  why the working is rendered again after `buildPad`.
+- Who is playing, girl or boy, is remembered on the player. It will
+  choose the artwork one day; today it only stores the choice. Age used
+  to be asked for and never changed anything, so it is gone.
 - The player names the creature. Default is Momo. All story and
   evolution text uses the player-chosen name, and the name can be
   changed at any time in settings, not only during the opening story.
