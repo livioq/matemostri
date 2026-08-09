@@ -70,15 +70,28 @@ public release.
   got wrong and stuck.
 - A picture only helps while it can be taken in at a glance, so a sum
   over `DOT_LIMIT` dots is left undrawn rather than turned into a wall of
-  them. That is why the two-digit mental lessons get smaller numbers but
-  no picture: 29 + 19 as forty-eight dots teaches nothing. Above a
-  working there is a second limit, on height rather than count, because
-  groups wrap sideways but a single pile only grows downwards: nine fours
-  are two rows of little groups, thirty-six in one pile is eight rows of
-  five, and the grid below will not go under 19px a cell. `dotTallest`
-  and `DOT_ROWS_IN_WORKING` are that limit; the dots are painted before
-  the grid is sized so `fitCell` knows the room they take, and `#colDots`
-  draws them smaller than the dots above a bare question.
+  them. The limit is 45, because the largest thing easy asks for is a
+  fact and what it carries: nine fours and the 3 carried into them.
+- The dots use the width they are given. A pile of fourteen is five
+  across at most, which leaves two thirds of the screen empty, so `fitDot`
+  grows them until either a group fills the strip or the picture would
+  stand too tall — one number, `--dot`, from which the gaps and the
+  padding follow. Nine little groups of four still have to shrink; one
+  pile of fourteen does not.
+- That sizing is an estimate, and an estimate cannot know what the keypad
+  costs on a particular phone. So `settleDots` measures the page after
+  the working is drawn and steps the picture down a size, or gives it up
+  altogether, rather than letting the working scroll. It is the real
+  guard; `DOT_ROWS_IN_WORKING` only stops the obviously hopeless.
+- On easy the picture is the help, so the times-table hint button is not
+  shown: it was taking room the picture needed.
+- The two digits being multiplied are ringed, so the child can see which
+  pair the dots are counting: 43 x 27 rings the 3 and the 7, then the 4
+  and the 7. An outline, not a border, so the grid does not move.
+- A carry note is cleared once the multiplication that uses it is done.
+  Left on screen it reads as still owing something, and when the next
+  carry happens to be the same digit — 22 x 5 carries 1, then makes 11
+  and carries 1 again — the child looks like they are writing 1 twice.
 - Zeros lose their group rather than showing an empty box, and a step
   that is not a sum at all — a carry to copy down, a crossing-out — gets
   no picture either. So that a step never goes without help where help is
@@ -144,6 +157,9 @@ Division: simple division; long division.
 - Column work is entered digit by digit with a carry row, the way it is
   written on paper. Subtraction uses regrouping: on 84-16 the 8 is
   crossed out and becomes 7, the 4 becomes 14.
+- A column crossed out twice reads newest first, leftwards, the way it is
+  written on paper: a 2 that becomes 12 gains its ten in front of it, and
+  the 2 it replaced is pushed aside.
 - Answer digits are always written right to left, one column at a time,
   and a step never asks for two digits at once. On 63+71 that is 4, then
   3, then the 1 that spills over — never 4, then 1, then 3. A column

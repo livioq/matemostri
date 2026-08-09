@@ -427,7 +427,14 @@ const uiContext = {
 vm.createContext(uiContext);
 vm.runInContext([
   'const setGridCell=()=>{};const selectColumnStep=()=>{};const selectLongMulStep=()=>{};',
-  'const DOT_LIMIT=36;',
+  'let dotSizeCap=0,settlingDots=false;const settleDots=()=>{};',
+  'const dotBudget=()=>200;const DOT_TALL_ALONE=190;',
+  source.match(/const DOT_SIZES=\[[^\]]*\];/)[0],
+  source.match(/const DOT_SEPARATOR=\d+;/)[0],
+  functionSource('dotLayouts'),
+  functionSource('dotLayoutFits'),
+  functionSource('fitDot'),
+  'const DOT_LIMIT=45;',
   functionSource('dotRows'),
   source.match(/const dotSplits=.*;\n/)[0],
   functionSource('dotShareGroups'),
@@ -450,7 +457,7 @@ vm.runInContext([
   functionSource('renderLongMul'),
   functionSource('renderStars'),
   functionSource('markQuestion'),
-  'this.dotsWorthDrawing=dotsWorthDrawing;this.dotTallest=dotTallest;this.ROWS=DOT_ROWS_IN_WORKING;this.stepDots=stepDots;this.dotsAreTappable=dotsAreTappable;' +
+  'this.dotsWorthDrawing=dotsWorthDrawing;this.dotTotal=dotTotal;this.dotTallest=dotTallest;this.ROWS=DOT_ROWS_IN_WORKING;this.stepDots=stepDots;this.dotsAreTappable=dotsAreTappable;' +
   'this.easyDotsMarkup=easyDotsMarkup;this.advanceDots=advanceDots;this.toggleStruck=toggleStruck;this.shareGroups=dotShareGroups;' + +
   'this.longMulStepDots=longMulStepDots;this.divStepDots=divStepDots;this.paintDots=paintDots;'
 ].join('\n'), uiContext);
@@ -514,21 +521,34 @@ assert.ok(Number(singleCarryNote.style.gridColumn) > singleUi.wid + 1, 'carry is
 assert.equal(uiElements.colGrid.children.some(child => child.style.gridRow === 1 && /carry/.test(child.textContent)), false,
   'multiplication carry is never rendered above the multiplicand');
 
+// a carry note is cleared once the multiplication that uses it is done. Left on screen it
+// reads as still owing something, and when the next carry is the same digit — 22 x 5 carries
+// 1, then makes 11 and carries 1 again — the child looks like they are writing 1 twice.
+const spentUi = context.buildColumn('mul', 22, 5);
+while (spentUi.steps[spentUi.si] && spentUi.steps[spentUi.si].t !== 'mulCarry') context.commitColumnStep(spentUi);
+context.commitColumnStep(spentUi);
+resetUi(); uiContext.S = {col:spentUi, colB:5}; uiContext.renderCol();
+assert.ok(uiElements.colGrid.children.some(c => c.className.includes('mul-carry-note')),
+  'the carry note is on screen while it is still owed');
+context.commitColumnStep(spentUi);
+resetUi(); uiContext.S = {col:spentUi, colB:5}; uiContext.renderCol();
+assert.equal(uiElements.colGrid.children.some(c => c.className.includes('mul-carry-note')), false,
+  'and gone once the multiplication that uses it has been done');
+
 const longUi = context.buildLongMultiplication(99, 99);
 while (!(longUi.steps[longUi.si].row === 1)) context.commitLongMultiplicationStep(longUi);
 resetUi(); uiContext.S = {longMul:longUi}; uiContext.renderLongMul();
 let carryNotes = uiElements.colGrid.children.filter(child => child.className.includes('mul-carry-note'));
-assert.equal(carryNotes.length, 1);
-assert.equal(carryNotes[0].style.gridRow, 5, 'first carry belongs to the first partial-product row');
-assert.match(carryNotes[0].className, /retired/, 'first-row carry retires before the second row begins');
+assert.equal(carryNotes.length, 0, 'the first row leaves no spent carry behind when the second begins');
 while (!(longUi.steps[longUi.si].t === 'partialCarry' && longUi.steps[longUi.si].row === 1)) context.commitLongMultiplicationStep(longUi);
 context.commitLongMultiplicationStep(longUi);
 resetUi(); uiContext.S = {longMul:longUi}; uiContext.renderLongMul();
 carryNotes = uiElements.colGrid.children.filter(child => child.className.includes('mul-carry-note'));
-assert.equal(carryNotes.length, 2);
-assert.equal(carryNotes.find(note => note.style.gridRow === 5).className.includes('retired'), true);
-assert.equal(carryNotes.find(note => note.style.gridRow === 6).className.includes('retired'), false,
-  'second-row carry remains active only beside its own row');
+assert.equal(carryNotes.length, 1, 'only the carry still owed is shown');
+assert.equal(carryNotes[0].style.gridRow, 6, 'and it belongs to the row being worked');
+assert.equal(carryNotes[0].className.includes('retired'), false,
+  'a carry that is still owed is never dimmed: it is either wanted or it is gone');
+assert.equal(source.includes("' retired'"), false, 'so nothing retires a carry note any more');
 
 const migrationContext = {};
 vm.createContext(migrationContext);
@@ -999,24 +1019,45 @@ for (let i = 0; i < 300; i += 1) {
 assert.equal(uiContext.dotsWorthDrawing({parts:[4, 5]}), true);
 assert.equal(uiContext.dotsWorthDrawing({parts:[29, 19]}), false, 'forty-eight dots teach nothing');
 assert.equal(uiContext.dotsWorthDrawing({groups:4, per:9}), true, 'the biggest fact on easy still gets one');
-assert.equal(uiContext.dotsWorthDrawing({groups:5, per:9}), false);
+assert.equal(uiContext.dotsWorthDrawing({groups:9, per:4, plus:3}), true,
+  'and so does that fact with what it carries into it');
+assert.equal(uiContext.dotsWorthDrawing({groups:6, per:9}), false);
 assert.equal(uiContext.dotsWorthDrawing(null), false, 'and a step that is not a sum gets none');
 
 // height, not count, is what makes a picture too big to stand above a working: nine fours
 // wrap sideways, thirty-six in one pile is eight rows deep
 assert.equal(uiContext.dotTallest({groups:9, per:4}), 1, 'a group of four is one row');
 assert.equal(uiContext.dotTallest({per:36, chunk:4}), 8, 'a pile of thirty-six is eight');
+assert.equal(uiContext.dotTallest({per:23, chunk:4}), 5, 'and a pile of twenty-three is five');
 assert.equal(uiContext.dotTallest({parts:[9, 9, 1]}), 2);
 assert.equal(uiContext.dotsWorthDrawing({per:36, chunk:4}), true, 'thirty-six is inside the count limit');
-assert.equal(uiContext.dotsWorthDrawing({per:36, chunk:4}, uiContext.ROWS), false,
-  'but it will not stand above a working');
+assert.equal(uiContext.dotsWorthDrawing({per:44, chunk:4}, uiContext.ROWS), false,
+  'but nine rows of five will not stand above a working');
+assert.equal(uiContext.dotsWorthDrawing({per:23, chunk:4}, uiContext.ROWS), true,
+  'how many times 4 goes into 23 still gets its picture');
 assert.equal(uiContext.dotsWorthDrawing({groups:9, per:4}, uiContext.ROWS), true,
   'while the same thirty-six as nine little groups will');
 assert.equal(uiContext.dotsWorthDrawing({per:20, chunk:4}, uiContext.ROWS), true);
 assert.equal(uiContext.dotsWorthDrawing({share:24, by:4}), true,
   'and a question with no working underneath it can stand taller');
-assert.equal((source.match(/DOT_ROWS_IN_WORKING\)/g) || []).length, 3,
+assert.equal((source.match(/DOT_ROWS_IN_WORKING,/g) || []).length, 3,
   'all three workings cap the height of the picture above them');
+// and each tells it how many grid rows it has to leave room for, so the picture never
+// squeezes the working past the smallest cell the grid will take
+assert.match(functionSource('dotBudget'), /gridRows\*MIN_CELL/,
+  'the picture may only have the room the grid does not need');
+assert.match(functionSource('renderLongMul'), /DOT_ROWS_IN_WORKING,9\)/, 'long multiplication has nine rows');
+assert.match(functionSource('renderCol'), /DOT_ROWS_IN_WORKING,4\)/, 'a column has four');
+assert.match(functionSource('renderDiv'), /DOT_ROWS_IN_WORKING,1\+2\*g\.steps\.length\)/,
+  'and a division grows two rows a round');
+
+// easy rings the pair being multiplied
+assert.match(functionSource('renderCol'), /ringMul&&st\.col===i\?' ringed'/,
+  'the digit being multiplied is ringed');
+assert.match(functionSource('renderCol'), /M\.bd\[i\],ringMul\?'ringed'/, 'and so is what it is multiplied by');
+assert.match(functionSource('renderLongMul'), /c===ringUp\?'ringed'/);
+assert.match(functionSource('renderLongMul'), /c===ringLow\?'ringed'/);
+assert.match(source, /\.dc\.ringed\{outline:/, 'ringed is an outline, so it does not move the grid');
 
 // choosing a difficulty is the same act as starting the lesson
 assert.equal(source.includes('id="nodeStart"'), false, 'there is no second button asking again');
@@ -1031,7 +1072,10 @@ assert.deepEqual(plain(uiContext.stepDots('add', {t:'res', x:6, y:3, carry:1})),
 assert.deepEqual(plain(uiContext.stepDots('sub', {t:'res', x:14, y:6})),
   {per:14, take:6, words:'Tap 6 dots to cross out.'});
 assert.deepEqual(plain(uiContext.stepDots('mul', {t:'res', x:7, m:3, carry:0})),
-  {groups:7, per:3, words:'7 groups of 3.'});
+  {groups:7, per:3, plus:0, words:'7 groups of 3.'});
+// the carry is part of the sum, so it is part of the picture
+assert.deepEqual(plain(uiContext.stepDots('mul', {t:'res', x:9, m:4, carry:3})),
+  {groups:9, per:4, plus:3, words:'9 groups of 4 and 3 carried.'});
 assert.equal(uiContext.stepDots('add', {t:'res', x:0, y:5, carry:0}), null,
   'nothing plus five is not a sum worth drawing');
 assert.deepEqual(plain(uiContext.stepDots('add', {t:'res', x:null, y:4, carry:1})),
@@ -1044,7 +1088,10 @@ assert.equal(uiContext.stepDots('add', {t:'carry', col:1, want:'1'}), null,
 assert.equal(uiContext.stepDots('sub', {t:'ann', col:1, want:'7'}), null,
   'nor is a crossing-out');
 assert.deepEqual(plain(uiContext.longMulStepDots({t:'partial', digit:3, multiplier:4})),
-  {groups:3, per:4, words:'3 groups of 4.'});
+  {groups:3, per:4, plus:0, words:'3 groups of 4.'});
+assert.deepEqual(plain(uiContext.longMulStepDots({t:'partial', digit:9, multiplier:4, carry:3})),
+  {groups:9, per:4, plus:3, words:'9 groups of 4 and 3 carried.'});
+assert.equal(uiContext.dotTotal({groups:9, per:4, plus:3}), 39, 'and it is counted in');
 assert.equal(uiContext.longMulStepDots({t:'placeholder'}), null, 'the placeholder 0 is not a sum');
 assert.deepEqual(plain(uiContext.divStepDots({t:'prod', q:3}, 4)),
   {groups:3, per:4, words:'3 groups of 4.'});
