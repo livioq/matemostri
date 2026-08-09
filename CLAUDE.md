@@ -45,11 +45,36 @@ public release.
   they must never drift apart or a lesson becomes impossible to
   complete.
 - Every lesson can be sat on three difficulties, chosen on its map stop.
-  Easy is aimed at the seven-year-old: small numbers drawn as dots in
-  rows of five, times tables no further than four, eight questions
-  rather than ten. Medium is the game as it was. Hard is medium with the
-  talking removed — the working is laid out with its boxes empty and the
-  child taps whichever one to fill next.
+  Difficulty moves the numbers, never the lesson. Medium is the game as
+  it was.
+- Easy is the same lesson, not a different one. Two-digit column addition
+  on easy is still two-digit column addition: same working, same carrying,
+  same place on the map. What changes is that the numbers are smaller and
+  that every individual sum inside the working is drawn as dots in rows of
+  five. It is eight questions rather than ten, and times tables stop at
+  four, so the largest fact anywhere on easy is 4 x 9 — that is a cap on
+  the multiplier, not on what it multiplies, so 9 x 4 is fine and long
+  division divides by 2 to 4. Do not go back to replacing easy questions
+  with a separate, simpler kind; that was the first attempt and it taught
+  the wrong lesson.
+- A picture only helps while it can be taken in at a glance, so a sum
+  over `DOT_LIMIT` dots is left undrawn rather than turned into a wall of
+  them. That is why the two-digit mental lessons get smaller numbers but
+  no picture: 29 + 19 as forty-eight dots teaches nothing. Zeros lose
+  their group rather than showing an empty box, and a step that is not a
+  sum at all — a carry to copy down, a crossing-out, deciding how many
+  times it goes — gets no picture either. When easy is drawing, the dots
+  are part of the room `fitCell` has to work inside, so they are painted
+  before the grid is sized, and `#colDots` draws them smaller than the
+  dots above a bare question because the grid below will not go under
+  19px a cell.
+- Hard is medium with the talking removed — the working is laid out with
+  its boxes empty and the child taps whichever one to fill next. The
+  first lesson has no working to take the talking out of, so hard takes
+  the small digits out instead: neither digit is below 4, or hard would
+  be medium under another name. The other mental lessons still differ
+  from medium only in nothing at all — worth fixing the same way if the
+  children notice.
 - Hard covers all three workings: columns, long multiplication and long
   division. Nothing is ever chosen for the child, not even the first box,
   and nothing is chosen for them after each answer either — `si`/`pi` go
@@ -66,6 +91,10 @@ public release.
   slots, the unwon ones greyed, so a lesson does not read as finished
   until all three are won. Finishing any one of them lights the path and
   unlocks the next stop; the badges are what say how thoroughly.
+- A harder sit proves the easier ones, so passing hard wins all three
+  badges at once and passing medium wins easy with it. `cascadeBadges`
+  applies the same rule to saved games on load, so nothing has to be
+  re-sat to catch up.
 - Finishing a difficulty offers the next one up on the end screen.
 - The column working must fit the screen without scrolling. `fitCell`
   sizes the grid from the room left once the keypad is built, which is
@@ -125,6 +154,10 @@ Recently done, in case something looks unfamiliar:
   All 45 lesson-by-difficulty combinations were played through in a
   browser at 360x740; the hard ones were played backwards, last box
   first, and every one of them finished.
+- Easy stopped being a different, simpler question and became the same
+  question with smaller numbers, with the individual sums inside the
+  working drawn as dots. `easyQuestion` is gone; the ranges live in
+  `generateLessonQuestion` beside the medium ones.
 - The working fits a phone without scrolling. Long multiplication used
   to overflow by 151px and long division by 7px; `fitCell` now sizes the
   grid from the room the keypad leaves.

@@ -67,7 +67,9 @@ vm.runInContext([
   functionSource('divPlan'),
   functionSource('divPromptText'),
   source.match(/const SESSION=\d+;/)[0],
-  functionSource('sessionPlan')
+  functionSource('sessionPlan'),
+  source.match(/const MATH_STAGES=\[[\s\S]*?\n\];/)[0],
+  'this.MATH_STAGES=MATH_STAGES;'
 ].join('\n'), context);
 
 function subtractionAnswer(model) {
@@ -407,7 +409,7 @@ class FakeElement {
 }
 const uiElements = {};
 const resetUi = () => {
-  ['colGrid', 'colPrompt', 'colHint', 'hintBtn', 'progress'].forEach(id => { uiElements[id] = new FakeElement(); });
+  ['colGrid', 'colPrompt', 'colDots', 'colHint', 'hintBtn', 'progress'].forEach(id => { uiElements[id] = new FakeElement(); });
 };
 resetUi();
 const uiContext = {
@@ -417,13 +419,24 @@ const uiContext = {
 };
 vm.createContext(uiContext);
 vm.runInContext([
-  'const setGridCell=()=>{};const selectColumnStep=()=>{};',
+  'const setGridCell=()=>{};const selectColumnStep=()=>{};const selectLongMulStep=()=>{};',
+  'const DOT_LIMIT=36;',
+  functionSource('dotRows'),
+  source.match(/const dotTotal=[\s\S]*?;\n/)[0],
+  source.match(/const dotsWorthDrawing=.*;\n/)[0],
+  functionSource('easyDotsMarkup'),
+  functionSource('paintDots'),
+  functionSource('stepDots'),
+  functionSource('longMulStepDots'),
+  functionSource('divStepDots'),
   functionSource('colPrompt'),
   functionSource('renderCol'),
   functionSource('longMulPrompt'),
   functionSource('renderLongMul'),
   functionSource('renderStars'),
-  functionSource('markQuestion')
+  functionSource('markQuestion'),
+  'this.dotsWorthDrawing=dotsWorthDrawing;this.stepDots=stepDots;' +
+  'this.longMulStepDots=longMulStepDots;this.divStepDots=divStepDots;this.paintDots=paintDots;'
 ].join('\n'), uiContext);
 
 // one star space per question, filled as they are answered
@@ -510,6 +523,7 @@ vm.runInContext([
   source.match(/const DIFFICULTIES=\[[\s\S]*?\n\];/)[0],
   'const DIFFICULTY_IDS=DIFFICULTIES.map(d=>d.id);',
   functionSource('blankBadges'),
+  functionSource('cascadeBadges'),
   retiredSource,
   functionSource('blankStageProgress'),
   functionSource('progressFromCount'),
@@ -517,7 +531,8 @@ vm.runInContext([
   functionSource('migrateV3StageProgress'),
   functionSource('migrateV4StageProgress'),
   'this.stageIds=MATH_STAGES.map(stage=>stage.id);this.migrateProgress=migrateV3StageProgress;',
-  'this.migrateV4=migrateV4StageProgress;this.retired=RETIRED_STAGE_IDS;'
+  'this.migrateV4=migrateV4StageProgress;this.retired=RETIRED_STAGE_IDS;',
+  'this.normalize=normalizeStageProgress;'
 ].join('\n'), migrationContext);
 assert.deepEqual([...migrationContext.stageIds].slice(0, 5), [
   'add_1digit', 'add_2column', 'add_2mental', 'add_3column', 'add_4column'
@@ -772,12 +787,14 @@ vm.runInContext([
   source.match(/const difficultyOf=[^\n]*/)[0],
   source.match(/const nextDifficulty=[^\n]*/)[0],
   functionSource('blankBadges'),
-  functionSource('easyQuestion'),
+  functionSource('cascadeBadges'),
+  functionSource('badgesFor'),
+  functionSource('awardBadges'),
   functionSource('dotRows'),
   source.match(/const SESSION=\d+;/)[0],
   functionSource('sessionPlan'),
   'const rnd=(a,b)=>a+Math.floor(Math.random()*(b-a+1));',
-  'this.D=DIFFICULTIES;this.ids=DIFFICULTY_IDS;this.next=nextDifficulty;this.blank=blankBadges;this.easy=easyQuestion;this.rows=dotRows;this.plan=sessionPlan;'
+  'this.D=DIFFICULTIES;this.ids=DIFFICULTY_IDS;this.next=nextDifficulty;this.blank=blankBadges;this.rows=dotRows;this.badges=badgesFor;this.award=awardBadges;this.plan=sessionPlan;'
 ].join('\n'), diffCtx);
 assert.deepEqual(plain(diffCtx.ids), ['easy', 'medium', 'hard'], 'easy, medium, hard, in that order');
 assert.deepEqual(plain(diffCtx.blank()), {easy:false, medium:false, hard:false});
@@ -785,24 +802,132 @@ assert.equal(diffCtx.next('easy'), 'medium', 'finishing easy points at medium');
 assert.equal(diffCtx.next('medium'), 'hard');
 assert.equal(diffCtx.next('hard'), null, 'hard is the end of the ladder');
 
-// easy: small enough to count, and multiplication never past the four times table
-for (let i = 0; i < 300; i += 1) {
-  const q = diffCtx.easy({gid:'mul'});
-  const [a, b] = q.txt.split(' \u00D7 ').map(Number);
-  assert.ok(a >= 2 && a <= 4, `easy multiplication stays inside the four times table (got ${a})`);
-  assert.ok(b >= 2 && b <= 9, `and the other factor is a single digit (got ${b})`);
-  assert.equal(q.ans, a * b);
-  assert.equal(q.kind, 'dots', 'easy questions come with a picture');
-  assert.match(q.words, /groups of/, 'and are described in words a child can follow');
+// a harder sit proves the easier ones, so passing hard wins all three badges
+const hardSitter = {stageProgress:{badges:{}}};
+assert.equal(diffCtx.award(hardSitter, 'add_1digit', 'hard'), true, 'a first pass wins something');
+assert.deepEqual(plain(diffCtx.badges(hardSitter, 'add_1digit')), {easy:true, medium:true, hard:true},
+  'passing hard wins easy and medium with it');
+assert.equal(diffCtx.award(hardSitter, 'add_1digit', 'easy'), false,
+  'and sitting easy afterwards has nothing left to win');
+const mediumSitter = {stageProgress:{badges:{}}};
+assert.equal(diffCtx.award(mediumSitter, 'add_2column', 'medium'), true);
+assert.deepEqual(plain(diffCtx.badges(mediumSitter, 'add_2column')), {easy:true, medium:true, hard:false},
+  'medium wins easy too, but hard is still to be earned');
+const easySitter = {stageProgress:{badges:{}}};
+diffCtx.award(easySitter, 'add_2column', 'easy');
+assert.deepEqual(plain(diffCtx.badges(easySitter, 'add_2column')), {easy:true, medium:false, hard:false},
+  'easy proves only itself');
+
+// a badge won before the cascade rule existed lights the ones below it on load
+const onlyHard = migrationContext.normalize({
+  available:{add_1digit:true, add_2column:true},
+  completed:{add_1digit:true},
+  badges:{add_1digit:{easy:false, medium:false, hard:true}}
+});
+assert.deepEqual(plain(onlyHard.badges.add_1digit), {easy:true, medium:true, hard:true},
+  'a saved game holding only the hard badge comes back holding all three');
+const beforeDifficulties = migrationContext.normalize({
+  available:{add_1digit:true, add_2column:true},
+  completed:{add_1digit:true}
+});
+assert.deepEqual(plain(beforeDifficulties.badges.add_1digit), {easy:true, medium:true, hard:false},
+  'and a lesson finished before difficulties existed counts as medium, which now wins easy too');
+assert.deepEqual(plain(beforeDifficulties.badges.add_2column), {easy:false, medium:false, hard:false},
+  'a lesson never finished wins nothing');
+
+// easy is the same lesson with smaller numbers, never a different lesson
+const stageById = id => context.MATH_STAGES.find(s => s.id === id);
+context.MATH_STAGES.forEach(stage => {
+  for (let i = 1; i <= 10; i += 1) {
+    const easy = context.generateLessonQuestion(stage, i, 'easy');
+    const medium = context.generateLessonQuestion(stage, i, 'medium');
+    assert.equal(easy.kind, medium.kind, `${stage.id} sits the same kind of question on easy`);
+    if (easy.a !== undefined) assert.equal(String(easy.a).length, String(medium.a).length,
+      `${stage.id} keeps its number of digits on easy`);
+    if (easy.M) assert.equal(easy.M.steps.length > 0, true, `${stage.id} still has a working on easy`);
+  }
+});
+// two-digit column addition on easy is still two-digit column addition, carries and all
+const easyCarries = Array.from({length: 60}, (_, i) =>
+  context.generateLessonQuestion(stageById('add_2column'), (i % 10) + 1, 'easy'));
+assert.ok(easyCarries.every(q => q.kind === 'col' && String(q.a).length === 2 && String(q.b).length === 2),
+  'easy two-digit column addition is still two two-digit numbers in columns');
+assert.ok(easyCarries.some(q => q.M.steps.some(s => s.t === 'carry')),
+  'and it still carries, which is the skill the lesson teaches');
+const easyBorrows = Array.from({length: 60}, (_, i) =>
+  context.generateLessonQuestion(stageById('sub_2column'), (i % 10) + 1, 'easy'));
+assert.ok(easyBorrows.some(q => q.M.steps.some(s => s.t === 'ann')),
+  'easy two-digit column subtraction still crosses out and regroups');
+
+// what easy does change: every times-table fact inside the lesson stops at four
+for (let i = 0; i < 200; i += 1) {
+  const single = context.generateLessonQuestion(stageById('mul_1x1'), 1, 'easy');
+  assert.ok(Number(single.txt.split(' \u00D7 ')[0]) <= 4, `easy ${single.txt} stays inside the four times table`);
+  assert.ok(Number(single.txt.split(' \u00D7 ')[1]) <= 9, 'and the other factor is a single digit');
+  const byOne = context.generateLessonQuestion(stageById('mul_1x2'), 1, 'easy');
+  assert.ok(byOne.b >= 2 && byOne.b <= 4, `easy ${byOne.a} x ${byOne.b} multiplies by 2 to 4`);
+  assert.equal(String(byOne.a).length, 2, 'but still by a two-digit number');
+  const long = context.generateLessonQuestion(stageById('mul_2x2'), 1, 'easy');
+  String(long.b).split('').forEach(d => assert.ok(Number(d) <= 4,
+    `easy long multiplication multiplies only by digits up to four (got ${long.b})`));
+  assert.equal(String(long.a).length, 2, 'and the working stays a full long multiplication');
+  const shared = context.generateLessonQuestion(stageById('div_simple'), 1, 'easy');
+  assert.ok(Number(shared.txt.split(' \u00F7 ')[1]) <= 4, `easy ${shared.txt} shares into 2 to 4`);
 }
-for (const gid of ['add', 'sub', 'div']) {
-  for (let i = 0; i < 200; i += 1) {
-    const q = diffCtx.easy({gid});
-    assert.equal(q.kind, 'dots');
-    assert.ok(q.ans >= 0, `easy ${gid} never goes below zero`);
-    assert.ok(q.ans <= 36, `easy ${gid} stays countable (got ${q.ans})`);
+for (let i = 1; i <= 10; i += 1) {
+  for (let n = 0; n < 20; n += 1) {
+    const q = context.generateLessonQuestion(stageById('div_long'), i, 'easy');
+    assert.ok(q.made.d >= 2 && q.made.d <= 4, `easy long division divides by 2 to 4 (got ${q.made.d})`);
+    assert.equal(q.made.N.length, context.longDivisionPhase(i).digits,
+      'and the dividend still grows across the lesson exactly as it does on medium');
   }
 }
+
+// hard on the first lesson has no working to take the talking out of, so it takes the
+// small digits out instead, or hard would be medium under another name
+for (let i = 0; i < 300; i += 1) {
+  const q = context.generateLessonQuestion(stageById('add_1digit'), 1, 'hard');
+  const [a, b] = q.txt.split(' + ').map(Number);
+  assert.ok(a >= 4 && a <= 9 && b >= 4 && b <= 9, `hard one-digit addition keeps both digits big (got ${q.txt})`);
+  const e = context.generateLessonQuestion(stageById('add_1digit'), 1, 'easy');
+  const [ea, eb] = e.txt.split(' + ').map(Number);
+  assert.ok(ea >= 1 && ea <= 5 && eb >= 1 && eb <= 5, `and easy keeps both small (got ${e.txt})`);
+}
+
+// the picture is drawn only while it can be taken in at a glance
+assert.equal(uiContext.dotsWorthDrawing({parts:[4, 5]}), true);
+assert.equal(uiContext.dotsWorthDrawing({parts:[29, 19]}), false, 'forty-eight dots teach nothing');
+assert.equal(uiContext.dotsWorthDrawing({groups:4, per:9}), true, 'the biggest fact on easy still gets one');
+assert.equal(uiContext.dotsWorthDrawing({groups:5, per:9}), false);
+assert.equal(uiContext.dotsWorthDrawing(null), false, 'and a step that is not a sum gets none');
+
+// it is the individual sum inside the working that gets the dots, not the whole question
+assert.deepEqual(plain(uiContext.stepDots('add', {t:'res', x:4, y:7, carry:0})),
+  {parts:[4, 7], words:'4 and 7 altogether.'});
+assert.deepEqual(plain(uiContext.stepDots('add', {t:'res', x:6, y:3, carry:1})),
+  {parts:[6, 3, 1], words:'6 and 3 and 1 altogether.'}, 'the carry is counted in too');
+assert.deepEqual(plain(uiContext.stepDots('sub', {t:'res', x:14, y:6})),
+  {per:14, take:6, words:'Start with 14 and take away 6.'});
+assert.deepEqual(plain(uiContext.stepDots('mul', {t:'res', x:7, m:3, carry:0})),
+  {groups:7, per:3, words:'7 groups of 3.'});
+assert.equal(uiContext.stepDots('add', {t:'res', x:0, y:5, carry:0}), null,
+  'nothing plus five is not a sum worth drawing');
+assert.deepEqual(plain(uiContext.stepDots('add', {t:'res', x:null, y:4, carry:1})),
+  {parts:[4, 1], words:'4 and 1 altogether.'}, 'but four plus a carried one still is one');
+assert.equal(uiContext.stepDots('add', {t:'res', x:null, y:4, carry:0}), null,
+  'while a column with nothing left to add to is not');
+assert.equal(uiContext.stepDots('mul', {t:'res', x:0, m:6, carry:0}), null, 'nor nought groups of six');
+assert.equal(uiContext.stepDots('add', {t:'carry', col:1, want:'1'}), null,
+  'a carry to copy down is not a sum to count');
+assert.equal(uiContext.stepDots('sub', {t:'ann', col:1, want:'7'}), null,
+  'nor is a crossing-out');
+assert.deepEqual(plain(uiContext.longMulStepDots({t:'partial', digit:3, multiplier:4})),
+  {groups:3, per:4, words:'3 groups of 4.'});
+assert.equal(uiContext.longMulStepDots({t:'placeholder'}), null, 'the placeholder 0 is not a sum');
+assert.deepEqual(plain(uiContext.divStepDots({t:'prod', q:3}, 4)),
+  {groups:3, per:4, words:'3 groups of 4.'});
+assert.equal(uiContext.divStepDots({t:'fit'}, 4), null, 'and neither is deciding how many times it goes');
+
 assert.deepEqual(plain(diffCtx.rows(12)), [5, 5, 2], 'dots are laid out in rows of five');
 assert.deepEqual(plain(diffCtx.rows(5)), [5]);
 assert.deepEqual(plain(diffCtx.rows(3)), [3]);
