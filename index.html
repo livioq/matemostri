@@ -234,8 +234,11 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
 .scene-art-label{display:none;position:relative;z-index:2;padding:8px 10px;border:2px dashed rgba(80,49,154,.28);border-radius:14px;background:rgba(255,255,255,.62)}
 .adventure-map.show-art-debug .scene-art-label{display:block}
 .adventure-path{position:absolute;inset:0;z-index:4;overflow:visible;pointer-events:none}
-.adventure-path path{fill:none;stroke:rgba(242,185,59,.68);stroke-width:11;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 8px rgba(242,185,59,.34))}
-.adventure-path path.path-glow{stroke:rgba(128,105,181,.22);stroke-width:24;filter:none}
+.adventure-path path{fill:none;stroke-linecap:round;stroke-linejoin:round}
+/* the road ahead is a faint glow; the part already walked is a dotted trail, the way a
+   route is marked on a paper map once you have been along it */
+.adventure-path .path-ahead{stroke:rgba(242,185,59,.34);stroke-width:10;filter:drop-shadow(0 0 7px rgba(242,185,59,.5))}
+.adventure-path .path-walked{stroke:rgba(242,185,59,.9);stroke-width:6;stroke-dasharray:2 13;filter:drop-shadow(0 1px 1px rgba(120,80,10,.35))}
 .map-location{position:absolute;width:min(190px,43vw);min-height:142px;padding:12px;border:2px solid rgba(80,49,154,.22);border-radius:24px;background:rgba(255,255,255,.94);box-shadow:0 8px 18px rgba(80,49,154,.14);text-align:center;transform:translate(-50%,-50%);transition:transform .12s,box-shadow .12s,opacity .12s;z-index:8}
 .map-location:active:not(:disabled){transform:translate(-50%,-50%) scale(.98)}
 .map-location.completed{border-color:#65b782;background:linear-gradient(145deg,#fff,#effff6)}
@@ -676,14 +679,22 @@ function mapSceneLayout(mapWidth){
     return layout;
   });
 }
+/* The trail wanders. Between one stop and the next it bows out to one side and then back,
+   alternating, so it reads as a path someone walked rather than a rope pulled taut between
+   two pegs. One point on its own draws nothing, which is what the ends of the journey want. */
 function mapPathD(layouts){
-  if(!layouts.length) return '';
+  if(!layouts||layouts.length<2) return layouts&&layouts.length?'M '+layouts[0].x+' '+layouts[0].y:'';
   const pts=layouts.map(l=>({x:l.x,y:l.y}));
-  return pts.map((p,i)=>{
-    if(i===0) return 'M '+p.x+' '+p.y;
-    const prev=pts[i-1],dy=p.y-prev.y,soft=Math.max(130,Math.min(280,dy*.44));
-    return ' C '+prev.x+' '+(prev.y+soft)+', '+p.x+' '+(p.y-soft)+', '+p.x+' '+p.y;
-  }).join('');
+  let d='M '+pts[0].x+' '+pts[0].y;
+  for(let i=1;i<pts.length;i++){
+    const a=pts[i-1],b=pts[i],dy=b.y-a.y;
+    const bow=(i%2?1:-1)*Math.min(26,Math.max(13,dy*0.05));
+    const midX=Math.min(86,Math.max(14,(a.x+b.x)/2+bow)),midY=a.y+dy/2;
+    const soft=Math.max(80,Math.min(200,dy*0.28));
+    d+=' C '+a.x+' '+(a.y+soft)+', '+midX+' '+(midY-soft*0.62)+', '+midX+' '+midY;
+    d+=' C '+midX+' '+(midY+soft*0.62)+', '+b.x+' '+(b.y-soft)+', '+b.x+' '+b.y;
+  }
+  return d;
 }
 const petName=()=>P&&P.momoName?P.momoName:'Momo';
 const collectibleTotal=p=>COLLECTIBLES.reduce((n,c)=>n+Number((p.collectibles&&p.collectibles[c.id])||0),0);
@@ -1207,9 +1218,12 @@ function renderMenu(){
   const layouts=mapSceneLayout(L.clientWidth),mapHeight=layouts.reduce((n,l)=>n+l.height,0);
   L.style.setProperty('--map-height',mapHeight+'px');
   L.classList.toggle('show-art-debug',!!DB.mapArtDebug);
-  L.innerHTML='<div class="map-art" aria-hidden="true">'+MAP_ART_PANELS.map(p=>'<img src="'+p.src+'" alt="" loading="lazy">').join('')+'</div>'+
-    '<svg class="adventure-path" aria-hidden="true" viewBox="0 0 100 '+mapHeight+'" preserveAspectRatio="none"><path class="path-glow" d="'+mapPathD(layouts)+'"></path><path d="'+mapPathD(layouts)+'"></path></svg>';
   const currentIndex=Math.min(count,PROGRESSION_NODES.length-1);
+  L.innerHTML='<div class="map-art" aria-hidden="true">'+MAP_ART_PANELS.map(p=>'<img src="'+p.src+'" alt="" loading="lazy">').join('')+'</div>'+
+    '<svg class="adventure-path" aria-hidden="true" viewBox="0 0 100 '+mapHeight+'" preserveAspectRatio="none">'+
+      '<path class="path-ahead" vector-effect="non-scaling-stroke" d="'+mapPathD(layouts.slice(currentIndex))+'"></path>'+
+      '<path class="path-walked" vector-effect="non-scaling-stroke" d="'+mapPathD(layouts.slice(0,currentIndex+1))+'"></path>'+
+    '</svg>';
   layouts.forEach((layout,i)=>{
     const node=layout.node,pos=layout.pos,artwork=pos.artwork||{};
     const scene=document.createElement('div');

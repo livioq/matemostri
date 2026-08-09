@@ -756,6 +756,35 @@ stageImages.forEach((file, i) => {
     `${file} is numbered in order and shipped as webp`);
 });
 
+// the trail: it wanders between stops, and what has been walked looks different from
+// what is still ahead
+const pathCtx = {Math};
+vm.createContext(pathCtx);
+vm.runInContext(functionSource('mapPathD') + ';this.mapPathD=mapPathD;', pathCtx);
+assert.equal(pathCtx.mapPathD([]), '', 'no stops, no path');
+assert.equal(pathCtx.mapPathD([{x:50, y:100}]), 'M 50 100',
+  'a single stop draws nothing, which is what the ends of the journey need');
+const wander = pathCtx.mapPathD([{x:50, y:0}, {x:29, y:600}, {x:71, y:1200}]);
+assert.equal((wander.match(/C/g) || []).length, 4,
+  'each gap is two curves, so the trail can bow out and come back rather than run straight');
+const xs = [...wander.matchAll(/(?:M|C|,)\s*(-?[\d.]+)\s/g)].map(m => Number(m[1]));
+assert.ok(Math.max(...xs) > 71 || Math.min(...xs) < 29,
+  'the trail reaches outside the columns the stops sit in');
+assert.ok(Math.min(...xs) >= 0 && Math.max(...xs) <= 100, 'but stays on the map');
+
+const menuPathSrc = functionSource('renderMenu');
+assert.match(menuPathSrc, /path-ahead[^]*mapPathD\(layouts\.slice\(currentIndex\)\)/,
+  'the road ahead runs from the current stop onward');
+assert.match(menuPathSrc, /path-walked[^]*mapPathD\(layouts\.slice\(0,currentIndex\+1\)\)/,
+  'the walked trail runs from the start up to the current stop');
+assert.ok(menuPathSrc.indexOf('const currentIndex') < menuPathSrc.indexOf('path-ahead'),
+  'currentIndex is worked out before the paths that need it');
+assert.match(source, /\.path-walked\{[^}]*stroke-dasharray/, 'the walked trail is dashed');
+assert.equal(/\.path-ahead\{[^}]*stroke-dasharray/.test(source), false, 'the road ahead is not');
+assert.match(source, /\.path-ahead\{[^}]*drop-shadow/, 'the road ahead glows');
+assert.match(source, /vector-effect="non-scaling-stroke"/,
+  'strokes and dashes stay even, since the svg is scaled unevenly by preserveAspectRatio=none');
+
 // the adaptive-difficulty subsystem is gone: ease wrote P.ease on every single answer,
 // its only reader was tierFor, and nothing ever called tierFor
 ['tierFor', 'bandOf', 'HARD_P', 'genEasy', 'genHard'].forEach(name => {

@@ -126,6 +126,7 @@ Map behaviour:
 - `renderMenu` must therefore run after `show('s-menu')`. A hidden element measures 0, which silently collapses the layout back to unscaled heights while the art scales down.
 - A resize listener re-lays the map out, so turning the phone does not leave the path where the painting used to be.
 - Opening the map scrolls to the current stop rather than the top, via `scrollMapToCurrent`.
+- The trail meanders: two curves per gap, bowing to alternate sides. It is drawn as two paths split at the current stop — dotted for what has been walked, a faint glow for what is ahead.
 - The winding path is drawn as an SVG curve through calculated node coordinates rather than stretched as a single vertical line.
 - The map is painted. Eight sections in `assets/map`, listed in `MAP_ART_PANELS`, stack as a full-bleed layer under the path and nodes. Each is 1024 canvas px wide and cut on a scene boundary, and together they are exactly the 21892px canvas in `docs/MAP_ART_SPEC.json`, covering all 15 scenes.
 - The per-scene `mapPosition.artwork` slots are a separate, still-unused mechanism for positioned cut-out scenery. Their placeholder labels show only when `DB.mapArtDebug` is enabled from the hidden developer spellbook.

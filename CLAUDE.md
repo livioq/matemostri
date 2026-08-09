@@ -119,6 +119,9 @@ Recently done, in case something looks unfamiliar:
   went with it, along with `S.q.vid`, which `ease` was all that read.
   `ease` is a retired save field now, so the map it left behind is
   dropped from existing games.
+- The trail meanders between stops instead of running straight, and is
+  drawn as two paths split at the current stop: dotted gold for the part
+  already walked, a faint glow for the part still ahead.
 - Opening the map lands on the stop the child is actually at rather than
   the top of a nine-thousand-pixel scroll. `scrollMapToCurrent` puts it a
   little above the middle so the path ahead is visible.
@@ -146,43 +149,43 @@ Worth watching when the children next play:
 
 ## Code map
 
-`index.html` is ~1946 lines: one `<style>` block, the screen markup, then
+`index.html` is ~1960 lines: one `<style>` block, the screen markup, then
 three `<script>` blocks. Line numbers drift as the file is edited — the
 `/* ---- name ---- */` banner comments are the durable anchors, so grep for
 those rather than trusting the numbers.
 
-### Styles (9-310)
+### Styles (17-321)
 
 | Lines | Contents |
 | --- | --- |
-| 10-45 | Design tokens (`:root` colours, `--cell`), page chrome, `.card`, `.btn`, `.screen` show/hide |
-| 46-69 | `/* magical companion */` — Momo art frame, glow, bob and evolution-burst animations |
-| 70-76 | `/* practice menu */` — lock states |
-| 77-94 | `/* question */` — question card, answer box, stamps, and `.stars`, the row of star spaces that replaced the question counter |
-| 95-100 | `/* keypad */` — the digit pad |
-| 101-127 | `/* column working */` — the paper-style grid: carry row, crossed-out regrouping, long-multiplication and division layout |
-| 128-191 | `/* settings */` |
-| 192-309 | `/* opening story + maths journey */` — story panels, then the adventure map: `.adventure-map`, `.map-art` (the painted panels), `.adventure-path`, `.map-scene`, `.scene-art-slot`, `.map-location`, `.map-momo`, and the major-transition overlay |
+| 18-53 | Design tokens (`:root` colours, `--cell`), page chrome, `.card`, `.btn`, `.screen` show/hide |
+| 54-77 | `/* magical companion */` — Momo art frame, glow, bob and evolution-burst animations |
+| 78-84 | `/* practice menu */` — lock states |
+| 85-102 | `/* question */` — question card, answer box, stamps, and `.stars`, the row of star spaces that replaced the question counter |
+| 103-108 | `/* keypad */` — the digit pad |
+| 109-135 | `/* column working */` — the paper-style grid: carry row, crossed-out regrouping, long-multiplication and division layout |
+| 136-199 | `/* settings */` |
+| 200-320 | `/* opening story + maths journey */` — story panels, then the adventure map: `.adventure-map`, `.map-art` (the painted panels), `.adventure-path`, `.map-scene`, `.scene-art-slot`, `.map-location`, `.map-momo`, and the major-transition overlay |
 
-### Markup (312-506)
+### Markup (323-517)
 
 Every screen is a `<section class="screen">`; `show(id)` toggles the `on`
-class. In DOM order: `s-story` (315), `s-players` (331), `s-home` (348),
-`s-menu` (367, the adventure map), `s-node` (376, the story card for one
-map stop), `s-play` (390, whose `#progress` is the star row), `s-crack`
-(413, the midpoint first-crack beat), `s-end` (424), `s-set` (437), the
-`lvUp` overlay (463), and the hidden `s-dev` spellbook (490).
+class. In DOM order: `s-story` (326), `s-players` (342), `s-home` (359),
+`s-menu` (378, the adventure map), `s-node` (387, the story card for one
+map stop), `s-play` (401, whose `#progress` is the star row), `s-crack`
+(424, the midpoint first-crack beat), `s-end` (435), `s-set` (448), the
+`lvUp` overlay (474), and the hidden `s-dev` spellbook (501).
 
-### Script 1 — data and maths (515-1144)
+### Script 1 — data and maths (518-1155)
 
 | Lines | Section | Notes |
 | --- | --- | --- |
-| 516-539 | `storage` | `KEY='matemostri:v2'`, `LEGACY_KEYS`, `store` get/set |
-| 540-807 | `model` | `MATH_STAGES` (541, the 15 lessons), `MONSTER_STAGE_DATA` (559, the 17 art stages), `PROGRESSION_NODES` (578, the 15 map stops), `MAP_ART_PANELS` (598) and `MAP_ART_CSS_WIDTH` (612), `EVOLUTIONS` (615), `COLLECTIBLES`, `COSMETIC_REWARDS`; `mapSceneLayout` (668) and `mapPathD` (679) lay the map out; save-shape helpers `blankStageProgress` (695), `progressFromCount` (700), `normalizeStageProgress` (705), `migrateV3StageProgress` (730), `RETIRED_STAGE_IDS` (743) and `migrateV4StageProgress` (744), `RETIRED_PLAYER_FIELDS` (754) and `dropRetiredPlayerFields` (755), `completeMathStage` (760), `migrate` (775) |
-| 808-913 | `pet` | `petSVG` (810) fallback art and `monsterMarkup` (903), which emits the `<img onerror>` → inline-SVG fallback |
-| 914-932 | `sound` | WebAudio beeps |
-| 933-1055 | `column working model` | `buildColumn` (936), `buildLongMultiplication` (998), `twoDigitColumnAddition` (1030), `twoDigitColumnSubtraction` (1042) — pure step generators |
-| 1056-1144 | `question generation` | `longDivisionPhase` (1060), `genDivision` (1065), `generateLessonQuestion` (1093), `divSteps` (1132) |
+| 519-542 | `storage` | `KEY='matemostri:v2'`, `LEGACY_KEYS`, `store` get/set |
+| 543-818 | `model` | `MATH_STAGES` (544, the 15 lessons), `MONSTER_STAGE_DATA` (562, the 17 art stages), `PROGRESSION_NODES` (581, the 15 map stops), `MAP_ART_PANELS` (601) and `MAP_ART_CSS_WIDTH` (615), `EVOLUTIONS` (618), `COLLECTIBLES`, `COSMETIC_REWARDS`; `mapSceneLayout` (671) and `mapPathD` (685) lay the map out; save-shape helpers `blankStageProgress` (706), `progressFromCount` (711), `normalizeStageProgress` (716), `migrateV3StageProgress` (741), `RETIRED_STAGE_IDS` (754) and `migrateV4StageProgress` (755), `RETIRED_PLAYER_FIELDS` (765) and `dropRetiredPlayerFields` (766), `completeMathStage` (771), `migrate` (786) |
+| 819-924 | `pet` | `petSVG` (821) fallback art and `monsterMarkup` (914), which emits the `<img onerror>` → inline-SVG fallback |
+| 925-943 | `sound` | WebAudio beeps |
+| 944-1066 | `column working model` | `buildColumn` (947), `buildLongMultiplication` (1009), `twoDigitColumnAddition` (1041), `twoDigitColumnSubtraction` (1053) — pure step generators |
+| 1067-1154 | `question generation` | `longDivisionPhase` (1071), `genDivision` (1076), `generateLessonQuestion` (1104), `divSteps` (1143) |
 
 The test suite text-extracts these by name, so keep them as top-level
 `function name(...)  {...}` declarations: `buildColumn`,
@@ -198,26 +201,26 @@ The test suite text-extracts these by name, so keep them as top-level
 `RETIRED_PLAYER_FIELDS` constants by source text, and runs the whole
 `model` section in a sandbox to exercise `migrate` end to end.
 
-### Script 2 — screens and session flow (1145-1529)
+### Script 2 — screens and session flow (1156-1543)
 
 | Lines | Section | Notes |
 | --- | --- | --- |
-| 1146-1279 | `screens` | `$`, `esc`, `show` (1149); `STORY_SCENES` (1151) and the opening story, `renderPlayers` (1170), `renderHome` (1182), `renderMenu` (1202) building the map and `scrollMapToCurrent` (1258) landing it on the stop you are at, `openMapNode` (1265) opening one stop's story card |
-| 1280-1307 | `settings` | `captureSettingsName` (1282) renames the creature, `renderSettings` (1289) |
-| 1308-1529 | `gameplay` | `SESSION` and `sessionPlan` (1312) sizing the lesson and its pass mark, `renderStars` (1330) and `markQuestion` (1342) filling the star row, `startSession` (1343), `nextQuestion` (1351), `checkNormal` (1416) with the two-try feedback rule, `shouldShowCrackPause` (1446) and `showCrackPause` (1452), `award` (1464) and `awardHelped` (1474), `awardCollectible` (1475), `maybeCompleteStage` (1483), `endSession` (1508) |
+| 1157-1293 | `screens` | `$`, `esc`, `show` (1160); `STORY_SCENES` (1162) and the opening story, `renderPlayers` (1181), `renderHome` (1193), `renderMenu` (1213) building the map and `scrollMapToCurrent` (1272) landing it on the stop you are at, `openMapNode` (1279) opening one stop's story card |
+| 1294-1321 | `settings` | `captureSettingsName` (1296) renames the creature, `renderSettings` (1303) |
+| 1322-1542 | `gameplay` | `SESSION` and `sessionPlan` (1326) sizing the lesson and its pass mark, `renderStars` (1344) and `markQuestion` (1356) filling the star row, `startSession` (1357), `nextQuestion` (1365), `checkNormal` (1430) with the two-try feedback rule, `shouldShowCrackPause` (1460) and `showCrackPause` (1466), `award` (1478) and `awardHelped` (1488), `awardCollectible` (1489), `maybeCompleteStage` (1497), `endSession` (1522) |
 
-### Script 3 — column UIs and wiring (1530-1944)
+### Script 3 — column UIs and wiring (1544-1958)
 
 | Lines | Section | Notes |
 | --- | --- | --- |
-| 1531-1643 | `columns: addition, subtraction, multiplication` | `colPrompt` (1532), `renderCol` (1553), `commitColumnStep` (1604), `pressCol`, `finishCol` |
-| 1644-1721 | `two-digit long multiplication` | `longMulPrompt` (1645), `renderLongMul` (1656), `commitLongMultiplicationStep`, `pressLongMul`, `finishLongMul` |
-| 1722-1841 | `division in columns` | `divPlan` (1725), `divPromptText` (1735), `renderDiv` (1744), `pressDiv` (1800), `finishDiv` — the interactive working: multiply-back, subtract, bring down |
-| 1842-1856 | `hidden developer spellbook` | `renderDeveloper` (1843), `resetPlayerProgress` |
-| 1857-1944 | `wiring` | Age picker, all event listeners, the map resize re-layout (1881), dev-tap unlock, boot |
+| 1545-1657 | `columns: addition, subtraction, multiplication` | `colPrompt` (1546), `renderCol` (1567), `commitColumnStep` (1618), `pressCol`, `finishCol` |
+| 1658-1735 | `two-digit long multiplication` | `longMulPrompt` (1659), `renderLongMul` (1670), `commitLongMultiplicationStep`, `pressLongMul`, `finishLongMul` |
+| 1722-1841 | `division in columns` | `divPlan` (1739), `divPromptText` (1749), `renderDiv` (1758), `pressDiv` (1814), `finishDiv` — the interactive working: multiply-back, subtract, bring down |
+| 1856-1870 | `hidden developer spellbook` | `renderDeveloper` (1857), `resetPlayerProgress` |
+| 1871-1959 | `wiring` | Age picker, all event listeners, the map resize re-layout (1881), dev-tap unlock, boot |
 
 Note on long division: question generation lives in `longDivisionPhase`
-and `genDivision` (1065) plus `generateLessonQuestion` (1093) in script 1,
+and `genDivision` (1076) plus `generateLessonQuestion` (1104) in script 1,
 while the working UI is `divPlan`/`renderDiv`/`pressDiv` in script 3.
 The two are independent — changes to what a question looks like belong
 in the former and should leave the latter untouched. The words the child
