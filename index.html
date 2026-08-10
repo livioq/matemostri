@@ -246,8 +246,10 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
 .journey-stage.available{border-color:#e477b4;box-shadow:0 0 0 3px rgba(228,119,180,.12)}.journey-stage.completed{border-color:#65b782}.journey-stage:disabled{cursor:default}
 .journey-art{width:76px;height:76px;display:grid;place-items:center}.journey-art img,.journey-art svg{max-width:76px;max-height:76px}
 .journey-stage h3{margin:0;color:var(--ink);font-size:17px}.journey-stage p{margin:3px 0 0;font-size:12px;font-weight:700;color:var(--ink-soft);line-height:1.3}
-.silhouette{width:60px;height:68px;background:#28304a;border-radius:48% 48% 42% 42%;position:relative;filter:drop-shadow(0 4px 2px rgba(0,0,0,.18))}
-.silhouette::before,.silhouette::after{content:"";position:absolute;top:-12px;width:22px;height:30px;background:#28304a;border-radius:70% 20% 60% 30%}.silhouette::before{left:4px;transform:rotate(-25deg)}.silhouette::after{right:4px;transform:rotate(25deg)}
+/* a span is inline, so width and height were ignored: the body collapsed to nothing and only
+   the two absolutely-placed ears rendered, as a pair of dark blobs over the words below */
+.silhouette{display:block;margin:0 auto;width:60px;height:68px;background:#a8adc4;border-radius:48% 48% 42% 42%;position:relative}
+.silhouette::before,.silhouette::after{content:"";position:absolute;top:-12px;width:22px;height:30px;background:#a8adc4;border-radius:70% 20% 60% 30%}.silhouette::before{left:4px;transform:rotate(-25deg)}.silhouette::after{right:4px;transform:rotate(25deg)}
 .accessory-list{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px}.accessory-chip{font-size:10px;font-weight:800;background:#fff4c9;color:#785800;border-radius:999px;padding:3px 7px}
 .journey-stage .badge{display:inline-block;margin:5px 5px 0 0;padding:3px 7px;border-radius:999px;background:#e6e9ff;color:#493aa1;font-size:10px;font-weight:900}
 .adventure-map{position:relative;min-height:var(--map-height,8400px);margin:10px 0 18px;padding:0;background:linear-gradient(180deg,#fff8ff 0%,#f2fbff 18%,#f5fff3 34%,#eef7ff 50%,#fff7dc 68%,#f4ecff 84%,#fff7fb 100%);border:2px solid rgba(80,49,154,.22);border-radius:30px;overflow:hidden;box-shadow:inset 0 0 0 6px rgba(255,255,255,.45)}
@@ -288,7 +290,10 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
 .map-location:active:not(:disabled){transform:translate(-50%,-50%) scale(.98)}
 .map-location.completed{border-color:#65b782;background:linear-gradient(145deg,#fff,#effff6)}
 .map-location.available{border-color:#e477b4;box-shadow:0 0 0 4px rgba(228,119,180,.13),0 10px 22px rgba(80,49,154,.16)}
-.map-location.locked{opacity:.66;background:linear-gradient(145deg,#f8f6fb,#e7e9f2)}
+/* a locked stop is muted, not faded: fading the card fades its words into the painting, and
+   the painting is busy. The card keeps its own solid ground and the writing stays readable. */
+.map-location.locked{background:linear-gradient(145deg,#f6f5fa,#e7e9f2);border-color:rgba(80,49,154,.16);box-shadow:0 5px 12px rgba(80,49,154,.10)}
+.map-location.locked .map-lesson,.map-location.locked .map-region{color:#6b6f86}
 .map-location.current{animation:mapPulse 1.9s ease-in-out infinite;border-color:var(--gold)}
 .map-location.major{border-width:3px;min-height:158px}
 .map-location img,.map-location svg{width:66px;height:66px;object-fit:contain}

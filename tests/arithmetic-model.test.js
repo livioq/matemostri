@@ -1280,6 +1280,19 @@ const pathLayer = Number((source.match(/\.adventure-path\{[^}]*z-index:(\d+)/) |
 const nameLayer = Number((source.match(/\.scene-title\{[^}]*z-index:(\d+)/) || [])[1]);
 assert.ok(nameLayer > pathLayer, `the name sits above the trail (${nameLayer} vs ${pathLayer})`);
 
+// a locked stop is muted, not faded. Fading the card fades its words into the painting,
+// and the painting is busy.
+assert.equal(/\.map-location\.locked\{[^}]*opacity:/.test(source), false,
+  'a locked card does not fade itself, and so does not fade its writing');
+assert.match(source, /\.map-location\.locked\{[^}]*background:linear-gradient/,
+  'it keeps a solid ground of its own');
+assert.match(source, /\.map-location\.locked \.map-lesson[^{]*\{color:/,
+  'and says it is locked by muting the words rather than the card');
+// a span is inline, so width and height did nothing: the body collapsed and only the two
+// absolutely-placed ears rendered, as dark blobs over the words underneath
+assert.match(source, /\.silhouette\{display:block/,
+  'the locked silhouette is a block, or it has no body at all');
+
 // and the zone is named once: the card below it carries the lesson, not the place again
 assert.equal(/\.map-location h3/.test(source), false, 'the stop card no longer repeats the name');
 assert.match(functionSource('renderMenu'), /<p class="map-lesson">'\+esc\(stage\.label\)/,

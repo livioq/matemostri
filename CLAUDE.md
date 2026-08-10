@@ -251,6 +251,12 @@ Recently done, in case something looks unfamiliar:
   carries a z-index and so makes a stacking context — anything inside it
   is trapped under the trail however high its own z-index. The card now
   carries the lesson rather than the place.
+- A locked stop is muted, never faded. `opacity` on the card fades its
+  writing too, and the writing sits over a busy painting; the card keeps
+  a solid ground and greys its words instead. The locked silhouette has
+  to be `display:block` — it is a span, so width and height did nothing,
+  the body collapsed to zero and only its two absolutely-placed ears
+  rendered, as dark blobs over the words below.
 - The trail meanders between stops, as one spline through every stop
   rather than a curve pulled past them, and is split at the current stop:
   gold dashes with a dark outline behind the child, only a soft glow
