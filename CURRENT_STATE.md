@@ -1,13 +1,13 @@
 # Current State - Matemostri
 
-Last inspected and updated: 2026-08-08
+Last inspected and updated: 2026-08-09
 
 This is the authoritative current-state document for this working tree. It is based on the real `index.html`, tests, and assets in the repository, not on older prompts.
 
 ## Repository State
 
 - Repository: `livioq/matemostri`
-- Current implementation: full single-file game in `index.html`, ~1969 lines
+- Current implementation: full single-file game in `index.html`, ~2436 lines
 - `origin/main` carries the complete working game. The older note in this
   document about `main` holding only a placeholder no longer applies; the
   adventure-map work and everything since has been merged there.
@@ -15,16 +15,75 @@ This is the authoritative current-state document for this working tree. It is ba
   multiplication, long division, profiles, saves, custom Momo names,
   collectibles, settings, hints, sounds, and developer tools.
 
+## Difficulties
+
+Every lesson can be sat on easy, medium or hard, chosen on its map stop.
+Difficulty moves the numbers, never the lesson: the same working, the same
+place on the map, the same skill. `DIFFICULTIES` and `DIFFICULTY_IDS` own the
+ladder; `generateLessonQuestion` holds all three number ranges side by side.
+
+**Easy** is aimed at the seven-year-old. It is the same lesson with smaller
+numbers, and every individual sum inside the working is drawn as dots in rows
+of five. Eight questions instead of ten. Times tables stop at four — a cap on
+the multiplier, not on what it multiplies, so 9 x 4 is fair and long division
+divides by 2 to 4. The two-digit lessons done in the head carry nothing and
+borrow nothing. Every digit of an easy number is 1 to 9 (`easyNumber`), so no
+step reads "0 + 5" and goes without a picture.
+
+The pictures are worked on, not read. A take-away starts whole and the child
+taps dots to cross them out; a share starts as one pile and each tap shares it
+out again, so 24 into 4 is halve then halve again and 24 into 3 is one sharing;
+"how many times does 4 go into 9" takes 4 away per tap. None of it is required
+and every tap wraps round, so nothing can be got wrong and stuck. Two limits
+keep a picture legible: `DOT_LIMIT` (36) on the count, and `DOT_ROWS_IN_WORKING`
+(4) on the height of a picture that sits above a grid, since groups wrap
+sideways but a single pile only grows downwards.
+
+**Medium** is the game as it was.
+
+**Hard** takes the talking out. All three workings — columns, long
+multiplication, long division — lay every box out empty and the child taps
+whichever to fill. Nothing is chosen for them, not at the start and not after
+each answer: `si`/`pi` go to -1 and the prompt says only "Tap a box, then write
+what belongs in it." Two rules make that safe. Every step type needs a box, so
+`mulCarry` and `partialCarry` get an empty box beside their row. And the steps
+that are only talk have no box at all, so hard drops them: `seek` from columns,
+`skip` from division.
+
+A lesson done in the head has no working, so there hard takes bigger numbers
+that carry or borrow instead. One-digit addition always crosses ten (8 + 5) and
+one-digit subtraction always crosses back (15 - 8). Both two-digit mental
+lessons always carry or always borrow. Times tables have nothing to carry, so
+there hard is simply the far end: 6 to 12.
+
+## Badges
+
+Passing a difficulty wins a badge, held in `stageProgress.badges[lessonId]`.
+Every map stop shows all three slots, the unwon ones greyed, so a lesson does
+not read as finished until all three are won. Finishing any one lights the path
+and unlocks the next stop; the badges say how thoroughly.
+
+A harder sit proves the easier ones, so passing hard wins all three at once and
+passing medium wins easy with it. `cascadeBadges` applies the same rule to
+saved games on load, so nothing has to be re-sat to catch up. The end screen
+offers the next difficulty up.
+
+Choosing a difficulty on a map stop is the same act as starting the lesson.
+There is no second button: tapping Easy starts the lesson on easy.
+
 ## Current Maths Progression
 
 `MATH_STAGES` defines 15 lessons. Unlocks are linear: lesson 1 is available for a new player; completing a lesson unlocks the next lesson. Completed lessons remain replayable for collectibles and do not advance story/evolution again.
 
-Pass rule:
+Pass rule, owned by `sessionPlan`, which returns the length and the pass mark
+together so they cannot drift apart:
 
 - Normal lessons: 10 questions, pass with 8 mastered answers.
 - Three-digit column lessons: 7 questions, pass with 6 mastered answers.
 - Four-digit column lessons: 5 questions, pass with 4 mastered answers.
+- On easy, any lesson is capped at 8 questions, pass with 7.
 - Mastered means correct unaided, or clean column/long-working without hints/errors.
+- The share needed is always 8 in 10, so the pass mark moves with the length.
 
 | # | Lesson ID | Lesson | Interface | Questions | Pass | Unlocks |
 |---:|---|---|---|---:|---:|---|
@@ -132,7 +191,8 @@ Map behaviour:
 - The map is painted. Eight sections in `assets/map`, listed in `MAP_ART_PANELS`, stack as a full-bleed layer under the path and nodes. Each is 1024 canvas px wide and cut on a scene boundary, and together they are exactly the 21892px canvas in `docs/MAP_ART_SPEC.json`, covering all 15 scenes.
 - The per-scene `mapPosition.artwork` slots are a separate, still-unused mechanism for positioned cut-out scenery. Their placeholder labels show only when `DB.mapArtDebug` is enabled from the hidden developer spellbook.
 - The current Momo sprite is placed on a separate configurable map layer near the current scene.
-- Tapping an unlocked node opens a short story card, then starts the existing maths lesson.
+- Tapping an unlocked node opens a short story card carrying the three badge slots and the three difficulties. Tapping a difficulty starts the lesson on it; there is nothing to confirm afterwards, so there is no second button.
+- Every stop on the map shows its three badge slots, the unwon ones greyed.
 - Completing a lesson shows the result/evolution, then `Continue Adventure` returns to the map.
 - `Practise Again` replays the same lesson and does not advance story.
 
@@ -140,14 +200,16 @@ Map behaviour:
 
 - Save key remains `matemostri:v2`.
 - Legacy key read fallback remains `matemostri:v4`.
-- Migration version is now `8`.
-- Existing completed lessons, availability, profile names, ages, custom monster names, stats, collectibles, accessories, sound settings, and storySeen values are preserved.
+- Migration version is now `9`.
+- Existing completed lessons, availability, profile names, custom monster names, stats, collectibles, accessories, sound settings, and storySeen values are preserved.
 - Map status is derived from `stageProgress`; old players do not need to replay story beats.
 - New `storyProgress` defaults are added safely:
   - `firstCrackSeen:false`
   - `mapSeen:{}`
 - Monster art is derived from completed lessons, except that stage 2 can display before the first lesson is complete if `firstCrackSeen` is true.
-- `xp`, `level` and `ease` are retired fields, listed in `RETIRED_PLAYER_FIELDS` and deleted from any save that still carries them. `ease` held an adaptive-difficulty map that was written on every answer and read by nothing.
+- `stageProgress.badges` is added by `normalizeStageProgress`. A lesson completed before difficulties existed counts as medium, which now wins easy with it, and `cascadeBadges` fills in everything below whatever was won.
+- `xp`, `level`, `ease` and `age` are retired fields, listed in `RETIRED_PLAYER_FIELDS` and deleted from any save that still carries them. `ease` held an adaptive-difficulty map that was written on every answer and read by nothing. `age` was asked for at setup and read by nothing; it is replaced by `look`, either `girl` or `boy`, which is stored and will one day choose the artwork.
+- The working must fit a phone without scrolling. `fitCell` sizes the grid cell from the room left once the question card, the easy picture and the keypad have taken theirs, down to 19px if it must, which is why the working is rendered again after `buildPad`.
 
 ## Asset State
 
@@ -183,6 +245,33 @@ runs the whole `model` section to exercise `migrate` end to end. It verifies:
   are exactly stages 7, 12, 15 and 17.
 - The map is shown before it is laid out, at every call site.
 
+**Difficulties and badges**
+
+- The ladder is easy, medium, hard, in that order, and hard is the end of it.
+- Every lesson returns the same *kind* of question on easy as on medium and
+  keeps its number of digits, so easy is never a different lesson. Easy
+  two-digit column addition still carries; easy two-digit column subtraction
+  still crosses out.
+- The four-times cap holds across every lesson that multiplies or divides, and
+  the easy long-division dividend still ramps exactly as medium's does.
+- Every easy number avoids 0 digits, so no step goes without its picture.
+- The two-digit mental lessons carry nothing and borrow nothing on easy, and
+  always carry or borrow on hard. Every mental lesson starts from meaningfully
+  bigger numbers on hard than on medium; medium is unchanged by any of it.
+- Which steps get a picture and which do not; that the count limit and the
+  height limit are both applied, and that all three workings apply the height
+  one.
+- The pictures are the child's to work: six take away four arrives as six dots
+  with none crossed out, four taps cross four out and tapping one again brings
+  it back; 24 by 4 goes 24, then 12 and 12, then four sixes, and wraps; taking
+  4 from 9 goes twice and a third tap starts over.
+- Hard leaves nothing selected, in all three workings, and drops the steps that
+  are only talk. Every remaining step type is drawn a box, and a working filled
+  backwards ends up identical to one filled forwards.
+- Passing hard wins all three badges, medium wins easy, easy proves only itself,
+  and a saved game holding only the hard badge comes back holding all three.
+- Tapping a difficulty starts the lesson; there is no second button.
+
 **Arithmetic**
 
 - Column answers are written right to left, one digit per step, for addition
@@ -203,6 +292,7 @@ runs the whole `model` section to exercise `migrate` end to end. It verifies:
   collectibles or cosmetics; migrating twice is stable.
 - A save stopped on a renamed lesson keeps it and gains nothing free.
 - XP cannot return: no field, no property read, no award call.
+- `age` is dropped from an existing save and `look` is kept.
 
 **Assets**
 

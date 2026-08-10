@@ -30,13 +30,43 @@ Stage 2, First Crack, is not a map location. It is an intermediate story state d
 | 14 | The Arcane Library | Simple division | Stage 16, Arcane Master | Division begins with a floating spellbook and fair sharing. |
 | 15 | The Heart of Matemostri | Long division | Stage 17, Guardian of Maths | Final major evolution: the whole journey pays off. |
 
+## Three Ways to Sit Each Stop
+
+Every location on the map can be sat on easy, medium or hard, chosen on the
+stop's story card. Difficulty moves the numbers, never the lesson: the same
+working, the same skill, the same place on the map. A child on easy and a child
+on hard are at Whispering Woods doing two-digit column addition; what differs is
+the size of the numbers and how much help is on the screen.
+
+- **Easy** is the same lesson with smaller numbers, and the individual sums
+  inside the working drawn as dots in rows of five. Eight questions rather than
+  ten. The take-away and sharing pictures are tapped rather than read, so the
+  picture never answers the question before it is asked.
+- **Medium** is the game as it was: one step at a time, with the words that
+  explain each one.
+- **Hard** removes the words. The working is laid out with every box empty and
+  the child decides which to fill. A lesson done in the head has no working to
+  strip, so there hard is bigger numbers that carry or borrow instead.
+
+Each one won earns a badge, and every stop shows all three slots with the unwon
+ones greyed. A stop does not read as finished until all three are lit. Finishing
+any one of them lights the path onwards — the badges say how thoroughly, not
+whether. A harder sit proves the easier ones, so passing hard fills all three
+slots at once and passing medium fills easy with it.
+
 ## Layout Contract
 
 The adventure map is intentionally tall on mobile. It should feel like travelling through large scenes, not tapping a compressed list of lessons.
 
 Each `PROGRESSION_NODES` entry owns layout metadata:
 
+The zone name is drawn on a plate at the top of each scene, and appended to the map rather
+than to the scene: `.map-scene` carries a z-index, which makes a stacking context, so a name
+inside it is painted under the trail however high its own z-index is. The stop card below it
+carries the lesson, not the place, so the name is only written once.
+
 - `mapPosition.side`: places the lesson node on the left, centre, or right of the winding path.
+  The stop also carries its badge row, so the node is a little taller than the lesson dot alone.
   The path swings from side to side between stops, more times on a longer stretch, and is
   drawn as one smooth curve through every swing. It is a Catmull-Rom spline, so it passes
   through its points rather than being pulled towards them: the trail always starts on the
@@ -98,11 +128,14 @@ Major moments use the larger transition presentation with previous and new Momo 
    find yourself every time. `scrollMapToCurrent` places the stop a little above the middle
    so the path ahead is still visible.
 3. The current map node pulses.
-4. Tapping an unlocked node opens a short story card.
-5. Start Lesson opens the existing maths interface.
+4. Tapping an unlocked node opens a short story card, showing the stop's three
+   badge slots and the three difficulties.
+5. Tapping a difficulty opens the maths interface on it. Choosing is the same
+   act as starting, so there is nothing to confirm and no second button.
 6. Completing a new lesson unlocks the next node and may evolve Momo.
-7. Continue Adventure returns to the map.
-8. Practise Again replays the same lesson without advancing story.
+7. The end screen shows the three badge slots and offers the next difficulty up.
+8. Continue Adventure returns to the map.
+9. Practise Again replays the same lesson without advancing story.
 
 Completed map nodes stay replayable for collectibles.
 
