@@ -229,185 +229,152 @@ Division: simple division; long division.
 
 Nothing outstanding.
 
-Recently done, in case something looks unfamiliar:
+Recently done, newest first, in case something looks unfamiliar:
 
-- Every lesson can now be sat on easy, medium or hard, each with its own
-  badge, and hard reaches all three workings rather than columns alone.
-  All 45 lesson-by-difficulty combinations were played through in a
-  browser at 360x740; the hard ones were played backwards, last box
-  first, and every one of them finished.
-- Easy stopped being a different, simpler question and became the same
-  question with smaller numbers, with the individual sums inside the
-  working drawn as dots. `easyQuestion` is gone; the ranges live in
-  `generateLessonQuestion` beside the medium ones.
-- The mental lessons finally differ on hard, where before they were
-  identical to medium: bigger numbers, and ones that carry or borrow.
-- The easy pictures for taking away and for sharing are tapped rather
-  than read, because arriving already crossed out or already shared
-  answered the question for the child.
-- The first stage of every easy long division now has a picture: "how
-  many times does 4 go into 9" draws the 9 and takes 4 away per tap. It
-  had none before, because only the multiply-back step was drawn.
-- The working fits a phone without scrolling. Long multiplication used
-  to overflow by 151px and long division by 7px; `fitCell` now sizes the
-  grid from the room the keypad leaves.
-- Age is gone from setup, replaced by boy or girl, which is stored and
-  nothing reads yet.
-- XP is removed rather than merely unused. The points table, the `xp`
-  field and the `level` it fed are gone from the code and from saved
-  games, and `softXP` — which never awarded anything — is now
-  `awardHelped`. A test fails if any of it comes back.
-- Subtraction now mirrors addition at two digits: columns first
-  (`sub_2column`, so 84-16 — the example the teaching rules are written
-  around — is finally a lesson the child sits), then the same size in
-  the head (`sub_2mental`, Moonlit Hollow). That makes fifteen lessons.
-  Inserting one shifts everything that counts them: the last evolution
-  now waits for fifteen, and both legacy migrations moved with it.
+- Five lessons now explain their working before the first sit —
+  `add_2column`, `sub_2column`, `mul_1x2`, `mul_2x2`, `div_long` — one
+  guide per working.
+- The question, the working prompt and every screen between the maths can
+  be read aloud on request.
+- The easy pictures grew to use the width they have, the multiplication
+  carry is drawn, and the pair being multiplied is ringed.
+- Long multiplication's final addition asked for the last carry twice on
+  a question like 49 x 23. It now follows the same rule the column
+  additions do.
+- Every lesson can be sat on easy, medium or hard, each with its own
+  badge. Easy is the same lesson with smaller numbers and pictures; hard
+  is the same lesson with the talking taken out, or — on a lesson done in
+  the head — with bigger numbers that carry.
+- The journey board names each zone once, at one size, above the trail
+  rather than under it, and a locked stop stays readable.
+- The working fits a phone without scrolling: `fitCell` sizes the grid
+  from the room the keypad and the picture leave.
+- XP is removed rather than merely unused, and so are `level`, `ease` and
+  `age`. `age` is replaced by `look`, girl or boy, which is stored and
+  nothing reads yet. A test fails if xp comes back.
+- Subtraction mirrors addition at two digits: columns first
+  (`sub_2column`), then the same size in the head (`sub_2mental`). That
+  makes fifteen lessons, and both legacy migrations moved with it.
 - Lesson lengths match how heavy a question is: ten normally, seven at
-  three digits, five at four. The journey is 134 questions across 15
-  lessons, where ten-a-lesson would have been 150.
+  three digits, five at four. The journey is 134 questions.
+- Column answers are written right to left, one digit at a time.
 - The play screen shows a row of star spaces instead of "2/10".
-- The home tiles, the lesson list header and the end screen said "path
-  lights" and "kind answers". They now say "7 of 15 lessons lit" and
-  "right answers".
-- Column answers are written right to left one digit at a time. The old
-  model asked for the last two digits as a single entry, so 63+71 went
-  4, then 1, then 3. The `final`, `mulFinal` and `partialFinal` step
-  types are gone; a carried digit that lands in an empty column is just
-  written there as that column's answer.
-- The adaptive-difficulty subsystem is gone. `ease` wrote `P.ease` on
-  every single answer, its only reader was `tierFor`, and nothing called
-  `tierFor`; `bandOf`, `HARD_P` and the `genEasy`/`genHard` generators
-  went with it, along with `S.q.vid`, which `ease` was all that read.
-  `ease` is a retired save field now, so the map it left behind is
-  dropped from existing games.
-- Every zone on the journey board is named once, the same size whether or
-  not it is a landmark, on a soft white plate. Three things were wrong at
-  once: the plate was 18px or 23px at 48% opacity straight onto the
-  artwork; the stop card underneath repeated the same name in a second
-  pair of sizes; and the trail was drawn over the top of it. The name is
-  appended to the map rather than to the scene, because `.map-scene`
-  carries a z-index and so makes a stacking context — anything inside it
-  is trapped under the trail however high its own z-index. The card now
-  carries the lesson rather than the place.
-- A locked stop is muted, never faded. `opacity` on the card fades its
-  writing too, and the writing sits over a busy painting; the card keeps
-  a solid ground and greys its words instead. The locked silhouette has
-  to be `display:block` — it is a span, so width and height did nothing,
-  the body collapsed to zero and only its two absolutely-placed ears
-  rendered, as dark blobs over the words below.
-- The trail meanders between stops, as one spline through every stop
-  rather than a curve pulled past them, and is split at the current stop:
-  gold dashes with a dark outline behind the child, only a soft glow
-  ahead. `.adventure-path` has to state its width and height, or the
-  `<svg>` sizes itself from the viewBox ratio and draws the whole trail
-  at three times scale, clipped and clear of the stops.
-- Opening the map lands on the stop the child is actually at rather than
-  the top of a nine-thousand-pixel scroll. `scrollMapToCurrent` puts it a
-  little above the middle so the path ahead is visible.
-- The creature can be renamed in settings.
-- There was a second lesson list, reached from the home screen, that
-  showed the same rows as `s-menu` but could not be tapped.
-  It is gone, and its personalised title moved onto `s-menu`.
+- The map is painted, the trail meanders through every stop, and opening
+  it lands on the stop the child is at rather than the top.
+- The adaptive-difficulty subsystem is gone, along with the second lesson
+  list that could not be tapped.
 
 Worth watching when the children next play:
 
-- Long division is still ten questions, and its last four are
-  four-digit dividends — heavier than a four-digit column sum. If that
-  ending drags, shorten the lesson or move the ramp rather than
-  reaching for the four-digit rule, which keys on `stage.digits` and
-  does not apply to a lesson that grows within itself.
+- Long division is still ten questions, and its last four are four-digit
+  dividends — heavier than a four-digit column sum. If that ending drags,
+  shorten the lesson or move the ramp rather than reaching for the
+  four-digit rule, which keys on `stage.digits` and does not apply to a
+  lesson that grows within itself.
 - Two digits x two digits is also still ten questions. It keys as a
   two-digit lesson, but each question is a full long multiplication.
 - Whether four long-division questions in ten that leave something over
-  is the right amount, and whether the two back-to-back at the end of
-  the session are one too many.
+  is the right amount, and whether the two back-to-back at the end are
+  one too many.
 - The last four questions of both two-digit column lessons are a free
   mix, so a session can end without a single carry or crossing-out.
-  Addition has always behaved this way and subtraction now matches it,
-  but if the children coast through the endings, that is the reason.
+- On easy, a picture is dropped when it cannot fit above the working. In
+  long division that is the four-digit dividends, where the grid alone
+  needs the whole screen; roughly a quarter of the biggest "how many
+  times" steps go undrawn.
 
 ## Code map
 
-`index.html` is ~1990 lines: one `<style>` block, the screen markup, then
+`index.html` is ~2740 lines: one `<style>` block, the screen markup, then
 three `<script>` blocks. Line numbers drift as the file is edited — the
 `/* ---- name ---- */` banner comments are the durable anchors, so grep for
 those rather than trusting the numbers.
 
-### Styles (17-327)
+### Styles (17-331)
 
 | Lines | Contents |
 | --- | --- |
 | 18-53 | Design tokens (`:root` colours, `--cell`), page chrome, `.card`, `.btn`, `.screen` show/hide |
-| 54-77 | `/* magical companion */` — Momo art frame, glow, bob and evolution-burst animations |
-| 78-84 | `/* practice menu */` — lock states |
-| 85-102 | `/* question */` — question card, answer box, stamps, and `.stars`, the row of star spaces that replaced the question counter |
-| 103-108 | `/* keypad */` — the digit pad |
-| 109-135 | `/* column working */` — the paper-style grid: carry row, crossed-out regrouping, long-multiplication and division layout |
-| 136-199 | `/* settings */` |
-| 200-326 | `/* opening story + maths journey */` — story panels, then the adventure map: `.adventure-map`, `.map-art` (the painted panels), `.adventure-path`, `.map-scene`, `.scene-art-slot`, `.map-location`, `.map-momo`, and the major-transition overlay |
+| 54-70 | `/* magical companion */` — Momo art frame, glow, bob and evolution-burst animations |
+| 71-95 | `/* question */` — question card, `.ask` (text beside its speaker button), `.speak`, answer box, stamps, `.stars` |
+| 96-112 | the easy pictures: `.dots`, `--dot` and the gaps and padding derived from it, `.tappable`, and `#colDots` for the tighter strip above a working |
+| 113-118 | `/* keypad */` |
+| 119-155 | `/* column working */` — the paper-style grid: carry row, crossed-out regrouping, `.ringed`, long-multiplication and division layout, and `.guide-grid` for a guide's worked example |
+| 156-212 | `/* settings */` and the level-up overlay |
+| 213-331 | `/* opening story + maths journey */` — story panels, then the adventure map: `.adventure-map`, `.map-art`, `.adventure-path`, `.map-scene`, `.scene-title`, `.map-location` and its badge row, `.silhouette`, `.map-momo`, and the major-transition overlay |
 
-### Markup (323-517)
+### Markup (335-548)
 
 Every screen is a `<section class="screen">`; `show(id)` toggles the `on`
-class. In DOM order: `s-story` (332), `s-players` (348), `s-home` (365),
-`s-menu` (384, the adventure map), `s-node` (393, the story card for one
-map stop), `s-play` (407, whose `#progress` is the star row), `s-crack`
-(430, the midpoint first-crack beat), `s-end` (441), `s-set` (454), the
-`lvUp` overlay (480), and the hidden `s-dev` spellbook (501).
+class. In DOM order: `s-story` (336), `s-players` (352), `s-home` (369),
+`s-menu` (388, the adventure map), `s-node` (397, one map stop),
+`s-guide` (413, how a new working works), `s-play` (428, whose `#progress`
+is the star row), `s-crack` (453), `s-end` (464), `s-set` (478), the `lvUp`
+overlay (504), the `unlockBox` overlay (514), and the hidden `s-dev`
+spellbook (533).
 
-### Script 1 — data and maths (524-1183)
+### Script 1 — data and maths (550-1543)
 
 | Lines | Section | Notes |
 | --- | --- | --- |
-| 525-548 | `storage` | `KEY='matemostri:v2'`, `LEGACY_KEYS`, `store` get/set |
-| 549-846 | `model` | `MATH_STAGES` (550, the 15 lessons), `MONSTER_STAGE_DATA` (568, the 17 art stages), `PROGRESSION_NODES` (587, the 15 map stops), `MAP_ART_PANELS` (607) and `MAP_ART_CSS_WIDTH` (621), `EVOLUTIONS` (624), `COLLECTIBLES`, `COSMETIC_REWARDS`; `mapSceneLayout` (677) and `mapPathD` (714) lay the map out; save-shape helpers `blankStageProgress` (734), `progressFromCount` (739), `normalizeStageProgress` (744), `migrateV3StageProgress` (769), `RETIRED_STAGE_IDS` (782) and `migrateV4StageProgress` (783), `RETIRED_PLAYER_FIELDS` (793) and `dropRetiredPlayerFields` (794), `completeMathStage` (799), `migrate` (814) |
-| 847-952 | `pet` | `petSVG` (849) fallback art and `monsterMarkup` (942), which emits the `<img onerror>` → inline-SVG fallback |
-| 953-971 | `sound` | WebAudio beeps |
-| after `sound` | `speech` | `SPEAK_WORDS`, `speakableText`, `speechReady`, `englishVoice`, `speak` — all feature-detected, all no-ops without `speechSynthesis` |
-| 972-1094 | `column working model` | `buildColumn` (975), `buildLongMultiplication` (1037), `twoDigitColumnAddition` (1069), `twoDigitColumnSubtraction` (1081) — pure step generators |
-| 1095-1182 | `question generation` | `longDivisionPhase` (1099), `genDivision` (1104), `generateLessonQuestion` (1132), `divSteps` (1171) |
+| 551-574 | `storage` | `KEY='matemostri:v2'`, `LEGACY_KEYS`, `store` get/set |
+| 575-963 | `model` | `MATH_STAGES` (576, the 15 lessons), `DIFFICULTIES` (599) with `cascadeBadges` (616) and `awardBadges` (621), `MONSTER_STAGE_DATA` (627), `PROGRESSION_NODES` (646), `MAP_ART_PANELS` (666), `EVOLUTIONS` (683), `storyProgressOf` (723), `mapSceneLayout` (726) and `mapPathD` (763), save-shape helpers `blankStageProgress` (783), `normalizeStageProgress` (793), `migrateV4StageProgress` (838), `completeMathStage` (854), `migrate` (868), and `LESSON_GUIDES` (907) |
+| 964-1069 | `pet` | `petSVG` (966) fallback art and `monsterMarkup` (1059) |
+| 1070-1088 | `sound` | WebAudio beeps |
+| 1089-1130 | `speech` | `SPEAK_WORDS` (1094), `speakableText` (1098), `speechReady` (1103), `englishVoice` (1108), `speak` (1116) — all feature-detected, all no-ops without `speechSynthesis` |
+| 1131-1262 | `column working model` | `buildColumn` (1134), `buildLongMultiplication` (1196), `twoDigitColumnAddition` (1235), `twoDigitColumnSubtraction` (1248) — pure step generators |
+| 1263-1542 | `question generation` | `longDivisionPhase` (1267), `genDivision` (1272), the easy picture rules — `DOT_LIMIT` (1319), `easyNumber` (1327), `dotSplits` (1333), `dotTallest` (1348), `stepDots` (1396), `longMulStepDots` (1406), `divStepDots` (1416) — then `pickPair` (1432), `generateLessonQuestion` (1436) and `divSteps` (1531) |
 
 The test suite text-extracts these by name, so keep them as top-level
 `function name(...)  {...}` declarations: `buildColumn`,
 `buildLongMultiplication`, `twoDigitColumnAddition`,
-`twoDigitColumnSubtraction`, `commitColumnStep`,
+`twoDigitColumnSubtraction`, `easyNumber`, `pickPair`, `commitColumnStep`,
 `commitLongMultiplicationStep`, `colPrompt`, `longMulPrompt`, `renderCol`,
-`renderLongMul`, `divSteps`, `divPlan`, `divPromptText`,
+`renderLongMul`, `renderDiv`, `divSteps`, `divPlan`, `divPromptText`,
 `longDivisionPhase`, `genDivision`, `generateLessonQuestion`,
 `sessionPlan`, `renderStars`, `markQuestion`, `renderMenu`,
-`shouldShowCrackPause`, `blankStageProgress`, `progressFromCount`,
-`normalizeStageProgress`, `dropRetiredPlayerFields`, `speakableText`,
-`speechReady`, `speak`, `englishVoice`, `offerSpeech`. It also matches the
-`MATH_STAGES` array and the `SESSION`, `RETIRED_STAGE_IDS` and
-`RETIRED_PLAYER_FIELDS` constants by source text, and runs the whole
-`model` section in a sandbox to exercise `migrate` end to end.
+`renderDifficultyChoice`, `beginLesson`, `shouldShowCrackPause`,
+`blankStageProgress`, `progressFromCount`, `normalizeStageProgress`,
+`cascadeBadges`, `badgesFor`, `awardBadges`, `dropRetiredPlayerFields`,
+`dotRows`, `dotShareGroups`, `dotLayouts`, `dotLayoutFits`, `fitDot`,
+`easyDotsMarkup`, `paintDots`, `advanceDots`, `toggleStruck`, `stepDots`,
+`longMulStepDots`, `divStepDots`, `dotBudget`, `elementWords`,
+`speakableText`, `speechReady`, `speak`, `englishVoice`, `offerSpeech`,
+`show`, `hushSpeech`, `storyProgressOf`, `nextOpenColumnStep`,
+`selectColumnStep`, `pressDiv`, `blankBadges`, `migrateV3StageProgress`,
+`migrateV4StageProgress`, `mapTrailPoints`, `mapPathD` and
+`scrollMapToCurrent`. It also
+matches the `MATH_STAGES`, `DIFFICULTIES` and `LESSON_GUIDES` tables and
+the `SESSION`, `DOT_SIZES`, `DOT_SEPARATOR`, `DOT_ROWS_IN_WORKING`,
+`RETIRED_STAGE_IDS` and `RETIRED_PLAYER_FIELDS` constants by source text,
+and runs the whole `model` section in a sandbox to exercise `migrate` end
+to end.
 
-### Script 2 — screens and session flow (1184-1573)
+### Script 2 — screens and session flow (1544-2128)
 
 | Lines | Section | Notes |
 | --- | --- | --- |
-| 1185-1323 | `screens` | `$`, `esc`, `show` (1188); `STORY_SCENES` (1190) and the opening story, `renderPlayers` (1209), `renderHome` (1221), `renderMenu` (1241) building the map and `scrollMapToCurrent` (1302) landing it on the stop you are at, `openMapNode` (1309) opening one stop's story card |
-| 1324-1351 | `settings` | `captureSettingsName` (1326) renames the creature, `renderSettings` (1333) |
-| 1352-1572 | `gameplay` | `SESSION` and `sessionPlan` (1356) sizing the lesson and its pass mark, `renderStars` (1374) and `markQuestion` (1386) filling the star row, `startSession` (1387), `nextQuestion` (1395), `checkNormal` (1460) with the two-try feedback rule, `shouldShowCrackPause` (1490) and `showCrackPause` (1496), `award` (1508) and `awardHelped` (1518), `awardCollectible` (1519), `maybeCompleteStage` (1527), `endSession` (1552) |
+| 1545-1754 | `screens` | `$`, `esc`, `hushSpeech` (1550) and `show` (1551); `STORY_SCENES` (1553), `renderPlayers` (1572), `renderHome` (1584), `renderMenu` (1604) building the map, `scrollMapToCurrent` (1677), `openMapNode` (1684), then the guide pages: `renderGuideGrid` (1699), `openGuide` (1709), `beginLesson` (1731) and `renderDifficultyChoice` (1736) |
+| 1755-1782 | `settings` | `captureSettingsName`, `renderSettings` |
+| 1783-2127 | `gameplay` | `SESSION` and `sessionPlan` (1787), `renderStars` (1806), `markQuestion` (1818), `startSession` (1819), `nextQuestion` (1828), the easy pictures — `easyDotsMarkup` (1894), `paintDots` (1946), `wireDots` (1964) — `checkNormal` (2003), `shouldShowCrackPause` (2033), `award` (2051), `maybeCompleteStage` (2070), `endSession` (2097) |
 
-### Script 3 — column UIs and wiring (1574-1988)
+### Script 3 — column UIs and wiring (2129-2736)
 
 | Lines | Section | Notes |
 | --- | --- | --- |
-| 1575-1687 | `columns: addition, subtraction, multiplication` | `colPrompt` (1576), `renderCol` (1597), `commitColumnStep` (1648), `pressCol`, `finishCol` |
-| 1688-1765 | `two-digit long multiplication` | `longMulPrompt` (1689), `renderLongMul` (1700), `commitLongMultiplicationStep`, `pressLongMul`, `finishLongMul` |
-| 1722-1841 | `division in columns` | `divPlan` (1769), `divPromptText` (1779), `renderDiv` (1788), `pressDiv` (1844), `finishDiv` — the interactive working: multiply-back, subtract, bring down |
-| 1886-1900 | `hidden developer spellbook` | `renderDeveloper` (1887), `resetPlayerProgress` |
-| 1901-1987 | `wiring` | Age picker, all event listeners, the map resize re-layout (1881), dev-tap unlock, boot |
+| 2130-2319 | `columns: addition, subtraction, multiplication` | `colPrompt` (2131), `dotBudget` (2161) and `fitCell` (2165), `renderCol` (2174), `nextOpenColumnStep` (2268), `commitColumnStep` (2273), `selectColumnStep` (2283), `pressCol` (2288), `finishCol` (2310) |
+| 2320-2427 | `two-digit long multiplication` | `longMulPrompt` (2321), `longMulSlot` (2335), `renderLongMul` (2341), `commitLongMultiplicationStep` (2387), `selectLongMulStep` (2397), `pressLongMul` (2402), `finishLongMul` (2421) |
+| 2428-2570 | `division in columns` | `divPlan` (2431), `divPromptText` (2441), `renderDiv` (2451), `selectDivStep` (2520), `pressDiv` (2525), `finishDiv` (2560) |
+| 2571-2585 | `hidden developer spellbook` | `renderDeveloper` (2572), `resetPlayerProgress` |
+| 2586-2735 | `wiring` | every event listener, `SPEAK_PANELS` (2631) and `offerSpeech` (2658), the map resize re-layout, dev-tap unlock, boot |
 
 Note on long division: question generation lives in `longDivisionPhase`
-and `genDivision` (1104) plus `generateLessonQuestion` (1132) in script 1,
-while the working UI is `divPlan`/`renderDiv`/`pressDiv` in script 3.
-The two are independent — changes to what a question looks like belong
-in the former and should leave the latter untouched. The words the child
-reads during the working are `divPromptText`, and the summary at the end
-is in `finishDiv`.
+and `genDivision` plus `generateLessonQuestion` in script 1, while the
+working UI is `divPlan`/`renderDiv`/`pressDiv` in script 3. The two are
+independent — changes to what a question looks like belong in the former
+and should leave the latter untouched. The words the child reads during
+the working are `divPromptText`, and the summary at the end is in
+`finishDiv`.
 
 Note on the map: `renderMenu` must run *after* `show('s-menu')`. Scene
 heights are measured from the map's width, and a hidden element measures
