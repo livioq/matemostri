@@ -142,6 +142,18 @@ public release.
 - Who is playing, girl or boy, is remembered on the player. It will
   choose the artwork one day; today it only stores the choice. Age used
   to be asked for and never changed anything, so it is gone.
+- The question can be read aloud, for a child who can do the sum but is
+  still slow at reading it. Never automatic: a speaker button beside the
+  question and beside the working prompt, tapped when it is wanted.
+  Symbols become words first — plus, take away, times, divided by,
+  equals — because a screen reader saying "six minus three" is not the
+  language the game uses anywhere else. An English voice if the browser
+  has one, read at 0.9.
+- Speech is feature-detected at every step, and the buttons carry
+  `hidden` in the markup: a browser without `speechSynthesis` shows no
+  button, changes no layout, and runs no speech code. `speechReady`
+  checks for `window` itself, so the test suite, which has none, is
+  untouched.
 - The player names the creature. Default is Momo. All story and
   evolution text uses the player-chosen name, and the name can be
   changed at any time in settings, not only during the opening story.
@@ -325,6 +337,7 @@ map stop), `s-play` (407, whose `#progress` is the star row), `s-crack`
 | 549-846 | `model` | `MATH_STAGES` (550, the 15 lessons), `MONSTER_STAGE_DATA` (568, the 17 art stages), `PROGRESSION_NODES` (587, the 15 map stops), `MAP_ART_PANELS` (607) and `MAP_ART_CSS_WIDTH` (621), `EVOLUTIONS` (624), `COLLECTIBLES`, `COSMETIC_REWARDS`; `mapSceneLayout` (677) and `mapPathD` (714) lay the map out; save-shape helpers `blankStageProgress` (734), `progressFromCount` (739), `normalizeStageProgress` (744), `migrateV3StageProgress` (769), `RETIRED_STAGE_IDS` (782) and `migrateV4StageProgress` (783), `RETIRED_PLAYER_FIELDS` (793) and `dropRetiredPlayerFields` (794), `completeMathStage` (799), `migrate` (814) |
 | 847-952 | `pet` | `petSVG` (849) fallback art and `monsterMarkup` (942), which emits the `<img onerror>` → inline-SVG fallback |
 | 953-971 | `sound` | WebAudio beeps |
+| after `sound` | `speech` | `SPEAK_WORDS`, `speakableText`, `speechReady`, `englishVoice`, `speak` — all feature-detected, all no-ops without `speechSynthesis` |
 | 972-1094 | `column working model` | `buildColumn` (975), `buildLongMultiplication` (1037), `twoDigitColumnAddition` (1069), `twoDigitColumnSubtraction` (1081) — pure step generators |
 | 1095-1182 | `question generation` | `longDivisionPhase` (1099), `genDivision` (1104), `generateLessonQuestion` (1132), `divSteps` (1171) |
 
@@ -337,7 +350,8 @@ The test suite text-extracts these by name, so keep them as top-level
 `longDivisionPhase`, `genDivision`, `generateLessonQuestion`,
 `sessionPlan`, `renderStars`, `markQuestion`, `renderMenu`,
 `shouldShowCrackPause`, `blankStageProgress`, `progressFromCount`,
-`normalizeStageProgress`, `dropRetiredPlayerFields`. It also matches the
+`normalizeStageProgress`, `dropRetiredPlayerFields`, `speakableText`,
+`speechReady`, `speak`, `englishVoice`, `offerSpeech`. It also matches the
 `MATH_STAGES` array and the `SESSION`, `RETIRED_STAGE_IDS` and
 `RETIRED_PLAYER_FIELDS` constants by source text, and runs the whole
 `model` section in a sandbox to exercise `migrate` end to end.

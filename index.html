@@ -85,6 +85,14 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
 /* question */
 .qhead{display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:700;color:var(--ink-soft)}
 .question{font-size:clamp(30px,10vw,42px);font-weight:700;color:var(--ink);text-align:center;padding:14px 0 6px}
+/* the speaker sits beside what it reads, and takes no room at all when speech is missing */
+.ask{display:flex;align-items:center;justify-content:center;gap:8px}
+.ask>:first-child{flex:1 1 auto;min-width:0}
+.speak{flex:0 0 auto;width:34px;height:34px;border-radius:50%;border:2px solid var(--ink);
+  background:#fff;color:var(--ink);font-size:13px;line-height:1;padding:0;
+  box-shadow:0 3px 0 rgba(27,58,140,.22)}
+.speak:active{transform:translateY(2px);box-shadow:0 1px 0 rgba(27,58,140,.22)}
+.speak[hidden]{display:none}
 .answer{min-height:56px;margin:0 auto;width:min(220px,70%);border-bottom:3px solid var(--pen);text-align:center;font-size:36px;font-weight:700;color:var(--pen);padding-bottom:4px}
 .answer.empty::after{content:"?";color:rgba(214,48,58,.28)}
 .stars{display:flex;gap:2px;align-items:center;justify-content:center;flex:1;margin:0 8px;line-height:1}
@@ -455,12 +463,12 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
     </div>
     <div class="card" id="qcard">
       <div id="normalQ" style="display:none">
-        <div class="question mono" id="qText">1 + 1</div>
+        <div class="ask"><div class="question mono" id="qText">1 + 1</div><button class="speak" id="sayQ" aria-label="Hear the question" hidden>▶</button></div>
         <div class="dots" id="dots" style="display:none"></div>
         <div class="answer mono empty" id="ansBox"></div>
       </div>
       <div id="colQ" style="display:none">
-        <div class="prompt" id="colPrompt"></div>
+        <div class="ask"><div class="prompt" id="colPrompt"></div><button class="speak" id="sayPrompt" aria-label="Hear this step" hidden>▶</button></div>
         <div class="dots" id="colDots" style="display:none"></div>
         <div class="gridwrap"><div class="wgrid" id="colGrid"></div></div>
         <div class="hintstrip" id="colHint" style="display:none"></div>
@@ -1052,6 +1060,46 @@ const sStep=()=>beep(760,.06);
 const sBad =()=>beep(180,.22,'sawtooth');
 const sTap =()=>beep(440,.04);
 const sLvl =()=>{[523,659,784,1046].forEach((f,i)=>setTimeout(()=>beep(f,.16),i*110))};
+
+/* ---------------- speech ---------------- */
+/* Reading the question aloud, for a child who can do the sum but is still slow at reading
+   it. Never automatic: a speaker button beside the question and beside the working prompt,
+   tapped when it is wanted. Every part of it is feature-detected, so a browser without
+   speech — and the test suite, which has no window at all — simply never sees a button. */
+const SPEAK_WORDS=[[/\u00D7/g,' times '],[/\u00F7/g,' divided by '],[/\u2212/g,' take away '],
+  [/\+/g,' plus '],[/=/g,' equals ']];
+function speakableText(text){
+  let words=String(text==null?'':text);
+  SPEAK_WORDS.forEach(pair=>{ words=words.replace(pair[0],pair[1]); });
+  return words.replace(/\s+/g,' ').replace(/\s+([.,?!])/g,'$1').trim();
+}
+function speechReady(){
+  return typeof window!=='undefined'&&!!window.speechSynthesis&&typeof window.SpeechSynthesisUtterance==='function';
+}
+let speechVoice=null;
+/* Voices arrive asynchronously in some browsers, so this is asked again until one answers. */
+function englishVoice(){
+  if(!speechReady()) return null;
+  if(speechVoice) return speechVoice;
+  let voices=[];
+  try{ voices=window.speechSynthesis.getVoices()||[]; }catch(e){ return null; }
+  speechVoice=voices.filter(v=>v&&/^en/i.test(v.lang||''))[0]||null;
+  return speechVoice;
+}
+function speak(text){
+  if(!speechReady()) return false;
+  const words=speakableText(text);
+  if(!words) return false;
+  try{
+    window.speechSynthesis.cancel();
+    const said=new window.SpeechSynthesisUtterance(words);
+    said.rate=0.9;
+    const voice=englishVoice();
+    if(voice){ said.voice=voice; said.lang=voice.lang; }
+    window.speechSynthesis.speak(said);
+    return true;
+  }catch(e){ return false; }
+}
 
 /* ---------------- column working model ---------------- */
 const rnd=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
@@ -1721,6 +1769,7 @@ function nextQuestion(){
     $('normalQ').style.display='block'; $('colQ').style.display='none';
     $('qText').textContent=made.txt+' =';
     const drawn=paintDots($('dots'),made.dots);
+    S.q.words=drawn?made.dots.words:'';       // the picture's caption, for the speaker button
     S.input=''; paintAns();
     $('qTag').textContent=drawn?made.dots.words:S.stage.magic+' · help '+petName()+' find the answer';
   }else{
@@ -2503,6 +2552,18 @@ $('setBack').onclick=()=>{ captureSettingsName(); renderHome(); show('s-home'); 
 $('quitPlay').onclick=()=>{ save(); renderHome(); show('s-home'); };
 // the easy pictures are tapped, not just looked at
 wireDots($('dots')); wireDots($('colDots'));
+/* Speech is opt-in and tapped for. If the browser has none, the buttons stay hidden and
+   nothing else in the game changes. */
+function offerSpeech(){
+  if(!speechReady()) return;
+  englishVoice();
+  $('sayQ').hidden=false; $('sayPrompt').hidden=false;
+}
+$('sayQ').onclick=()=>{ sTap(); speak($('qText').textContent+(S&&S.q&&S.q.words?'. '+S.q.words:'')); };
+$('sayPrompt').onclick=()=>{ sTap(); speak($('colPrompt').textContent); };
+if(speechReady()&&window.speechSynthesis.addEventListener)
+  window.speechSynthesis.addEventListener('voiceschanged',()=>{ speechVoice=null; englishVoice(); });
+offerSpeech();
 $('crackContinue').onclick=()=>{ sTap(); show('s-play'); nextQuestion(); };
 $('againBtn').onclick=()=>{ show('s-menu'); renderMenu(); };
 $('endHome').onclick=()=>{ if(lastSessionStageId) startSession(lastSessionStageId,endRetryDifficulty); };

@@ -1300,6 +1300,37 @@ assert.match(functionSource('renderMenu'), /<p class="map-lesson">'\+esc\(stage\
 assert.equal(/\.map-location\.major \.map-lesson/.test(source), false,
   'and a landmark card is not written in a different size either');
 
+// speech: symbols become words before anything is read aloud, and every part of it is
+// feature-detected so a browser without speech — and this suite, which has no window at
+// all — is untouched
+const speechCtx = {};
+vm.createContext(speechCtx);
+vm.runInContext([
+  source.match(/const SPEAK_WORDS=\[[\s\S]*?\];/)[0],
+  functionSource('speakableText'),
+  functionSource('speechReady'),
+  'this.say=speakableText;this.ready=speechReady;'
+].join('\n'), speechCtx);
+assert.equal(speechCtx.ready(), false, 'with no window there is no speech, and nothing throws');
+assert.equal(speechCtx.say('8 + 5 ='), '8 plus 5 equals');
+assert.equal(speechCtx.say('15 \u2212 8 ='), '15 take away 8 equals');
+assert.equal(speechCtx.say('9 \u00D7 4 ='), '9 times 4 equals');
+assert.equal(speechCtx.say('24 \u00F7 4 ='), '24 divided by 4 equals');
+assert.equal(speechCtx.say('9 \u00D7 4 + 3. Write the ones digit here.'),
+  '9 times 4 plus 3. Write the ones digit here.', 'a working prompt reads as a sentence');
+assert.equal(speechCtx.say('How many times does 4 go into 9?'), 'How many times does 4 go into 9?',
+  'a prompt with no symbols in it is left alone');
+assert.equal(speechCtx.say(''), '', 'nothing to say stays nothing');
+assert.equal(speechCtx.say(null), '', 'and neither does a missing prompt throw');
+assert.match(functionSource('speak'), /if\(!speechReady\(\)\) return false/,
+  'speaking checks first, so a browser without speech does nothing at all');
+assert.match(functionSource('speak'), /rate=0\.9/, 'read a little slower than default');
+assert.match(functionSource('englishVoice'), /\/\^en\/i\.test/, 'and in an English voice if there is one');
+assert.match(source, /<button class="speak" id="sayQ"[^>]*hidden>/, 'the speaker is hidden until speech is found');
+assert.match(source, /<button class="speak" id="sayPrompt"[^>]*hidden>/);
+assert.match(functionSource('offerSpeech'), /if\(!speechReady\(\)\) return;/,
+  'and only ever revealed when there is speech to offer');
+
 // the trail: it wanders between stops, and what has been walked looks different from
 // what is still ahead
 const pathCtx = {Math};
