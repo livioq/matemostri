@@ -85,14 +85,6 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
 /* question */
 .qhead{display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:700;color:var(--ink-soft)}
 .question{font-size:clamp(30px,10vw,42px);font-weight:700;color:var(--ink);text-align:center;padding:14px 0 6px}
-/* the speaker sits beside what it reads, and takes no room at all when speech is missing */
-.ask{display:flex;align-items:center;justify-content:center;gap:8px}
-.ask>:first-child{flex:1 1 auto;min-width:0}
-.speak{flex:0 0 auto;width:34px;height:34px;border-radius:50%;border:2px solid var(--ink);
-  background:#fff;color:var(--ink);font-size:13px;line-height:1;padding:0;
-  box-shadow:0 3px 0 rgba(27,58,140,.22)}
-.speak:active{transform:translateY(2px);box-shadow:0 1px 0 rgba(27,58,140,.22)}
-.speak[hidden]{display:none}
 .answer{min-height:56px;margin:0 auto;width:min(220px,70%);border-bottom:3px solid var(--pen);text-align:center;font-size:36px;font-weight:700;color:var(--pen);padding-bottom:4px}
 .answer.empty::after{content:"?";color:rgba(214,48,58,.28)}
 .stars{display:flex;gap:2px;align-items:center;justify-content:center;flex:1;margin:0 8px;line-height:1}
@@ -132,12 +124,6 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
 .key.del{background:#fff;color:var(--pen);border-color:var(--pen);box-shadow:0 4px 0 rgba(214,48,58,.3)}
 /* column working */
 .gridwrap{display:flex;justify-content:center;padding:6px 0 2px;overflow-x:auto}
-/* the worked example on a guide page, drawn in the same cells the real working uses */
-.guide-grid{--cell:34px;position:relative}
-.guide-sum{text-align:center;font-size:20px;font-weight:800;color:var(--ink-soft);margin:2px 0 0}
-.guide-note{text-align:center;font-size:12px;font-weight:800;color:#9a6400;margin:2px 0 0}
-.guide-lines{margin:10px 0 0;padding:0 0 0 22px;text-align:left}
-.guide-lines li{margin:0 0 7px;font-weight:700;color:var(--ink);font-size:14px;line-height:1.32}
 .wgrid{display:grid;position:relative}
 .dc{width:var(--cell);height:var(--cell);display:flex;align-items:center;justify-content:center;
     font-family:ui-monospace,"Roboto Mono","Courier New",monospace;font-size:calc(var(--cell)*.6);font-weight:700;color:var(--ink)}
@@ -260,10 +246,8 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
 .journey-stage.available{border-color:#e477b4;box-shadow:0 0 0 3px rgba(228,119,180,.12)}.journey-stage.completed{border-color:#65b782}.journey-stage:disabled{cursor:default}
 .journey-art{width:76px;height:76px;display:grid;place-items:center}.journey-art img,.journey-art svg{max-width:76px;max-height:76px}
 .journey-stage h3{margin:0;color:var(--ink);font-size:17px}.journey-stage p{margin:3px 0 0;font-size:12px;font-weight:700;color:var(--ink-soft);line-height:1.3}
-/* a span is inline, so width and height were ignored: the body collapsed to nothing and only
-   the two absolutely-placed ears rendered, as a pair of dark blobs over the words below */
-.silhouette{display:block;margin:0 auto;width:60px;height:68px;background:#a8adc4;border-radius:48% 48% 42% 42%;position:relative}
-.silhouette::before,.silhouette::after{content:"";position:absolute;top:-12px;width:22px;height:30px;background:#a8adc4;border-radius:70% 20% 60% 30%}.silhouette::before{left:4px;transform:rotate(-25deg)}.silhouette::after{right:4px;transform:rotate(25deg)}
+.silhouette{width:60px;height:68px;background:#28304a;border-radius:48% 48% 42% 42%;position:relative;filter:drop-shadow(0 4px 2px rgba(0,0,0,.18))}
+.silhouette::before,.silhouette::after{content:"";position:absolute;top:-12px;width:22px;height:30px;background:#28304a;border-radius:70% 20% 60% 30%}.silhouette::before{left:4px;transform:rotate(-25deg)}.silhouette::after{right:4px;transform:rotate(25deg)}
 .accessory-list{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px}.accessory-chip{font-size:10px;font-weight:800;background:#fff4c9;color:#785800;border-radius:999px;padding:3px 7px}
 .journey-stage .badge{display:inline-block;margin:5px 5px 0 0;padding:3px 7px;border-radius:999px;background:#e6e9ff;color:#493aa1;font-size:10px;font-weight:900}
 .adventure-map{position:relative;min-height:var(--map-height,8400px);margin:10px 0 18px;padding:0;background:linear-gradient(180deg,#fff8ff 0%,#f2fbff 18%,#f5fff3 34%,#eef7ff 50%,#fff7dc 68%,#f4ecff 84%,#fff7fb 100%);border:2px solid rgba(80,49,154,.22);border-radius:30px;overflow:hidden;box-shadow:inset 0 0 0 6px rgba(255,255,255,.45)}
@@ -304,10 +288,7 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
 .map-location:active:not(:disabled){transform:translate(-50%,-50%) scale(.98)}
 .map-location.completed{border-color:#65b782;background:linear-gradient(145deg,#fff,#effff6)}
 .map-location.available{border-color:#e477b4;box-shadow:0 0 0 4px rgba(228,119,180,.13),0 10px 22px rgba(80,49,154,.16)}
-/* a locked stop is muted, not faded: fading the card fades its words into the painting, and
-   the painting is busy. The card keeps its own solid ground and the writing stays readable. */
-.map-location.locked{background:linear-gradient(145deg,#f6f5fa,#e7e9f2);border-color:rgba(80,49,154,.16);box-shadow:0 5px 12px rgba(80,49,154,.10)}
-.map-location.locked .map-lesson,.map-location.locked .map-region{color:#6b6f86}
+.map-location.locked{opacity:.66;background:linear-gradient(145deg,#f8f6fb,#e7e9f2)}
 .map-location.current{animation:mapPulse 1.9s ease-in-out infinite;border-color:var(--gold)}
 .map-location.major{border-width:3px;min-height:158px}
 .map-location img,.map-location svg{width:66px;height:66px;object-fit:contain}
@@ -390,7 +371,7 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
     <h1 style="font-size:30px;margin:3px 0 10px">A magical maths friend</h1>
     <div class="story-card">
       <img id="storyImg" src="assets/story/find-egg.webp" alt="A child discovers a glowing magical egg" onerror="this.style.display='none'">
-      <div class="story-copy"><div class="ask"><h2 id="storyTitle">A magical egg!</h2><button class="speak" id="sayStory" aria-label="Hear this" hidden>▶</button></div><p id="storyText"></p></div>
+      <div class="story-copy"><h2 id="storyTitle">A magical egg!</h2><p id="storyText"></p></div>
       <div id="friendNameBox" style="padding:0 8px 10px">
         <label for="friendName" style="display:block;text-align:center;font-weight:850;color:var(--ink);margin-bottom:7px">What would you like to call your new friend?</label>
         <input type="text" id="friendName" value="Momo" maxlength="12" autocomplete="off" aria-label="Your magical friend's name">
@@ -453,28 +434,12 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
     </div>
     <div class="card story-node-card">
       <div class="eyebrow" id="nodeLesson"></div>
-      <div class="ask"><h1 style="font-size:29px;margin:4px 0" id="nodeTitle">The next path</h1><button class="speak" id="sayNode" aria-label="Hear this" hidden>▶</button></div>
+      <h1 style="font-size:29px;margin:4px 0" id="nodeTitle">The next path</h1>
       <div class="pet-stage" id="nodePet"></div>
       <p id="nodeStory"></p>
     </div>
-    <button class="link" id="nodeGuide" style="display:none;margin:10px auto 0">how it works</button>
     <div class="eyebrow" style="margin:14px 0 6px" id="nodeChoose">tap one to begin</div>
     <div class="difficulty-row" id="nodeDifficulty"></div>
-  </section>
-
-  <section id="s-guide" class="screen">
-    <div class="row" style="justify-content:space-between">
-      <button class="link" id="guideBack">back</button>
-      <span class="eyebrow" id="guideEyebrow"></span>
-    </div>
-    <div class="card">
-      <div class="ask"><h1 style="font-size:26px;margin:2px 0" id="guideTitle">How it works</h1><button class="speak" id="sayGuide" aria-label="Hear this" hidden>▶</button></div>
-      <div class="guide-sum mono" id="guideSum"></div>
-      <div class="gridwrap"><div class="wgrid guide-grid" id="guideGrid"></div></div>
-      <div class="guide-note" id="guideNote"></div>
-      <ol class="guide-lines" id="guideLines"></ol>
-    </div>
-    <button class="btn" id="guideStart">Start the lesson</button>
   </section>
 
   <section id="s-play" class="screen">
@@ -485,12 +450,12 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
     </div>
     <div class="card" id="qcard">
       <div id="normalQ" style="display:none">
-        <div class="ask"><div class="question mono" id="qText">1 + 1</div><button class="speak" id="sayQ" aria-label="Hear the question" hidden>▶</button></div>
+        <div class="question mono" id="qText">1 + 1</div>
         <div class="dots" id="dots" style="display:none"></div>
         <div class="answer mono empty" id="ansBox"></div>
       </div>
       <div id="colQ" style="display:none">
-        <div class="ask"><div class="prompt" id="colPrompt"></div><button class="speak" id="sayPrompt" aria-label="Hear this step" hidden>▶</button></div>
+        <div class="prompt" id="colPrompt"></div>
         <div class="dots" id="colDots" style="display:none"></div>
         <div class="gridwrap"><div class="wgrid" id="colGrid"></div></div>
         <div class="hintstrip" id="colHint" style="display:none"></div>
@@ -504,7 +469,7 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
 
   <section id="s-crack" class="screen">
     <div class="eyebrow">the magic stirs</div>
-    <div class="ask"><h1 style="font-size:30px;margin:4px 0" id="crackTitle">A tiny crack!</h1><button class="speak" id="sayCrack" aria-label="Hear this" hidden>▶</button></div>
+    <h1 style="font-size:30px;margin:4px 0" id="crackTitle">A tiny crack!</h1>
     <div class="card">
       <div class="pet-stage" id="crackPet"></div>
       <div class="stats" id="crackStats"></div>
@@ -515,7 +480,7 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
 
   <section id="s-end" class="screen">
     <div class="eyebrow">the magic settles</div>
-    <div class="ask"><h1 style="font-size:30px;margin:4px 0" id="endTitle">Well done!</h1><button class="speak" id="sayEnd" aria-label="Hear this" hidden>▶</button></div>
+    <h1 style="font-size:30px;margin:4px 0" id="endTitle">Well done!</h1>
     <div class="card">
       <div class="pet-stage" id="endPet"></div>
       <div class="stats" id="endStats"></div>
@@ -556,7 +521,6 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
   <div class="levelup" id="lvUp">
     <div class="eyebrow" style="color:#d9ccff">a magical moment</div>
     <h2 id="luTitle">Your friend has grown!</h2>
-    <button class="speak" id="sayGrown" aria-label="Hear this" hidden>▶</button>
     <div id="luPet"></div>
     <div id="luMsg" style="font-weight:700;max-width:280px"></div>
     <div style="height:18px"></div>
@@ -577,7 +541,6 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
       <div class="pet-stage" id="unlockPet"></div>
       <h2 id="unlockTitle">A new path is glowing!</h2>
       <p id="unlockText">A new maths adventure is ready.</p>
-      <button class="speak" id="sayUnlock" aria-label="Hear this" hidden>▶</button>
       <button class="btn" id="unlockOk">See your result</button>
     </div>
   </div>
@@ -782,7 +745,7 @@ const monsterStage = lvl => MONSTER_STAGES[stageOf(lvl)-1];
 const completedCount=p=>MATH_STAGES.filter(s=>p.stageProgress&&p.stageProgress.completed&&p.stageProgress.completed[s.id]).length;
 function evolutionForCount(count){ let found=EVOLUTIONS[0]; EVOLUTIONS.forEach(e=>{ if(count>=e.completed) found=e; }); return found; }
 const artForCount=count=>evolutionForCount(count).art;
-function storyProgressOf(p){ if(!p.storyProgress||typeof p.storyProgress!=='object') p.storyProgress={}; if(p.storyProgress.firstCrackSeen===undefined) p.storyProgress.firstCrackSeen=false; if(!p.storyProgress.mapSeen||typeof p.storyProgress.mapSeen!=='object') p.storyProgress.mapSeen={}; if(!p.storyProgress.guidesSeen||typeof p.storyProgress.guidesSeen!=='object') p.storyProgress.guidesSeen={}; return p.storyProgress; }
+function storyProgressOf(p){ if(!p.storyProgress||typeof p.storyProgress!=='object') p.storyProgress={}; if(p.storyProgress.firstCrackSeen===undefined) p.storyProgress.firstCrackSeen=false; if(!p.storyProgress.mapSeen||typeof p.storyProgress.mapSeen!=='object') p.storyProgress.mapSeen={}; return p.storyProgress; }
 function artForPlayer(p){ const count=completedCount(p); return count===0&&storyProgressOf(p).firstCrackSeen?2:artForCount(count); }
 function mapSideX(side){ return side==='left'?29:side==='right'?71:50; }
 function mapSceneLayout(mapWidth){
@@ -925,7 +888,7 @@ function newPlayer(name,look){
   return {id:'p'+Date.now(),name:name,look:look==='boy'?'boy':'girl',total:0,right:0,best:0,
           groups:{add:true,sub:true,mul:true,div:true},
           unlocked:{add2:false,sub2:false,mul2:false,div2:false},
-          stageProgress:blankStageProgress(),monsterStage:1,momoName:'Momo',collectibles:{},accessories:[],storySeen:false,storyProgress:{firstCrackSeen:false,mapSeen:{},guidesSeen:{}},migrationVersion:9};
+          stageProgress:blankStageProgress(),monsterStage:1,momoName:'Momo',collectibles:{},accessories:[],storySeen:false,storyProgress:{firstCrackSeen:false,mapSeen:{}},migrationVersion:9};
 }
 function migrate(p){
   const version=Number(p.migrationVersion)||0,wasLegacy=version<3;
@@ -959,69 +922,6 @@ function migrate(p){
   p.migrationVersion=9;
   return p;
 }
-
-/* A lesson that introduces a new working gets a page explaining it first. "Put the ones in
-   the column and keep the tens" is not obvious to a seven-year-old, and the lesson itself
-   only ever says it one step at a time. Each guide is a worked example drawn in the same
-   cells the real working uses, and a few lines saying what happened, in the same words the
-   lesson will use. Shown once, before the first sit; available again from the map stop.
-   Cells are placed by row and column so one renderer draws a column sum and a division. */
-const LESSON_GUIDES={
-  add_2column:{title:'Adding in columns',sum:'27 + 15',cols:3,
-    cells:[{r:1,c:2,t:'1',cls:'small'},
-      {r:2,c:2,t:'2'},{r:2,c:3,t:'7'},
-      {r:3,c:1,t:'+',cls:'op'},{r:3,c:2,t:'1'},{r:3,c:3,t:'5'},
-      {r:4,c:2,t:'4',cls:'typed'},{r:4,c:3,t:'2',cls:'typed'}],
-    rules:[{r:4,c:1,span:3}],
-    lines:['Ones under ones, tens under tens.',
-      'Add the ones first: 7 and 5 make 12.',
-      '12 will not fit in one box, so write the 2 and carry the 1 above the tens.',
-      'Now the tens: 2 and 1, and the 1 you carried, make 4.']},
-  sub_2column:{title:'Taking away in columns',sum:'84 \u2212 16',cols:3,
-    cells:[{r:1,c:2,t:'7',cls:'small'},{r:1,c:3,t:'14',cls:'small'},
-      {r:2,c:2,t:'8',cls:'struck'},{r:2,c:3,t:'4',cls:'struck'},
-      {r:3,c:1,t:'\u2212',cls:'op'},{r:3,c:2,t:'1'},{r:3,c:3,t:'6'},
-      {r:4,c:2,t:'6',cls:'typed'},{r:4,c:3,t:'8',cls:'typed'}],
-    rules:[{r:4,c:1,span:3}],
-    lines:['Ones under ones, tens under tens.',
-      '4 take away 6 will not go.',
-      'So borrow a ten: cross out the 8 and write 7, and the 4 becomes 14.',
-      'Now 14 take away 6 is 8, and 7 take away 1 is 6.']},
-  mul_1x2:{title:'Multiplying in columns',sum:'43 \u00D7 4',cols:4,
-    cells:[{r:1,c:3,t:'4'},{r:1,c:4,t:'3',cls:'ringed'},
-      {r:2,c:1,t:'\u00D7',cls:'op'},{r:2,c:4,t:'4',cls:'ringed'},
-      {r:3,c:2,t:'1',cls:'typed'},{r:3,c:3,t:'7',cls:'typed'},{r:3,c:4,t:'2',cls:'typed'}],
-    rules:[{r:3,c:1,span:4}],
-    note:'keep 1',
-    lines:['Multiply the ones first: 3 times 4 is 12.',
-      'Only one digit fits in a box, so write the 2 and keep the 1 at the side.',
-      'Now the tens: 4 times 4 is 16, and the 1 you kept makes 17.',
-      'Nothing is left to multiply, so the 17 goes down in front of the 2.']},
-  mul_2x2:{title:'Long multiplication',sum:'43 \u00D7 12',cols:4,
-    cells:[{r:1,c:3,t:'4'},{r:1,c:4,t:'3'},
-      {r:2,c:1,t:'\u00D7',cls:'op'},{r:2,c:3,t:'1'},{r:2,c:4,t:'2'},
-      {r:3,c:3,t:'8',cls:'typed'},{r:3,c:4,t:'6',cls:'typed'},
-      {r:4,c:2,t:'4',cls:'typed'},{r:4,c:3,t:'3',cls:'typed'},{r:4,c:4,t:'0',cls:'ringed'},
-      {r:5,c:2,t:'5',cls:'typed'},{r:5,c:3,t:'1',cls:'typed'},{r:5,c:4,t:'6',cls:'typed'}],
-    rules:[{r:3,c:1,span:4},{r:5,c:1,span:4}],
-    lines:['Multiply by the ones first, into the first row: 43 times 2 is 86.',
-      'The second row is multiplying by tens, so it starts with a 0 in the ones place.',
-      'Then multiply by the tens: 43 times 1 is 43, written in front of that 0.',
-      'Add the two rows together.']},
-  div_long:{title:'Long division',sum:'84 \u00F7 4',cols:5,bar:3,
-    cells:[{r:1,c:1,t:'8'},{r:1,c:2,t:'4'},{r:1,c:4,t:'4'},
-      {r:2,c:4,t:'2',cls:'typed'},{r:2,c:5,t:'1',cls:'typed'},
-      {r:2,c:1,t:'8',cls:'sub typed'},
-      {r:3,c:1,t:'0',cls:'typed'},{r:3,c:2,t:'4',cls:'brought'},
-      {r:4,c:2,t:'4',cls:'sub typed'},
-      {r:5,c:2,t:'0',cls:'typed'}],
-    rules:[{r:2,c:4,span:2}],
-    lines:['How many times does 4 go into 8? Twice. Write the 2 above.',
-      '2 times 4 is 8. Write it underneath and take it away.',
-      'Bring the next digit down: that leaves 4.',
-      'Do the same again: 4 goes into 4 once, and nothing is left.']}
-};
-const guideFor=stageId=>LESSON_GUIDES[stageId]||null;
 
 /* ---------------- pet ---------------- */
 
@@ -1147,48 +1047,6 @@ const sStep=()=>beep(760,.06);
 const sBad =()=>beep(180,.22,'sawtooth');
 const sTap =()=>beep(440,.04);
 const sLvl =()=>{[523,659,784,1046].forEach((f,i)=>setTimeout(()=>beep(f,.16),i*110))};
-
-/* ---------------- speech ---------------- */
-/* Reading the question aloud, for a child who can do the sum but is still slow at reading
-   it. Never automatic: a speaker button beside the question and beside the working prompt,
-   tapped when it is wanted. Every part of it is feature-detected, so a browser without
-   speech — and the test suite, which has no window at all — simply never sees a button. */
-const SPEAK_WORDS=[[/\u00D7/g,' times '],[/\u00F7/g,' divided by '],[/\u2212/g,' take away '],
-  [/\+/g,' plus '],[/=/g,' equals '],
-  // a middot separates two thoughts on screen; spoken, it wants to be a full stop
-  [/\s*\u00B7\s*/g,'. ']];
-function speakableText(text){
-  let words=String(text==null?'':text);
-  SPEAK_WORDS.forEach(pair=>{ words=words.replace(pair[0],pair[1]); });
-  return words.replace(/\s+/g,' ').replace(/\s+([.,?!])/g,'$1').trim();
-}
-function speechReady(){
-  return typeof window!=='undefined'&&!!window.speechSynthesis&&typeof window.SpeechSynthesisUtterance==='function';
-}
-let speechVoice=null;
-/* Voices arrive asynchronously in some browsers, so this is asked again until one answers. */
-function englishVoice(){
-  if(!speechReady()) return null;
-  if(speechVoice) return speechVoice;
-  let voices=[];
-  try{ voices=window.speechSynthesis.getVoices()||[]; }catch(e){ return null; }
-  speechVoice=voices.filter(v=>v&&/^en/i.test(v.lang||''))[0]||null;
-  return speechVoice;
-}
-function speak(text){
-  if(!speechReady()) return false;
-  const words=speakableText(text);
-  if(!words) return false;
-  try{
-    window.speechSynthesis.cancel();
-    const said=new window.SpeechSynthesisUtterance(words);
-    said.rate=0.9;
-    const voice=englishVoice();
-    if(voice){ said.voice=voice; said.lang=voice.lang; }
-    window.speechSynthesis.speak(said);
-    return true;
-  }catch(e){ return false; }
-}
 
 /* ---------------- column working model ---------------- */
 const rnd=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
@@ -1607,10 +1465,7 @@ function divSteps(Nstr,d){
 /* ---------------- screens ---------------- */
 const $=id=>document.getElementById(id);
 const esc=s=>String(s).replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
-/* leaving a screen stops whatever it was reading, so a panel is never still talking over
-   the next one. Feature-detected like the rest of it. */
-function hushSpeech(){ try{ if(speechReady()) window.speechSynthesis.cancel(); }catch(e){} }
-function show(id){ hushSpeech(); document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on')); $(id).classList.add('on'); try{window.scrollTo(0,0)}catch(e){} }
+function show(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on')); $(id).classList.add('on'); try{window.scrollTo(0,0)}catch(e){} }
 
 const STORY_SCENES=[
   {image:'assets/story/find-egg.webp',alt:'A child discovers a glowing magical egg in the woods',title:'A magical egg!',text:'While walking through the woods, you find a mysterious egg glowing beneath the leaves.'},
@@ -1756,59 +1611,19 @@ function openMapNode(nodeId){
   renderDifficultyChoice(stage);
   show('s-node');
 }
-/* The guide page for a lesson that introduces a new working. Cells are placed by row and
-   column, so the one renderer draws a column sum, a long multiplication and a division. */
-function renderGuideGrid(guide){
-  const parts=[];
-  if(guide.bar) parts.push('<div class="vbar" style="grid-column:'+guide.bar+';grid-row:1 / -1"></div>');
-  (guide.rules||[]).forEach(rule=>parts.push('<div class="rule" style="grid-row:'+rule.r+
-    ';grid-column:'+rule.c+' / span '+rule.span+'"></div>'));
-  (guide.cells||[]).forEach(cell=>parts.push('<div class="dc '+(cell.cls||'')+'" style="grid-row:'+cell.r+
-    ';grid-column:'+cell.c+'">'+esc(cell.t)+'</div>'));
-  return parts.join('');
-}
-let guidePending=null;
-function openGuide(stageId,difficulty,fromLesson){
-  const guide=guideFor(stageId),stage=STAGE_BY_ID(stageId);
-  if(!guide||!stage) return false;
-  guidePending={stageId:stageId,difficulty:difficulty};
-  $('guideEyebrow').textContent=stage.magic;
-  $('guideTitle').textContent=guide.title;
-  $('guideSum').textContent=guide.sum;
-  const rows=Math.max.apply(null,(guide.cells||[]).map(c=>c.r).concat((guide.rules||[]).map(r=>r.r)));
-  const grid=$('guideGrid');
-  grid.style.gridTemplateColumns='repeat('+guide.cols+', var(--cell))';
-  grid.style.gridTemplateRows='repeat('+rows+', var(--cell))';
-  grid.innerHTML=renderGuideGrid(guide);
-  $('guideNote').textContent=guide.note||'';
-  $('guideNote').style.display=guide.note?'block':'none';
-  $('guideLines').innerHTML=guide.lines.map(line=>'<li>'+esc(line)+'</li>').join('');
-  $('guideStart').textContent=difficulty?'Start the lesson':'Back to the stop';
-  show('s-guide');
-  return true;
-}
 /* Choosing a difficulty is the same act as starting the lesson: there is nothing to confirm
-   after it, so a second button asking again was only a step in the way. The one exception is
-   a working the child has not met: that gets its explanation first, once. */
-function beginLesson(stageId,difficulty){
-  const seen=storyProgressOf(P).guidesSeen;
-  if(guideFor(stageId)&&!seen[stageId]) { openGuide(stageId,difficulty,true); return; }
-  startSession(stageId,difficulty);
-}
+   after it, so a second button asking again was only a step in the way. */
 function renderDifficultyChoice(stage){
   const badges=badgesFor(P,stage.id),row=$('nodeDifficulty');
   const done=stageStatus(P,stage.id)==='completed';
   $('nodeChoose').textContent=done?'tap one to practise again':'tap one to begin';
-  const again=$('nodeGuide');
-  again.style.display=guideFor(stage.id)?'block':'none';
-  again.onclick=()=>{ sTap(); openGuide(stage.id,null,false); };
   row.innerHTML='';
   DIFFICULTIES.forEach(d=>{
     const b=document.createElement('button');
     b.className='difficulty'+(badges[d.id]?' won':'');
     b.innerHTML='<span class="difficulty-badge">'+d.badge+'</span><span class="difficulty-name">'+d.label+'</span>'+
       '<span class="difficulty-blurb">'+d.blurb+'</span>'+(badges[d.id]?'<span class="difficulty-won">badge won</span>':'');
-    b.onclick=()=>{ sTap(); beginLesson(stage.id,d.id); };
+    b.onclick=()=>{ sTap(); startSession(stage.id,d.id); };
     row.appendChild(b);
   });
 }
@@ -1901,7 +1716,6 @@ function nextQuestion(){
     $('normalQ').style.display='block'; $('colQ').style.display='none';
     $('qText').textContent=made.txt+' =';
     const drawn=paintDots($('dots'),made.dots);
-    S.q.words=drawn?made.dots.words:'';       // the picture's caption, for the speaker button
     S.input=''; paintAns();
     $('qTag').textContent=drawn?made.dots.words:S.stage.magic+' · help '+petName()+' find the answer';
   }else{
@@ -2642,7 +2456,7 @@ function openDeveloper(){ renderDeveloper(); show('s-dev'); }
 function resetPlayerProgress(){
   P.stageProgress=blankStageProgress(); P.monsterStage=1; delete P.devMonsterOverride;
   P.collectibles={}; COLLECTIBLES.forEach(c=>P.collectibles[c.id]=0); P.accessories=[];
-  P.right=0; P.best=0; P.total=0; P.storySeen=false; P.storyProgress={firstCrackSeen:false,mapSeen:{},guidesSeen:{}}; P.migrationVersion=9; save();
+  P.right=0; P.best=0; P.total=0; P.storySeen=false; P.storyProgress={firstCrackSeen:false,mapSeen:{}}; P.migrationVersion=9; save();
 }
 
 /* ---------------- wiring ---------------- */
@@ -2684,66 +2498,6 @@ $('setBack').onclick=()=>{ captureSettingsName(); renderHome(); show('s-home'); 
 $('quitPlay').onclick=()=>{ save(); renderHome(); show('s-home'); };
 // the easy pictures are tapped, not just looked at
 wireDots($('dots')); wireDots($('colDots'));
-/* Speech is opt-in and tapped for. If the browser has none, the buttons stay hidden and
-   nothing else in the game changes.
-
-   The screens between the maths are where the story is told — what the creature has grown
-   into, what a new place is — and they are the longest reading in the game, so they each
-   get a speaker too. One button reads a whole panel, in the order it is written. */
-const SPEAK_PANELS={
-  sayQ:['qText'],
-  sayPrompt:['colPrompt'],
-  sayUnlock:['unlockTitle','unlockText'],
-  sayGrown:['luTitle','luMsg'],
-  sayCrack:['crackTitle','crackStats','crackReward'],
-  sayEnd:['endTitle','endStats','endReward'],
-  sayNode:['nodeLesson','nodeTitle','nodeStory'],
-  sayStory:['storyTitle','storyText'],
-  sayGuide:['guideTitle','guideSum','guideLines']
-};
-/* A block of stats is several little elements, and textContent runs them together into
-   "7answers mastered7brightest streak". Each part is read on its own instead. */
-function partWords(el){
-  const kids=el&&el.children;
-  if(!kids||!kids.length) return String((el&&el.textContent)||'').replace(/\s+/g,' ').trim();
-  return Array.prototype.map.call(kids,partWords).filter(Boolean).join(' ');
-}
-/* Each part is a sentence. One that already ends in a full stop does not want another. */
-const joinSpoken=parts=>parts.filter(Boolean)
-  .map(t=>/[.!?]$/.test(t)?t:t+'.').join(' ');
-function elementWords(el){
-  const kids=el&&el.children;
-  if(!kids||!kids.length) return String((el&&el.textContent)||'').replace(/\s+/g,' ').trim();
-  return joinSpoken(Array.prototype.map.call(kids,partWords));
-}
-function panelWords(ids){ return joinSpoken(ids.map(id=>elementWords($(id)))); }
-function offerSpeech(){
-  if(!speechReady()) return;
-  englishVoice();
-  Array.prototype.forEach.call(document.querySelectorAll('.speak'),b=>{ b.hidden=false; });
-}
-$('guideStart').onclick=()=>{
-  sTap();
-  if(!guidePending) { show('s-menu'); renderMenu(); return; }
-  const going=guidePending;
-  if(going.difficulty){
-    storyProgressOf(P).guidesSeen[going.stageId]=true; save();
-    startSession(going.stageId,going.difficulty);
-  }else if(selectedMapNode) openMapNode(selectedMapNode.id);
-};
-$('guideBack').onclick=()=>{ sTap(); if(selectedMapNode) openMapNode(selectedMapNode.id); else { show('s-menu'); renderMenu(); } };
-Object.keys(SPEAK_PANELS).forEach(id=>{
-  const button=$(id); if(!button) return;
-  button.onclick=()=>{
-    sTap();
-    // the question carries the picture's caption with it, when easy is drawing one
-    const extra=id==='sayQ'&&S&&S.q&&S.q.words?' '+S.q.words:'';
-    speak(panelWords(SPEAK_PANELS[id])+extra);
-  };
-});
-if(speechReady()&&window.speechSynthesis.addEventListener)
-  window.speechSynthesis.addEventListener('voiceschanged',()=>{ speechVoice=null; englishVoice(); });
-offerSpeech();
 $('crackContinue').onclick=()=>{ sTap(); show('s-play'); nextQuestion(); };
 $('againBtn').onclick=()=>{ show('s-menu'); renderMenu(); };
 $('endHome').onclick=()=>{ if(lastSessionStageId) startSession(lastSessionStageId,endRetryDifficulty); };

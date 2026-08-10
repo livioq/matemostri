@@ -135,13 +135,52 @@ public release.
 - Finishing a difficulty offers the next one up on the end screen.
 - Choosing a difficulty on a map stop is the same act as starting the
   lesson. There is nothing to confirm after it, so there is no second
-  button: tapping Easy starts the lesson on easy.
+  button: tapping Easy starts the lesson on easy. The one exception is a
+  working the child has not met, which gets its explanation first.
+- A lesson that introduces a new working explains it before the first
+  sit. "Put the ones in the column and keep the tens" is not obvious to a
+  seven-year-old, and the lesson itself only ever says it one step at a
+  time, by which point the child is already being asked to do it. Five
+  lessons have a guide — `add_2column`, `sub_2column`, `mul_1x2`,
+  `mul_2x2`, `div_long` — one for each working; the other ten introduce
+  nothing new and go straight in.
+- A guide is a worked example drawn in the same cells the real working
+  uses, and a few lines saying what happened in the words the lesson will
+  use. `LESSON_GUIDES` places its cells by row and column, so one
+  renderer draws a column sum, a long multiplication and a division. The
+  rule goes on the answer's own row, as its top border, the way
+  `renderCol` does it — on a row of its own it leaves an empty gap.
+- A guide is shown once, remembered in `storyProgress.guidesSeen`, and
+  reachable again from the map stop by "how it works". `storyProgressOf`
+  adds the field, so an existing save gains it without a version bump.
 - The column working must fit the screen without scrolling. `fitCell`
   sizes the grid from the room left once the keypad is built, which is
   why the working is rendered again after `buildPad`.
 - Who is playing, girl or boy, is remembered on the player. It will
   choose the artwork one day; today it only stores the choice. Age used
   to be asked for and never changed anything, so it is gone.
+- The question can be read aloud, for a child who can do the sum but is
+  still slow at reading it. Never automatic: a speaker button beside the
+  question and beside the working prompt, tapped when it is wanted.
+  Symbols become words first — plus, take away, times, divided by,
+  equals — because a screen reader saying "six minus three" is not the
+  language the game uses anywhere else. A middot, which separates two
+  thoughts on screen, becomes a full stop. An English voice if the
+  browser has one, read at 0.9.
+- The screens between the maths get a speaker too, and they are the
+  longest reading in the game: the opening story, a map stop's story
+  card, the midpoint crack, what the creature has grown into, and the
+  end of a lesson. One button reads its whole panel in the order it is
+  written, and `SPEAK_PANELS` says which parts belong to which button. A
+  block of little stats is read as separate parts — `textContent` alone
+  runs them together into "7answers mastered7brightest streak". Leaving
+  a screen stops whatever it was reading, so a panel never talks over
+  the next one.
+- Speech is feature-detected at every step, and the buttons carry
+  `hidden` in the markup: a browser without `speechSynthesis` shows no
+  button, changes no layout, and runs no speech code. `speechReady`
+  checks for `window` itself, so the test suite, which has none, is
+  untouched.
 - The player names the creature. Default is Momo. All story and
   evolution text uses the player-chosen name, and the name can be
   changed at any time in settings, not only during the opening story.
@@ -251,6 +290,12 @@ Recently done, in case something looks unfamiliar:
   carries a z-index and so makes a stacking context — anything inside it
   is trapped under the trail however high its own z-index. The card now
   carries the lesson rather than the place.
+- A locked stop is muted, never faded. `opacity` on the card fades its
+  writing too, and the writing sits over a busy painting; the card keeps
+  a solid ground and greys its words instead. The locked silhouette has
+  to be `display:block` — it is a span, so width and height did nothing,
+  the body collapsed to zero and only its two absolutely-placed ears
+  rendered, as dark blobs over the words below.
 - The trail meanders between stops, as one spline through every stop
   rather than a curve pulled past them, and is split at the current stop:
   gold dashes with a dark outline behind the child, only a soft glow
@@ -319,6 +364,7 @@ map stop), `s-play` (407, whose `#progress` is the star row), `s-crack`
 | 549-846 | `model` | `MATH_STAGES` (550, the 15 lessons), `MONSTER_STAGE_DATA` (568, the 17 art stages), `PROGRESSION_NODES` (587, the 15 map stops), `MAP_ART_PANELS` (607) and `MAP_ART_CSS_WIDTH` (621), `EVOLUTIONS` (624), `COLLECTIBLES`, `COSMETIC_REWARDS`; `mapSceneLayout` (677) and `mapPathD` (714) lay the map out; save-shape helpers `blankStageProgress` (734), `progressFromCount` (739), `normalizeStageProgress` (744), `migrateV3StageProgress` (769), `RETIRED_STAGE_IDS` (782) and `migrateV4StageProgress` (783), `RETIRED_PLAYER_FIELDS` (793) and `dropRetiredPlayerFields` (794), `completeMathStage` (799), `migrate` (814) |
 | 847-952 | `pet` | `petSVG` (849) fallback art and `monsterMarkup` (942), which emits the `<img onerror>` → inline-SVG fallback |
 | 953-971 | `sound` | WebAudio beeps |
+| after `sound` | `speech` | `SPEAK_WORDS`, `speakableText`, `speechReady`, `englishVoice`, `speak` — all feature-detected, all no-ops without `speechSynthesis` |
 | 972-1094 | `column working model` | `buildColumn` (975), `buildLongMultiplication` (1037), `twoDigitColumnAddition` (1069), `twoDigitColumnSubtraction` (1081) — pure step generators |
 | 1095-1182 | `question generation` | `longDivisionPhase` (1099), `genDivision` (1104), `generateLessonQuestion` (1132), `divSteps` (1171) |
 
@@ -331,7 +377,8 @@ The test suite text-extracts these by name, so keep them as top-level
 `longDivisionPhase`, `genDivision`, `generateLessonQuestion`,
 `sessionPlan`, `renderStars`, `markQuestion`, `renderMenu`,
 `shouldShowCrackPause`, `blankStageProgress`, `progressFromCount`,
-`normalizeStageProgress`, `dropRetiredPlayerFields`. It also matches the
+`normalizeStageProgress`, `dropRetiredPlayerFields`, `speakableText`,
+`speechReady`, `speak`, `englishVoice`, `offerSpeech`. It also matches the
 `MATH_STAGES` array and the `SESSION`, `RETIRED_STAGE_IDS` and
 `RETIRED_PLAYER_FIELDS` constants by source text, and runs the whole
 `model` section in a sandbox to exercise `migrate` end to end.

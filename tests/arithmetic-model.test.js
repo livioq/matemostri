@@ -762,7 +762,7 @@ assert.equal(currentSave.momoName, 'Sparkle', 'the chosen name survives');
 assert.equal(currentSave.best, 9, 'play stats survive');
 assert.deepEqual(plain(currentSave.collectibles).stars, 3, 'collectibles survive');
 assert.ok(currentSave.accessories.includes('scarf'), 'cosmetics survive');
-assert.deepEqual(plain(currentSave.storyProgress), {firstCrackSeen:false,mapSeen:{}},
+assert.deepEqual(plain(currentSave.storyProgress), {firstCrackSeen:false, mapSeen:{}, guidesSeen:{}},
   'map/story migration adds safe defaults without resetting progress');
 ['add_1digit', 'add_2column', 'add_2mental', 'sub_1digit'].forEach(id => {
   assert.equal(currentSave.stageProgress.completed[id], true, `${id} stays completed`);
@@ -1085,8 +1085,10 @@ assert.match(source, /\.dc\.ringed\{outline:/, 'ringed is an outline, so it does
 
 // choosing a difficulty is the same act as starting the lesson
 assert.equal(source.includes('id="nodeStart"'), false, 'there is no second button asking again');
-assert.match(functionSource('renderDifficultyChoice'), /startSession\(stage\.id,d\.id\)/,
-  'tapping a difficulty starts the lesson on it');
+assert.match(functionSource('renderDifficultyChoice'), /beginLesson\(stage\.id,d\.id\)/,
+  'tapping a difficulty begins the lesson on it');
+assert.match(functionSource('beginLesson'), /startSession\(stageId,difficulty\)/,
+  'which is the lesson itself once the working is familiar');
 
 // it is the individual sum inside the working that gets the dots, not the whole question
 assert.deepEqual(plain(uiContext.stepDots('add', {t:'res', x:4, y:7, carry:0})),
@@ -1280,12 +1282,115 @@ const pathLayer = Number((source.match(/\.adventure-path\{[^}]*z-index:(\d+)/) |
 const nameLayer = Number((source.match(/\.scene-title\{[^}]*z-index:(\d+)/) || [])[1]);
 assert.ok(nameLayer > pathLayer, `the name sits above the trail (${nameLayer} vs ${pathLayer})`);
 
+// a locked stop is muted, not faded. Fading the card fades its words into the painting,
+// and the painting is busy.
+assert.equal(/\.map-location\.locked\{[^}]*opacity:/.test(source), false,
+  'a locked card does not fade itself, and so does not fade its writing');
+assert.match(source, /\.map-location\.locked\{[^}]*background:linear-gradient/,
+  'it keeps a solid ground of its own');
+assert.match(source, /\.map-location\.locked \.map-lesson[^{]*\{color:/,
+  'and says it is locked by muting the words rather than the card');
+// a span is inline, so width and height did nothing: the body collapsed and only the two
+// absolutely-placed ears rendered, as dark blobs over the words underneath
+assert.match(source, /\.silhouette\{display:block/,
+  'the locked silhouette is a block, or it has no body at all');
+
 // and the zone is named once: the card below it carries the lesson, not the place again
 assert.equal(/\.map-location h3/.test(source), false, 'the stop card no longer repeats the name');
 assert.match(functionSource('renderMenu'), /<p class="map-lesson">'\+esc\(stage\.label\)/,
   'it carries the lesson instead');
 assert.equal(/\.map-location\.major \.map-lesson/.test(source), false,
   'and a landmark card is not written in a different size either');
+
+// speech: symbols become words before anything is read aloud, and every part of it is
+// feature-detected so a browser without speech — and this suite, which has no window at
+// all — is untouched
+const speechCtx = {};
+vm.createContext(speechCtx);
+vm.runInContext([
+  source.match(/const SPEAK_WORDS=\[[\s\S]*?\];/)[0],
+  functionSource('speakableText'),
+  functionSource('speechReady'),
+  source.match(/const joinSpoken=[\s\S]*?;\n/)[0],
+  'this.say=speakableText;this.ready=speechReady;this.join=joinSpoken;'
+].join('\n'), speechCtx);
+assert.equal(speechCtx.ready(), false, 'with no window there is no speech, and nothing throws');
+assert.equal(speechCtx.say('8 + 5 ='), '8 plus 5 equals');
+assert.equal(speechCtx.say('15 \u2212 8 ='), '15 take away 8 equals');
+assert.equal(speechCtx.say('9 \u00D7 4 ='), '9 times 4 equals');
+assert.equal(speechCtx.say('24 \u00F7 4 ='), '24 divided by 4 equals');
+assert.equal(speechCtx.say('9 \u00D7 4 + 3. Write the ones digit here.'),
+  '9 times 4 plus 3. Write the ones digit here.', 'a working prompt reads as a sentence');
+assert.equal(speechCtx.say('How many times does 4 go into 9?'), 'How many times does 4 go into 9?',
+  'a prompt with no symbols in it is left alone');
+assert.equal(speechCtx.say('next lesson \u00B7 Three-digit column addition'),
+  'next lesson. Three-digit column addition', 'a middot separates two thoughts, so it is a full stop');
+assert.equal(speechCtx.say(''), '', 'nothing to say stays nothing');
+assert.equal(speechCtx.say(null), '', 'and neither does a missing prompt throw');
+assert.match(functionSource('speak'), /if\(!speechReady\(\)\) return false/,
+  'speaking checks first, so a browser without speech does nothing at all');
+assert.match(functionSource('speak'), /rate=0\.9/, 'read a little slower than default');
+assert.match(functionSource('englishVoice'), /\/\^en\/i\.test/, 'and in an English voice if there is one');
+// the screens between the maths are the longest reading in the game, so each gets a speaker
+['sayQ', 'sayPrompt', 'sayUnlock', 'sayGrown', 'sayCrack', 'sayEnd', 'sayNode', 'sayStory'].forEach(id => {
+  assert.match(source, new RegExp('id="' + id + '"[^>]*hidden>'), `${id} ships hidden`);
+  assert.match(source, new RegExp('\\b' + id + ':\\['), `${id} has a panel to read`);
+});
+assert.match(source, /sayUnlock:\['unlockTitle','unlockText'\]/,
+  'the evolution overlay reads what the creature has grown into');
+assert.match(functionSource('elementWords'), /joinSpoken\(/,
+  'a block of little stats is read as separate parts, not run together');
+assert.deepEqual(speechCtx.join(['Ones under ones.', 'Add the ones first: 7 and 5 make 12.']),
+  'Ones under ones. Add the ones first: 7 and 5 make 12.',
+  'a part that already ends in a full stop does not get another');
+assert.deepEqual(speechCtx.join(['7', 'answers mastered']), '7. answers mastered.',
+  'and one that does not, does');
+assert.deepEqual(speechCtx.join(['', 'Well done!', '']), 'Well done!', 'empty parts are skipped');
+assert.match(functionSource('show'), /hushSpeech\(\)/,
+  'and leaving a screen stops it reading over the next one');
+assert.match(functionSource('hushSpeech'), /speechReady\(\)/, 'feature-detected like the rest');
+assert.match(source, /<button class="speak" id="sayQ"[^>]*hidden>/, 'the speaker is hidden until speech is found');
+assert.match(source, /<button class="speak" id="sayPrompt"[^>]*hidden>/);
+assert.match(functionSource('offerSpeech'), /if\(!speechReady\(\)\) return;/,
+  'and only ever revealed when there is speech to offer');
+
+// a lesson that introduces a new working explains it first, once
+const guideCtx = {};
+vm.createContext(guideCtx);
+vm.runInContext([
+  source.match(/const LESSON_GUIDES=\{[\s\S]*?\n\};/)[0],
+  source.match(/const guideFor=.*;\n/)[0],
+  'this.guides=LESSON_GUIDES;this.guideFor=guideFor;'
+].join('\n'), guideCtx);
+const guided = Object.keys(plain(guideCtx.guides));
+assert.deepEqual(guided.sort(), ['add_2column', 'div_long', 'mul_1x2', 'mul_2x2', 'sub_2column'],
+  'every lesson that introduces a new working has a guide, and no other does');
+guided.forEach(id => {
+  const guide = plain(guideCtx.guides[id]);
+  assert.ok(guide.title && guide.sum, `${id} names itself and shows a worked sum`);
+  assert.ok(guide.lines.length >= 3 && guide.lines.length <= 5, `${id} explains itself in a few lines`);
+  guide.lines.forEach(line => {
+    assert.ok(/[.!?]$/.test(line), `${id} line ends as a sentence: ${line}`);
+    assert.equal(/quotient|product|remainder|multiplicand|divisor|minuend|carry the tens digit/i.test(line), false,
+      `${id} keeps the jargon out: ${line}`);
+  });
+  const rows = guide.cells.map(c => c.r).concat(guide.rules.map(r => r.r));
+  assert.ok(Math.min.apply(null, rows) >= 1, `${id} places every cell on a real row`);
+  guide.cells.forEach(c => assert.ok(c.c >= 1 && c.c <= guide.cols,
+    `${id} places every cell inside its ${guide.cols} columns`));
+  // the rule is drawn on the answer's own row, as its top border, the way the real working does
+  guide.rules.forEach(rule => assert.ok(guide.cells.some(c => c.r === rule.r),
+    `${id} draws its rule on a row that has digits, not on an empty one`));
+});
+assert.equal(guideCtx.guideFor('add_1digit'), null, 'a lesson with nothing new to explain has no guide');
+
+assert.match(functionSource('beginLesson'), /guideFor\(stageId\)&&!seen\[stageId\]/,
+  'the guide is shown before the first sit, and only then');
+assert.match(source, /guidesSeen\[going\.stageId\]=true/, 'and remembered once it has been read');
+assert.match(functionSource('storyProgressOf'), /guidesSeen/,
+  'so an existing save gains the field rather than losing its progress');
+assert.match(functionSource('renderDifficultyChoice'), /openGuide\(stage\.id,null,false\)/,
+  'and the map stop can call it back up afterwards');
 
 // the trail: it wanders between stops, and what has been walked looks different from
 // what is still ahead
