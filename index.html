@@ -262,7 +262,7 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
 .map-scene.major::before{inset:10px 8px;background:radial-gradient(circle at 50% 42%,rgba(255,232,142,.24),transparent 42%),linear-gradient(180deg,rgba(255,255,255,.2),rgba(255,255,255,0));box-shadow:inset 0 0 44px rgba(255,226,133,.25)}
 /* every zone reads the same size and the same weight, whether or not it is a landmark, and
    sits on a soft plate so it is legible over whatever the painting is doing underneath */
-.scene-title{position:absolute;left:14px;right:14px;top:20px;z-index:7;text-align:center;line-height:1.15}
+.scene-title{position:absolute;left:14px;right:14px;z-index:9;text-align:center;line-height:1.15;pointer-events:none}
 .scene-title span{display:inline-block;padding:5px 13px;border-radius:999px;
   background:rgba(255,255,255,.86);box-shadow:0 2px 9px rgba(80,49,154,.16);
   color:var(--ink);font-size:16px;font-weight:950;letter-spacing:.02em;text-transform:uppercase}
@@ -294,9 +294,7 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
 .map-location img,.map-location svg{width:66px;height:66px;object-fit:contain}
 .map-location.major img,.map-location.major svg{width:78px;height:78px}
 .map-location .map-region{display:block;font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:var(--ink-soft);font-weight:900}
-.map-location h3{margin:2px 0;color:var(--ink);font-size:14px;line-height:1.08}
-.map-location.major h3{font-size:16px}
-.map-location p{margin:0;color:var(--ink-soft);font-size:11px;font-weight:800;line-height:1.18}
+.map-location .map-lesson{margin:3px 0 0;color:var(--ink);font-size:13px;font-weight:800;line-height:1.2}
 .map-pin-status{display:inline-block;margin-top:5px;padding:3px 7px;border-radius:999px;background:#fff4c9;color:#785800;font-size:10px;font-weight:900}
 .map-momo{position:absolute;z-index:9;width:92px;height:92px;display:grid;place-items:center;transform:translate(-50%,-50%);pointer-events:none}
 .map-momo img,.map-momo svg{max-width:92px;max-height:92px;object-fit:contain}
@@ -307,7 +305,7 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
 .evolution-pair{display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:center;margin:8px 0}.evolution-pair .pet-stage{min-height:150px}.evolution-pair .pet-stage::before{width:110px}.evolution-pair-wrap .arrow{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:28px;color:var(--gold);font-weight:900;text-shadow:0 2px 0 var(--ink)}
 .evolution-pair-wrap{position:relative}
 @keyframes mapPulse{0%,100%{box-shadow:0 0 0 4px rgba(242,185,59,.18),0 8px 18px rgba(80,49,154,.14)}50%{box-shadow:0 0 0 9px rgba(242,185,59,.34),0 12px 25px rgba(80,49,154,.2)}}
-@media (max-width:380px){.map-location{width:154px;padding:9px}.map-location h3{font-size:13px}.map-location.major h3{font-size:15px}.map-location img,.map-location svg{width:58px;height:58px}.map-location.major img,.map-location.major svg{width:68px;height:68px}.map-momo{width:76px;height:76px}.map-momo img,.map-momo svg{max-width:76px;max-height:76px}.scene-title span{font-size:15px;padding:4px 11px}}
+@media (max-width:380px){.map-location{width:154px;padding:9px}.map-location .map-lesson{font-size:12px}.map-location img,.map-location svg{width:58px;height:58px}.map-location.major img,.map-location.major svg{width:68px;height:68px}.map-momo{width:76px;height:76px}.map-momo img,.map-momo svg{max-width:76px;max-height:76px}.scene-title span{font-size:15px;padding:4px 11px}}
 .evolution-burst{animation:evolve 1s cubic-bezier(.2,.9,.3,1)}
 .egg-wiggle{animation:eggWiggle .75s ease-in-out 2}.egg-wiggle>img{filter:drop-shadow(0 0 18px rgba(255,193,72,.7))}
 @keyframes evolve{0%{opacity:0;transform:scale(.55) rotate(-8deg)}65%{opacity:1;transform:scale(1.08) rotate(2deg)}100%{transform:scale(1) rotate(0)}}
@@ -1542,7 +1540,7 @@ function renderMenu(){
     scene.className='map-scene '+(node.majorEvolution?'major':'')+' scene-'+node.slug;
     scene.style.setProperty('--scene-top',layout.top+'px');
     scene.style.setProperty('--scene-height',layout.height+'px');
-    scene.innerHTML='<div class="scene-title"><span>'+esc(node.title)+'</span></div>';
+    scene.innerHTML='';
     const slot=document.createElement('div'),artX=mapSideX(artwork.position||'center')+(Number(artwork.offsetX)||0);
     slot.className='scene-art-slot'+(artwork.src?' has-art':'');
     slot.style.setProperty('--art-left',artX+'%');
@@ -1553,6 +1551,13 @@ function renderMenu(){
     slot.innerHTML=artwork.src?'<img src="'+artwork.src+'" alt="">':'<span class="scene-art-label">['+esc(artwork.label||node.title+' Art')+']</span>';
     scene.appendChild(slot);
     L.appendChild(scene);
+    // the name goes on the map itself, not inside the scene: .map-scene carries a z-index,
+    // which makes a stacking context, and anything inside it is trapped under the trail
+    const title=document.createElement('div');
+    title.className='scene-title';
+    title.style.top=(layout.top+Math.round(20*layout.scale))+'px';
+    title.innerHTML='<span>'+esc(node.title)+'</span>';
+    L.appendChild(title);
     const stage=STAGE_BY_ID(node.lessonId),status=stageStatus(P,node.lessonId),locked=status==='locked',done=status==='completed';
     const b=document.createElement('button');
     b.className='map-location '+status+(i===currentIndex&&!done?' current':'')+(node.majorEvolution?' major':'');
@@ -1564,7 +1569,9 @@ function renderMenu(){
     const badges=badgesFor(P,node.lessonId);
     const badgeRow='<span class="badge-row" aria-label="'+badgeCount(P,node.lessonId)+' of 3 badges">'+
       DIFFICULTIES.map(d=>'<span class="badge'+(badges[d.id]?' won':'')+'" title="'+d.label+'">'+d.badge+'</span>').join('')+'</span>';
-    b.innerHTML=art+'<span class="map-region">'+esc(node.region)+'</span><h3>'+esc(node.title)+'</h3><p>'+esc(stage.label)+'</p>'+badgeRow+'<span class="map-pin-status">'+statusText+'</span>';
+    // the zone is named once, on the plate above the scene. Repeating it here put the same
+    // words twice within a hundred pixels, and in a second size on a landmark stop.
+    b.innerHTML=art+'<span class="map-region">'+esc(node.region)+'</span><p class="map-lesson">'+esc(stage.label)+'</p>'+badgeRow+'<span class="map-pin-status">'+statusText+'</span>';
     if(!locked) b.onclick=()=>openMapNode(node.id);
     L.appendChild(b);
   });

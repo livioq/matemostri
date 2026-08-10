@@ -242,10 +242,15 @@ Recently done, in case something looks unfamiliar:
   went with it, along with `S.q.vid`, which `ease` was all that read.
   `ease` is a retired save field now, so the map it left behind is
   dropped from existing games.
-- Every zone on the journey board is named the same size, landmark or
-  not, on a soft white plate. It used to be 18px, or 23px for a landmark,
-  painted at 48% opacity straight onto the artwork, which made the names
-  both uneven and hard to read.
+- Every zone on the journey board is named once, the same size whether or
+  not it is a landmark, on a soft white plate. Three things were wrong at
+  once: the plate was 18px or 23px at 48% opacity straight onto the
+  artwork; the stop card underneath repeated the same name in a second
+  pair of sizes; and the trail was drawn over the top of it. The name is
+  appended to the map rather than to the scene, because `.map-scene`
+  carries a z-index and so makes a stacking context — anything inside it
+  is trapped under the trail however high its own z-index. The card now
+  carries the lesson rather than the place.
 - The trail meanders between stops, as one spline through every stop
   rather than a curve pulled past them, and is split at the current stop:
   gold dashes with a dark outline behind the child, only a soft glow

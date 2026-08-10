@@ -60,6 +60,11 @@ The adventure map is intentionally tall on mobile. It should feel like travellin
 
 Each `PROGRESSION_NODES` entry owns layout metadata:
 
+The zone name is drawn on a plate at the top of each scene, and appended to the map rather
+than to the scene: `.map-scene` carries a z-index, which makes a stacking context, so a name
+inside it is painted under the trail however high its own z-index is. The stop card below it
+carries the lesson, not the place, so the name is only written once.
+
 - `mapPosition.side`: places the lesson node on the left, centre, or right of the winding path.
   The stop also carries its badge row, so the node is a little taller than the lesson dot alone.
   The path swings from side to side between stops, more times on a longer stretch, and is

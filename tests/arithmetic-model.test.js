@@ -1271,7 +1271,21 @@ assert.match(source, /\.scene-title span\{[^}]*background:rgba\(255,255,255/,
   'the name sits on a plate, so it does not have to compete with whatever is painted under it');
 assert.match(source, /\.scene-title span\{[^}]*color:var\(--ink\)/,
   'and is full-strength ink rather than a wash');
-assert.match(source, /<div class="scene-title"><span>/, 'the name is wrapped so the plate hugs it');
+assert.match(source, /title\.innerHTML='<span>'/, 'the name is wrapped so the plate hugs it');
+// .map-scene carries a z-index, which makes a stacking context: a name inside it is trapped
+// under the trail however high its own z-index is, so the name is put on the map itself
+assert.match(functionSource('renderMenu'), /title\.className='scene-title'[\s\S]{0,200}?L\.appendChild\(title\)/,
+  'the zone name is appended to the map, not to the scene');
+const pathLayer = Number((source.match(/\.adventure-path\{[^}]*z-index:(\d+)/) || [])[1]);
+const nameLayer = Number((source.match(/\.scene-title\{[^}]*z-index:(\d+)/) || [])[1]);
+assert.ok(nameLayer > pathLayer, `the name sits above the trail (${nameLayer} vs ${pathLayer})`);
+
+// and the zone is named once: the card below it carries the lesson, not the place again
+assert.equal(/\.map-location h3/.test(source), false, 'the stop card no longer repeats the name');
+assert.match(functionSource('renderMenu'), /<p class="map-lesson">'\+esc\(stage\.label\)/,
+  'it carries the lesson instead');
+assert.equal(/\.map-location\.major \.map-lesson/.test(source), false,
+  'and a landmark card is not written in a different size either');
 
 // the trail: it wanders between stops, and what has been walked looks different from
 // what is still ahead
