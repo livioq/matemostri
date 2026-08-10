@@ -135,7 +135,24 @@ public release.
 - Finishing a difficulty offers the next one up on the end screen.
 - Choosing a difficulty on a map stop is the same act as starting the
   lesson. There is nothing to confirm after it, so there is no second
-  button: tapping Easy starts the lesson on easy.
+  button: tapping Easy starts the lesson on easy. The one exception is a
+  working the child has not met, which gets its explanation first.
+- A lesson that introduces a new working explains it before the first
+  sit. "Put the ones in the column and keep the tens" is not obvious to a
+  seven-year-old, and the lesson itself only ever says it one step at a
+  time, by which point the child is already being asked to do it. Five
+  lessons have a guide — `add_2column`, `sub_2column`, `mul_1x2`,
+  `mul_2x2`, `div_long` — one for each working; the other ten introduce
+  nothing new and go straight in.
+- A guide is a worked example drawn in the same cells the real working
+  uses, and a few lines saying what happened in the words the lesson will
+  use. `LESSON_GUIDES` places its cells by row and column, so one
+  renderer draws a column sum, a long multiplication and a division. The
+  rule goes on the answer's own row, as its top border, the way
+  `renderCol` does it — on a row of its own it leaves an empty gap.
+- A guide is shown once, remembered in `storyProgress.guidesSeen`, and
+  reachable again from the map stop by "how it works". `storyProgressOf`
+  adds the field, so an existing save gains it without a version bump.
 - The column working must fit the screen without scrolling. `fitCell`
   sizes the grid from the room left once the keypad is built, which is
   why the working is rendered again after `buildPad`.

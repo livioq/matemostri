@@ -132,6 +132,12 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
 .key.del{background:#fff;color:var(--pen);border-color:var(--pen);box-shadow:0 4px 0 rgba(214,48,58,.3)}
 /* column working */
 .gridwrap{display:flex;justify-content:center;padding:6px 0 2px;overflow-x:auto}
+/* the worked example on a guide page, drawn in the same cells the real working uses */
+.guide-grid{--cell:34px;position:relative}
+.guide-sum{text-align:center;font-size:20px;font-weight:800;color:var(--ink-soft);margin:2px 0 0}
+.guide-note{text-align:center;font-size:12px;font-weight:800;color:#9a6400;margin:2px 0 0}
+.guide-lines{margin:10px 0 0;padding:0 0 0 22px;text-align:left}
+.guide-lines li{margin:0 0 7px;font-weight:700;color:var(--ink);font-size:14px;line-height:1.32}
 .wgrid{display:grid;position:relative}
 .dc{width:var(--cell);height:var(--cell);display:flex;align-items:center;justify-content:center;
     font-family:ui-monospace,"Roboto Mono","Courier New",monospace;font-size:calc(var(--cell)*.6);font-weight:700;color:var(--ink)}
@@ -451,8 +457,24 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
       <div class="pet-stage" id="nodePet"></div>
       <p id="nodeStory"></p>
     </div>
+    <button class="link" id="nodeGuide" style="display:none;margin:10px auto 0">how it works</button>
     <div class="eyebrow" style="margin:14px 0 6px" id="nodeChoose">tap one to begin</div>
     <div class="difficulty-row" id="nodeDifficulty"></div>
+  </section>
+
+  <section id="s-guide" class="screen">
+    <div class="row" style="justify-content:space-between">
+      <button class="link" id="guideBack">back</button>
+      <span class="eyebrow" id="guideEyebrow"></span>
+    </div>
+    <div class="card">
+      <div class="ask"><h1 style="font-size:26px;margin:2px 0" id="guideTitle">How it works</h1><button class="speak" id="sayGuide" aria-label="Hear this" hidden>▶</button></div>
+      <div class="guide-sum mono" id="guideSum"></div>
+      <div class="gridwrap"><div class="wgrid guide-grid" id="guideGrid"></div></div>
+      <div class="guide-note" id="guideNote"></div>
+      <ol class="guide-lines" id="guideLines"></ol>
+    </div>
+    <button class="btn" id="guideStart">Start the lesson</button>
   </section>
 
   <section id="s-play" class="screen">
@@ -760,7 +782,7 @@ const monsterStage = lvl => MONSTER_STAGES[stageOf(lvl)-1];
 const completedCount=p=>MATH_STAGES.filter(s=>p.stageProgress&&p.stageProgress.completed&&p.stageProgress.completed[s.id]).length;
 function evolutionForCount(count){ let found=EVOLUTIONS[0]; EVOLUTIONS.forEach(e=>{ if(count>=e.completed) found=e; }); return found; }
 const artForCount=count=>evolutionForCount(count).art;
-function storyProgressOf(p){ if(!p.storyProgress||typeof p.storyProgress!=='object') p.storyProgress={}; if(p.storyProgress.firstCrackSeen===undefined) p.storyProgress.firstCrackSeen=false; if(!p.storyProgress.mapSeen||typeof p.storyProgress.mapSeen!=='object') p.storyProgress.mapSeen={}; return p.storyProgress; }
+function storyProgressOf(p){ if(!p.storyProgress||typeof p.storyProgress!=='object') p.storyProgress={}; if(p.storyProgress.firstCrackSeen===undefined) p.storyProgress.firstCrackSeen=false; if(!p.storyProgress.mapSeen||typeof p.storyProgress.mapSeen!=='object') p.storyProgress.mapSeen={}; if(!p.storyProgress.guidesSeen||typeof p.storyProgress.guidesSeen!=='object') p.storyProgress.guidesSeen={}; return p.storyProgress; }
 function artForPlayer(p){ const count=completedCount(p); return count===0&&storyProgressOf(p).firstCrackSeen?2:artForCount(count); }
 function mapSideX(side){ return side==='left'?29:side==='right'?71:50; }
 function mapSceneLayout(mapWidth){
@@ -903,7 +925,7 @@ function newPlayer(name,look){
   return {id:'p'+Date.now(),name:name,look:look==='boy'?'boy':'girl',total:0,right:0,best:0,
           groups:{add:true,sub:true,mul:true,div:true},
           unlocked:{add2:false,sub2:false,mul2:false,div2:false},
-          stageProgress:blankStageProgress(),monsterStage:1,momoName:'Momo',collectibles:{},accessories:[],storySeen:false,storyProgress:{firstCrackSeen:false,mapSeen:{}},migrationVersion:9};
+          stageProgress:blankStageProgress(),monsterStage:1,momoName:'Momo',collectibles:{},accessories:[],storySeen:false,storyProgress:{firstCrackSeen:false,mapSeen:{},guidesSeen:{}},migrationVersion:9};
 }
 function migrate(p){
   const version=Number(p.migrationVersion)||0,wasLegacy=version<3;
@@ -937,6 +959,69 @@ function migrate(p){
   p.migrationVersion=9;
   return p;
 }
+
+/* A lesson that introduces a new working gets a page explaining it first. "Put the ones in
+   the column and keep the tens" is not obvious to a seven-year-old, and the lesson itself
+   only ever says it one step at a time. Each guide is a worked example drawn in the same
+   cells the real working uses, and a few lines saying what happened, in the same words the
+   lesson will use. Shown once, before the first sit; available again from the map stop.
+   Cells are placed by row and column so one renderer draws a column sum and a division. */
+const LESSON_GUIDES={
+  add_2column:{title:'Adding in columns',sum:'27 + 15',cols:3,
+    cells:[{r:1,c:2,t:'1',cls:'small'},
+      {r:2,c:2,t:'2'},{r:2,c:3,t:'7'},
+      {r:3,c:1,t:'+',cls:'op'},{r:3,c:2,t:'1'},{r:3,c:3,t:'5'},
+      {r:4,c:2,t:'4',cls:'typed'},{r:4,c:3,t:'2',cls:'typed'}],
+    rules:[{r:4,c:1,span:3}],
+    lines:['Ones under ones, tens under tens.',
+      'Add the ones first: 7 and 5 make 12.',
+      '12 will not fit in one box, so write the 2 and carry the 1 above the tens.',
+      'Now the tens: 2 and 1, and the 1 you carried, make 4.']},
+  sub_2column:{title:'Taking away in columns',sum:'84 \u2212 16',cols:3,
+    cells:[{r:1,c:2,t:'7',cls:'small'},{r:1,c:3,t:'14',cls:'small'},
+      {r:2,c:2,t:'8',cls:'struck'},{r:2,c:3,t:'4',cls:'struck'},
+      {r:3,c:1,t:'\u2212',cls:'op'},{r:3,c:2,t:'1'},{r:3,c:3,t:'6'},
+      {r:4,c:2,t:'6',cls:'typed'},{r:4,c:3,t:'8',cls:'typed'}],
+    rules:[{r:4,c:1,span:3}],
+    lines:['Ones under ones, tens under tens.',
+      '4 take away 6 will not go.',
+      'So borrow a ten: cross out the 8 and write 7, and the 4 becomes 14.',
+      'Now 14 take away 6 is 8, and 7 take away 1 is 6.']},
+  mul_1x2:{title:'Multiplying in columns',sum:'43 \u00D7 4',cols:4,
+    cells:[{r:1,c:3,t:'4'},{r:1,c:4,t:'3',cls:'ringed'},
+      {r:2,c:1,t:'\u00D7',cls:'op'},{r:2,c:4,t:'4',cls:'ringed'},
+      {r:3,c:2,t:'1',cls:'typed'},{r:3,c:3,t:'7',cls:'typed'},{r:3,c:4,t:'2',cls:'typed'}],
+    rules:[{r:3,c:1,span:4}],
+    note:'keep 1',
+    lines:['Multiply the ones first: 3 times 4 is 12.',
+      'Only one digit fits in a box, so write the 2 and keep the 1 at the side.',
+      'Now the tens: 4 times 4 is 16, and the 1 you kept makes 17.',
+      'Nothing is left to multiply, so the 17 goes down in front of the 2.']},
+  mul_2x2:{title:'Long multiplication',sum:'43 \u00D7 12',cols:4,
+    cells:[{r:1,c:3,t:'4'},{r:1,c:4,t:'3'},
+      {r:2,c:1,t:'\u00D7',cls:'op'},{r:2,c:3,t:'1'},{r:2,c:4,t:'2'},
+      {r:3,c:3,t:'8',cls:'typed'},{r:3,c:4,t:'6',cls:'typed'},
+      {r:4,c:2,t:'4',cls:'typed'},{r:4,c:3,t:'3',cls:'typed'},{r:4,c:4,t:'0',cls:'ringed'},
+      {r:5,c:2,t:'5',cls:'typed'},{r:5,c:3,t:'1',cls:'typed'},{r:5,c:4,t:'6',cls:'typed'}],
+    rules:[{r:3,c:1,span:4},{r:5,c:1,span:4}],
+    lines:['Multiply by the ones first, into the first row: 43 times 2 is 86.',
+      'The second row is multiplying by tens, so it starts with a 0 in the ones place.',
+      'Then multiply by the tens: 43 times 1 is 43, written in front of that 0.',
+      'Add the two rows together.']},
+  div_long:{title:'Long division',sum:'84 \u00F7 4',cols:5,bar:3,
+    cells:[{r:1,c:1,t:'8'},{r:1,c:2,t:'4'},{r:1,c:4,t:'4'},
+      {r:2,c:4,t:'2',cls:'typed'},{r:2,c:5,t:'1',cls:'typed'},
+      {r:2,c:1,t:'8',cls:'sub typed'},
+      {r:3,c:1,t:'0',cls:'typed'},{r:3,c:2,t:'4',cls:'brought'},
+      {r:4,c:2,t:'4',cls:'sub typed'},
+      {r:5,c:2,t:'0',cls:'typed'}],
+    rules:[{r:2,c:4,span:2}],
+    lines:['How many times does 4 go into 8? Twice. Write the 2 above.',
+      '2 times 4 is 8. Write it underneath and take it away.',
+      'Bring the next digit down: that leaves 4.',
+      'Do the same again: 4 goes into 4 once, and nothing is left.']}
+};
+const guideFor=stageId=>LESSON_GUIDES[stageId]||null;
 
 /* ---------------- pet ---------------- */
 
@@ -1671,19 +1756,59 @@ function openMapNode(nodeId){
   renderDifficultyChoice(stage);
   show('s-node');
 }
+/* The guide page for a lesson that introduces a new working. Cells are placed by row and
+   column, so the one renderer draws a column sum, a long multiplication and a division. */
+function renderGuideGrid(guide){
+  const parts=[];
+  if(guide.bar) parts.push('<div class="vbar" style="grid-column:'+guide.bar+';grid-row:1 / -1"></div>');
+  (guide.rules||[]).forEach(rule=>parts.push('<div class="rule" style="grid-row:'+rule.r+
+    ';grid-column:'+rule.c+' / span '+rule.span+'"></div>'));
+  (guide.cells||[]).forEach(cell=>parts.push('<div class="dc '+(cell.cls||'')+'" style="grid-row:'+cell.r+
+    ';grid-column:'+cell.c+'">'+esc(cell.t)+'</div>'));
+  return parts.join('');
+}
+let guidePending=null;
+function openGuide(stageId,difficulty,fromLesson){
+  const guide=guideFor(stageId),stage=STAGE_BY_ID(stageId);
+  if(!guide||!stage) return false;
+  guidePending={stageId:stageId,difficulty:difficulty};
+  $('guideEyebrow').textContent=stage.magic;
+  $('guideTitle').textContent=guide.title;
+  $('guideSum').textContent=guide.sum;
+  const rows=Math.max.apply(null,(guide.cells||[]).map(c=>c.r).concat((guide.rules||[]).map(r=>r.r)));
+  const grid=$('guideGrid');
+  grid.style.gridTemplateColumns='repeat('+guide.cols+', var(--cell))';
+  grid.style.gridTemplateRows='repeat('+rows+', var(--cell))';
+  grid.innerHTML=renderGuideGrid(guide);
+  $('guideNote').textContent=guide.note||'';
+  $('guideNote').style.display=guide.note?'block':'none';
+  $('guideLines').innerHTML=guide.lines.map(line=>'<li>'+esc(line)+'</li>').join('');
+  $('guideStart').textContent=difficulty?'Start the lesson':'Back to the stop';
+  show('s-guide');
+  return true;
+}
 /* Choosing a difficulty is the same act as starting the lesson: there is nothing to confirm
-   after it, so a second button asking again was only a step in the way. */
+   after it, so a second button asking again was only a step in the way. The one exception is
+   a working the child has not met: that gets its explanation first, once. */
+function beginLesson(stageId,difficulty){
+  const seen=storyProgressOf(P).guidesSeen;
+  if(guideFor(stageId)&&!seen[stageId]) { openGuide(stageId,difficulty,true); return; }
+  startSession(stageId,difficulty);
+}
 function renderDifficultyChoice(stage){
   const badges=badgesFor(P,stage.id),row=$('nodeDifficulty');
   const done=stageStatus(P,stage.id)==='completed';
   $('nodeChoose').textContent=done?'tap one to practise again':'tap one to begin';
+  const again=$('nodeGuide');
+  again.style.display=guideFor(stage.id)?'block':'none';
+  again.onclick=()=>{ sTap(); openGuide(stage.id,null,false); };
   row.innerHTML='';
   DIFFICULTIES.forEach(d=>{
     const b=document.createElement('button');
     b.className='difficulty'+(badges[d.id]?' won':'');
     b.innerHTML='<span class="difficulty-badge">'+d.badge+'</span><span class="difficulty-name">'+d.label+'</span>'+
       '<span class="difficulty-blurb">'+d.blurb+'</span>'+(badges[d.id]?'<span class="difficulty-won">badge won</span>':'');
-    b.onclick=()=>{ sTap(); startSession(stage.id,d.id); };
+    b.onclick=()=>{ sTap(); beginLesson(stage.id,d.id); };
     row.appendChild(b);
   });
 }
@@ -2517,7 +2642,7 @@ function openDeveloper(){ renderDeveloper(); show('s-dev'); }
 function resetPlayerProgress(){
   P.stageProgress=blankStageProgress(); P.monsterStage=1; delete P.devMonsterOverride;
   P.collectibles={}; COLLECTIBLES.forEach(c=>P.collectibles[c.id]=0); P.accessories=[];
-  P.right=0; P.best=0; P.total=0; P.storySeen=false; P.storyProgress={firstCrackSeen:false,mapSeen:{}}; P.migrationVersion=9; save();
+  P.right=0; P.best=0; P.total=0; P.storySeen=false; P.storyProgress={firstCrackSeen:false,mapSeen:{},guidesSeen:{}}; P.migrationVersion=9; save();
 }
 
 /* ---------------- wiring ---------------- */
@@ -2573,7 +2698,8 @@ const SPEAK_PANELS={
   sayCrack:['crackTitle','crackStats','crackReward'],
   sayEnd:['endTitle','endStats','endReward'],
   sayNode:['nodeLesson','nodeTitle','nodeStory'],
-  sayStory:['storyTitle','storyText']
+  sayStory:['storyTitle','storyText'],
+  sayGuide:['guideTitle','guideSum','guideLines']
 };
 /* A block of stats is several little elements, and textContent runs them together into
    "7answers mastered7brightest streak". Each part is read on its own instead. */
@@ -2582,20 +2708,30 @@ function partWords(el){
   if(!kids||!kids.length) return String((el&&el.textContent)||'').replace(/\s+/g,' ').trim();
   return Array.prototype.map.call(kids,partWords).filter(Boolean).join(' ');
 }
+/* Each part is a sentence. One that already ends in a full stop does not want another. */
+const joinSpoken=parts=>parts.filter(Boolean)
+  .map(t=>/[.!?]$/.test(t)?t:t+'.').join(' ');
 function elementWords(el){
   const kids=el&&el.children;
   if(!kids||!kids.length) return String((el&&el.textContent)||'').replace(/\s+/g,' ').trim();
-  return Array.prototype.map.call(kids,partWords).filter(Boolean).join('. ');
+  return joinSpoken(Array.prototype.map.call(kids,partWords));
 }
-function panelWords(ids){
-  return ids.map(id=>elementWords($(id))).filter(Boolean)
-    .map(t=>/[.!?]$/.test(t)?t:t+'.').join(' ');
-}
+function panelWords(ids){ return joinSpoken(ids.map(id=>elementWords($(id)))); }
 function offerSpeech(){
   if(!speechReady()) return;
   englishVoice();
   Array.prototype.forEach.call(document.querySelectorAll('.speak'),b=>{ b.hidden=false; });
 }
+$('guideStart').onclick=()=>{
+  sTap();
+  if(!guidePending) { show('s-menu'); renderMenu(); return; }
+  const going=guidePending;
+  if(going.difficulty){
+    storyProgressOf(P).guidesSeen[going.stageId]=true; save();
+    startSession(going.stageId,going.difficulty);
+  }else if(selectedMapNode) openMapNode(selectedMapNode.id);
+};
+$('guideBack').onclick=()=>{ sTap(); if(selectedMapNode) openMapNode(selectedMapNode.id); else { show('s-menu'); renderMenu(); } };
 Object.keys(SPEAK_PANELS).forEach(id=>{
   const button=$(id); if(!button) return;
   button.onclick=()=>{
