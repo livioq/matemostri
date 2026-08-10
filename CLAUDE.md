@@ -147,8 +147,18 @@ public release.
   question and beside the working prompt, tapped when it is wanted.
   Symbols become words first — plus, take away, times, divided by,
   equals — because a screen reader saying "six minus three" is not the
-  language the game uses anywhere else. An English voice if the browser
-  has one, read at 0.9.
+  language the game uses anywhere else. A middot, which separates two
+  thoughts on screen, becomes a full stop. An English voice if the
+  browser has one, read at 0.9.
+- The screens between the maths get a speaker too, and they are the
+  longest reading in the game: the opening story, a map stop's story
+  card, the midpoint crack, what the creature has grown into, and the
+  end of a lesson. One button reads its whole panel in the order it is
+  written, and `SPEAK_PANELS` says which parts belong to which button. A
+  block of little stats is read as separate parts — `textContent` alone
+  runs them together into "7answers mastered7brightest streak". Leaving
+  a screen stops whatever it was reading, so a panel never talks over
+  the next one.
 - Speech is feature-detected at every step, and the buttons carry
   `hidden` in the markup: a browser without `speechSynthesis` shows no
   button, changes no layout, and runs no speech code. `speechReady`
