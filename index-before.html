@@ -85,14 +85,6 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
 /* question */
 .qhead{display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:700;color:var(--ink-soft)}
 .question{font-size:clamp(30px,10vw,42px);font-weight:700;color:var(--ink);text-align:center;padding:14px 0 6px}
-/* the speaker sits beside what it reads, and takes no room at all when speech is missing */
-.ask{display:flex;align-items:center;justify-content:center;gap:8px}
-.ask>:first-child{flex:1 1 auto;min-width:0}
-.speak{flex:0 0 auto;width:34px;height:34px;border-radius:50%;border:2px solid var(--ink);
-  background:#fff;color:var(--ink);font-size:13px;line-height:1;padding:0;
-  box-shadow:0 3px 0 rgba(27,58,140,.22)}
-.speak:active{transform:translateY(2px);box-shadow:0 1px 0 rgba(27,58,140,.22)}
-.speak[hidden]{display:none}
 .answer{min-height:56px;margin:0 auto;width:min(220px,70%);border-bottom:3px solid var(--pen);text-align:center;font-size:36px;font-weight:700;color:var(--pen);padding-bottom:4px}
 .answer.empty::after{content:"?";color:rgba(214,48,58,.28)}
 .stars{display:flex;gap:2px;align-items:center;justify-content:center;flex:1;margin:0 8px;line-height:1}
@@ -254,10 +246,8 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
 .journey-stage.available{border-color:#e477b4;box-shadow:0 0 0 3px rgba(228,119,180,.12)}.journey-stage.completed{border-color:#65b782}.journey-stage:disabled{cursor:default}
 .journey-art{width:76px;height:76px;display:grid;place-items:center}.journey-art img,.journey-art svg{max-width:76px;max-height:76px}
 .journey-stage h3{margin:0;color:var(--ink);font-size:17px}.journey-stage p{margin:3px 0 0;font-size:12px;font-weight:700;color:var(--ink-soft);line-height:1.3}
-/* a span is inline, so width and height were ignored: the body collapsed to nothing and only
-   the two absolutely-placed ears rendered, as a pair of dark blobs over the words below */
-.silhouette{display:block;margin:0 auto;width:60px;height:68px;background:#a8adc4;border-radius:48% 48% 42% 42%;position:relative}
-.silhouette::before,.silhouette::after{content:"";position:absolute;top:-12px;width:22px;height:30px;background:#a8adc4;border-radius:70% 20% 60% 30%}.silhouette::before{left:4px;transform:rotate(-25deg)}.silhouette::after{right:4px;transform:rotate(25deg)}
+.silhouette{width:60px;height:68px;background:#28304a;border-radius:48% 48% 42% 42%;position:relative;filter:drop-shadow(0 4px 2px rgba(0,0,0,.18))}
+.silhouette::before,.silhouette::after{content:"";position:absolute;top:-12px;width:22px;height:30px;background:#28304a;border-radius:70% 20% 60% 30%}.silhouette::before{left:4px;transform:rotate(-25deg)}.silhouette::after{right:4px;transform:rotate(25deg)}
 .accessory-list{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px}.accessory-chip{font-size:10px;font-weight:800;background:#fff4c9;color:#785800;border-radius:999px;padding:3px 7px}
 .journey-stage .badge{display:inline-block;margin:5px 5px 0 0;padding:3px 7px;border-radius:999px;background:#e6e9ff;color:#493aa1;font-size:10px;font-weight:900}
 .adventure-map{position:relative;min-height:var(--map-height,8400px);margin:10px 0 18px;padding:0;background:linear-gradient(180deg,#fff8ff 0%,#f2fbff 18%,#f5fff3 34%,#eef7ff 50%,#fff7dc 68%,#f4ecff 84%,#fff7fb 100%);border:2px solid rgba(80,49,154,.22);border-radius:30px;overflow:hidden;box-shadow:inset 0 0 0 6px rgba(255,255,255,.45)}
@@ -298,10 +288,7 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
 .map-location:active:not(:disabled){transform:translate(-50%,-50%) scale(.98)}
 .map-location.completed{border-color:#65b782;background:linear-gradient(145deg,#fff,#effff6)}
 .map-location.available{border-color:#e477b4;box-shadow:0 0 0 4px rgba(228,119,180,.13),0 10px 22px rgba(80,49,154,.16)}
-/* a locked stop is muted, not faded: fading the card fades its words into the painting, and
-   the painting is busy. The card keeps its own solid ground and the writing stays readable. */
-.map-location.locked{background:linear-gradient(145deg,#f6f5fa,#e7e9f2);border-color:rgba(80,49,154,.16);box-shadow:0 5px 12px rgba(80,49,154,.10)}
-.map-location.locked .map-lesson,.map-location.locked .map-region{color:#6b6f86}
+.map-location.locked{opacity:.66;background:linear-gradient(145deg,#f8f6fb,#e7e9f2)}
 .map-location.current{animation:mapPulse 1.9s ease-in-out infinite;border-color:var(--gold)}
 .map-location.major{border-width:3px;min-height:158px}
 .map-location img,.map-location svg{width:66px;height:66px;object-fit:contain}
@@ -384,7 +371,7 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
     <h1 style="font-size:30px;margin:3px 0 10px">A magical maths friend</h1>
     <div class="story-card">
       <img id="storyImg" src="assets/story/find-egg.webp" alt="A child discovers a glowing magical egg" onerror="this.style.display='none'">
-      <div class="story-copy"><div class="ask"><h2 id="storyTitle">A magical egg!</h2><button class="speak" id="sayStory" aria-label="Hear this" hidden>▶</button></div><p id="storyText"></p></div>
+      <div class="story-copy"><h2 id="storyTitle">A magical egg!</h2><p id="storyText"></p></div>
       <div id="friendNameBox" style="padding:0 8px 10px">
         <label for="friendName" style="display:block;text-align:center;font-weight:850;color:var(--ink);margin-bottom:7px">What would you like to call your new friend?</label>
         <input type="text" id="friendName" value="Momo" maxlength="12" autocomplete="off" aria-label="Your magical friend's name">
@@ -447,7 +434,7 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
     </div>
     <div class="card story-node-card">
       <div class="eyebrow" id="nodeLesson"></div>
-      <div class="ask"><h1 style="font-size:29px;margin:4px 0" id="nodeTitle">The next path</h1><button class="speak" id="sayNode" aria-label="Hear this" hidden>▶</button></div>
+      <h1 style="font-size:29px;margin:4px 0" id="nodeTitle">The next path</h1>
       <div class="pet-stage" id="nodePet"></div>
       <p id="nodeStory"></p>
     </div>
@@ -463,12 +450,12 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
     </div>
     <div class="card" id="qcard">
       <div id="normalQ" style="display:none">
-        <div class="ask"><div class="question mono" id="qText">1 + 1</div><button class="speak" id="sayQ" aria-label="Hear the question" hidden>▶</button></div>
+        <div class="question mono" id="qText">1 + 1</div>
         <div class="dots" id="dots" style="display:none"></div>
         <div class="answer mono empty" id="ansBox"></div>
       </div>
       <div id="colQ" style="display:none">
-        <div class="ask"><div class="prompt" id="colPrompt"></div><button class="speak" id="sayPrompt" aria-label="Hear this step" hidden>▶</button></div>
+        <div class="prompt" id="colPrompt"></div>
         <div class="dots" id="colDots" style="display:none"></div>
         <div class="gridwrap"><div class="wgrid" id="colGrid"></div></div>
         <div class="hintstrip" id="colHint" style="display:none"></div>
@@ -482,7 +469,7 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
 
   <section id="s-crack" class="screen">
     <div class="eyebrow">the magic stirs</div>
-    <div class="ask"><h1 style="font-size:30px;margin:4px 0" id="crackTitle">A tiny crack!</h1><button class="speak" id="sayCrack" aria-label="Hear this" hidden>▶</button></div>
+    <h1 style="font-size:30px;margin:4px 0" id="crackTitle">A tiny crack!</h1>
     <div class="card">
       <div class="pet-stage" id="crackPet"></div>
       <div class="stats" id="crackStats"></div>
@@ -493,7 +480,7 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
 
   <section id="s-end" class="screen">
     <div class="eyebrow">the magic settles</div>
-    <div class="ask"><h1 style="font-size:30px;margin:4px 0" id="endTitle">Well done!</h1><button class="speak" id="sayEnd" aria-label="Hear this" hidden>▶</button></div>
+    <h1 style="font-size:30px;margin:4px 0" id="endTitle">Well done!</h1>
     <div class="card">
       <div class="pet-stage" id="endPet"></div>
       <div class="stats" id="endStats"></div>
@@ -534,7 +521,6 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
   <div class="levelup" id="lvUp">
     <div class="eyebrow" style="color:#d9ccff">a magical moment</div>
     <h2 id="luTitle">Your friend has grown!</h2>
-    <button class="speak" id="sayGrown" aria-label="Hear this" hidden>▶</button>
     <div id="luPet"></div>
     <div id="luMsg" style="font-weight:700;max-width:280px"></div>
     <div style="height:18px"></div>
@@ -555,7 +541,6 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
       <div class="pet-stage" id="unlockPet"></div>
       <h2 id="unlockTitle">A new path is glowing!</h2>
       <p id="unlockText">A new maths adventure is ready.</p>
-      <button class="speak" id="sayUnlock" aria-label="Hear this" hidden>▶</button>
       <button class="btn" id="unlockOk">See your result</button>
     </div>
   </div>
@@ -1063,48 +1048,6 @@ const sBad =()=>beep(180,.22,'sawtooth');
 const sTap =()=>beep(440,.04);
 const sLvl =()=>{[523,659,784,1046].forEach((f,i)=>setTimeout(()=>beep(f,.16),i*110))};
 
-/* ---------------- speech ---------------- */
-/* Reading the question aloud, for a child who can do the sum but is still slow at reading
-   it. Never automatic: a speaker button beside the question and beside the working prompt,
-   tapped when it is wanted. Every part of it is feature-detected, so a browser without
-   speech — and the test suite, which has no window at all — simply never sees a button. */
-const SPEAK_WORDS=[[/\u00D7/g,' times '],[/\u00F7/g,' divided by '],[/\u2212/g,' take away '],
-  [/\+/g,' plus '],[/=/g,' equals '],
-  // a middot separates two thoughts on screen; spoken, it wants to be a full stop
-  [/\s*\u00B7\s*/g,'. ']];
-function speakableText(text){
-  let words=String(text==null?'':text);
-  SPEAK_WORDS.forEach(pair=>{ words=words.replace(pair[0],pair[1]); });
-  return words.replace(/\s+/g,' ').replace(/\s+([.,?!])/g,'$1').trim();
-}
-function speechReady(){
-  return typeof window!=='undefined'&&!!window.speechSynthesis&&typeof window.SpeechSynthesisUtterance==='function';
-}
-let speechVoice=null;
-/* Voices arrive asynchronously in some browsers, so this is asked again until one answers. */
-function englishVoice(){
-  if(!speechReady()) return null;
-  if(speechVoice) return speechVoice;
-  let voices=[];
-  try{ voices=window.speechSynthesis.getVoices()||[]; }catch(e){ return null; }
-  speechVoice=voices.filter(v=>v&&/^en/i.test(v.lang||''))[0]||null;
-  return speechVoice;
-}
-function speak(text){
-  if(!speechReady()) return false;
-  const words=speakableText(text);
-  if(!words) return false;
-  try{
-    window.speechSynthesis.cancel();
-    const said=new window.SpeechSynthesisUtterance(words);
-    said.rate=0.9;
-    const voice=englishVoice();
-    if(voice){ said.voice=voice; said.lang=voice.lang; }
-    window.speechSynthesis.speak(said);
-    return true;
-  }catch(e){ return false; }
-}
-
 /* ---------------- column working model ---------------- */
 const rnd=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
 const columnPlace=(wid,col)=>['ones','tens','hundreds','thousands','ten-thousands'][wid-1-col]||'next';
@@ -1522,10 +1465,7 @@ function divSteps(Nstr,d){
 /* ---------------- screens ---------------- */
 const $=id=>document.getElementById(id);
 const esc=s=>String(s).replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
-/* leaving a screen stops whatever it was reading, so a panel is never still talking over
-   the next one. Feature-detected like the rest of it. */
-function hushSpeech(){ try{ if(speechReady()) window.speechSynthesis.cancel(); }catch(e){} }
-function show(id){ hushSpeech(); document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on')); $(id).classList.add('on'); try{window.scrollTo(0,0)}catch(e){} }
+function show(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on')); $(id).classList.add('on'); try{window.scrollTo(0,0)}catch(e){} }
 
 const STORY_SCENES=[
   {image:'assets/story/find-egg.webp',alt:'A child discovers a glowing magical egg in the woods',title:'A magical egg!',text:'While walking through the woods, you find a mysterious egg glowing beneath the leaves.'},
@@ -1776,7 +1716,6 @@ function nextQuestion(){
     $('normalQ').style.display='block'; $('colQ').style.display='none';
     $('qText').textContent=made.txt+' =';
     const drawn=paintDots($('dots'),made.dots);
-    S.q.words=drawn?made.dots.words:'';       // the picture's caption, for the speaker button
     S.input=''; paintAns();
     $('qTag').textContent=drawn?made.dots.words:S.stage.magic+' · help '+petName()+' find the answer';
   }else{
@@ -2559,55 +2498,6 @@ $('setBack').onclick=()=>{ captureSettingsName(); renderHome(); show('s-home'); 
 $('quitPlay').onclick=()=>{ save(); renderHome(); show('s-home'); };
 // the easy pictures are tapped, not just looked at
 wireDots($('dots')); wireDots($('colDots'));
-/* Speech is opt-in and tapped for. If the browser has none, the buttons stay hidden and
-   nothing else in the game changes.
-
-   The screens between the maths are where the story is told — what the creature has grown
-   into, what a new place is — and they are the longest reading in the game, so they each
-   get a speaker too. One button reads a whole panel, in the order it is written. */
-const SPEAK_PANELS={
-  sayQ:['qText'],
-  sayPrompt:['colPrompt'],
-  sayUnlock:['unlockTitle','unlockText'],
-  sayGrown:['luTitle','luMsg'],
-  sayCrack:['crackTitle','crackStats','crackReward'],
-  sayEnd:['endTitle','endStats','endReward'],
-  sayNode:['nodeLesson','nodeTitle','nodeStory'],
-  sayStory:['storyTitle','storyText']
-};
-/* A block of stats is several little elements, and textContent runs them together into
-   "7answers mastered7brightest streak". Each part is read on its own instead. */
-function partWords(el){
-  const kids=el&&el.children;
-  if(!kids||!kids.length) return String((el&&el.textContent)||'').replace(/\s+/g,' ').trim();
-  return Array.prototype.map.call(kids,partWords).filter(Boolean).join(' ');
-}
-function elementWords(el){
-  const kids=el&&el.children;
-  if(!kids||!kids.length) return String((el&&el.textContent)||'').replace(/\s+/g,' ').trim();
-  return Array.prototype.map.call(kids,partWords).filter(Boolean).join('. ');
-}
-function panelWords(ids){
-  return ids.map(id=>elementWords($(id))).filter(Boolean)
-    .map(t=>/[.!?]$/.test(t)?t:t+'.').join(' ');
-}
-function offerSpeech(){
-  if(!speechReady()) return;
-  englishVoice();
-  Array.prototype.forEach.call(document.querySelectorAll('.speak'),b=>{ b.hidden=false; });
-}
-Object.keys(SPEAK_PANELS).forEach(id=>{
-  const button=$(id); if(!button) return;
-  button.onclick=()=>{
-    sTap();
-    // the question carries the picture's caption with it, when easy is drawing one
-    const extra=id==='sayQ'&&S&&S.q&&S.q.words?' '+S.q.words:'';
-    speak(panelWords(SPEAK_PANELS[id])+extra);
-  };
-});
-if(speechReady()&&window.speechSynthesis.addEventListener)
-  window.speechSynthesis.addEventListener('voiceschanged',()=>{ speechVoice=null; englishVoice(); });
-offerSpeech();
 $('crackContinue').onclick=()=>{ sTap(); show('s-play'); nextQuestion(); };
 $('againBtn').onclick=()=>{ show('s-menu'); renderMenu(); };
 $('endHome').onclick=()=>{ if(lastSessionStageId) startSession(lastSessionStageId,endRetryDifficulty); };

@@ -1320,12 +1320,26 @@ assert.equal(speechCtx.say('9 \u00D7 4 + 3. Write the ones digit here.'),
   '9 times 4 plus 3. Write the ones digit here.', 'a working prompt reads as a sentence');
 assert.equal(speechCtx.say('How many times does 4 go into 9?'), 'How many times does 4 go into 9?',
   'a prompt with no symbols in it is left alone');
+assert.equal(speechCtx.say('next lesson \u00B7 Three-digit column addition'),
+  'next lesson. Three-digit column addition', 'a middot separates two thoughts, so it is a full stop');
 assert.equal(speechCtx.say(''), '', 'nothing to say stays nothing');
 assert.equal(speechCtx.say(null), '', 'and neither does a missing prompt throw');
 assert.match(functionSource('speak'), /if\(!speechReady\(\)\) return false/,
   'speaking checks first, so a browser without speech does nothing at all');
 assert.match(functionSource('speak'), /rate=0\.9/, 'read a little slower than default');
 assert.match(functionSource('englishVoice'), /\/\^en\/i\.test/, 'and in an English voice if there is one');
+// the screens between the maths are the longest reading in the game, so each gets a speaker
+['sayQ', 'sayPrompt', 'sayUnlock', 'sayGrown', 'sayCrack', 'sayEnd', 'sayNode', 'sayStory'].forEach(id => {
+  assert.match(source, new RegExp('id="' + id + '"[^>]*hidden>'), `${id} ships hidden`);
+  assert.match(source, new RegExp('\\b' + id + ':\\['), `${id} has a panel to read`);
+});
+assert.match(source, /sayUnlock:\['unlockTitle','unlockText'\]/,
+  'the evolution overlay reads what the creature has grown into');
+assert.match(functionSource('elementWords'), /join\('\. '\)/,
+  'a block of little stats is read as separate parts, not run together');
+assert.match(functionSource('show'), /hushSpeech\(\)/,
+  'and leaving a screen stops it reading over the next one');
+assert.match(functionSource('hushSpeech'), /speechReady\(\)/, 'feature-detected like the rest');
 assert.match(source, /<button class="speak" id="sayQ"[^>]*hidden>/, 'the speaker is hidden until speech is found');
 assert.match(source, /<button class="speak" id="sayPrompt"[^>]*hidden>/);
 assert.match(functionSource('offerSpeech'), /if\(!speechReady\(\)\) return;/,
