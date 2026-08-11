@@ -63,6 +63,9 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
 .collectible{background:linear-gradient(145deg,#fff,#fff3c9);border:1.5px solid rgba(122,82,173,.25);border-radius:999px;padding:5px 9px;font-size:12px;font-weight:850;color:#664391;box-shadow:0 2px 6px rgba(80,49,154,.1)}
 .wardrobe{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-top:8px}.wardrobe .accessory-chip{font-size:11px;padding:5px 8px}
 .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center;margin-top:8px}
+/* the end of a lesson has three of these; home has four, which sit better two by two than
+   three across with one stranded underneath */
+#statBox{grid-template-columns:repeat(2,1fr)}
 .stats div{background:#fff;border:2px solid var(--grid);border-radius:12px;padding:8px 4px}
 .stats b{display:block;font-size:20px;color:var(--ink)}
 .stats span{font-size:11px;font-weight:700;color:var(--ink-soft)}
@@ -226,6 +229,7 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
 .badge.won{color:var(--gold);text-shadow:0 0 6px rgba(242,185,59,.6)}
 .badge-row.end .badge{font-size:22px}
 .badge-caption{margin-left:8px;font-size:12px;font-weight:800;color:var(--ink-soft)}
+.day-streak{margin-top:9px;text-align:center;font-size:14px;font-weight:900;color:var(--gold);text-shadow:0 1px 0 rgba(122,84,0,.25)}
 .difficulty-row{display:grid;gap:8px;margin-bottom:12px}
 .difficulty{display:grid;grid-template-columns:30px 1fr;gap:4px 10px;text-align:left;padding:10px 12px;border:2px solid var(--grid);border-radius:14px;background:#fff}
 .difficulty .difficulty-badge{grid-row:1 / span 2;align-self:center;font-size:20px;color:rgba(80,49,154,.28);text-align:center}
@@ -468,6 +472,7 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
       <div class="pet-stage" id="endPet"></div>
       <div class="stats" id="endStats"></div>
       <div class="badge-row end" id="endBadges"></div>
+      <div class="day-streak" id="endStreak" style="display:none"></div>
       <div class="reward-line" id="endReward" style="margin-top:12px"></div>
     </div>
     <button class="btn" id="againBtn">Continue Adventure</button>
@@ -720,6 +725,41 @@ const monsterStage = lvl => MONSTER_STAGES[stageOf(lvl)-1];
 const completedCount=p=>MATH_STAGES.filter(s=>p.stageProgress&&p.stageProgress.completed&&p.stageProgress.completed[s.id]).length;
 function evolutionForCount(count){ let found=EVOLUTIONS[0]; EVOLUTIONS.forEach(e=>{ if(count>=e.completed) found=e; }); return found; }
 const artForCount=count=>evolutionForCount(count).art;
+/* How many days in a row a lesson has been passed. The date is the child's own, not UTC:
+   a lesson finished at nine in the evening belongs to that evening, not to tomorrow. The
+   run is only alive while it is unbroken, so a player who last played on Monday is not
+   told on Thursday that they are on a run of five — `liveStreak` is what any screen shows,
+   and `markLessonDay` is the only thing that moves it. */
+const dayKey=when=>{
+  const d=when||new Date();
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+};
+function dayBefore(key){
+  const parts=String(key).split('-').map(Number);
+  const d=new Date(parts[0],parts[1]-1,parts[2]);
+  d.setDate(d.getDate()-1);
+  return dayKey(d);
+}
+const blankDays=()=>({last:'',run:0,best:0});
+function daysOf(p){
+  if(!p.days||typeof p.days!=='object') p.days=blankDays();
+  if(typeof p.days.last!=='string') p.days.last='';
+  p.days.run=Math.max(0,Number(p.days.run)||0);
+  p.days.best=Math.max(0,Number(p.days.best)||0,p.days.run);
+  return p.days;
+}
+function liveStreak(days,today){
+  if(!days||!days.last) return 0;
+  return days.last===today||days.last===dayBefore(today)?days.run:0;
+}
+function markLessonDay(p,today){
+  const days=daysOf(p);
+  if(days.last===today) return {run:days.run,grew:false};
+  days.run=days.last===dayBefore(today)?days.run+1:1;
+  days.last=today;
+  days.best=Math.max(days.best,days.run);
+  return {run:days.run,grew:true};
+}
 function storyProgressOf(p){ if(!p.storyProgress||typeof p.storyProgress!=='object') p.storyProgress={}; if(p.storyProgress.firstCrackSeen===undefined) p.storyProgress.firstCrackSeen=false; if(!p.storyProgress.mapSeen||typeof p.storyProgress.mapSeen!=='object') p.storyProgress.mapSeen={}; if(!p.storyProgress.guidesSeen||typeof p.storyProgress.guidesSeen!=='object') p.storyProgress.guidesSeen={}; return p.storyProgress; }
 function artForPlayer(p){ const count=completedCount(p); return count===0&&storyProgressOf(p).firstCrackSeen?2:artForCount(count); }
 function mapSideX(side){ return side==='left'?29:side==='right'?71:50; }
@@ -863,7 +903,7 @@ function newPlayer(name,look){
   return {id:'p'+Date.now(),name:name,look:look==='boy'?'boy':'girl',total:0,right:0,best:0,
           groups:{add:true,sub:true,mul:true,div:true},
           unlocked:{add2:false,sub2:false,mul2:false,div2:false},
-          stageProgress:blankStageProgress(),monsterStage:1,momoName:'Momo',collectibles:{},accessories:[],storySeen:false,storyProgress:{firstCrackSeen:false,mapSeen:{},guidesSeen:{}},migrationVersion:9};
+          stageProgress:blankStageProgress(),monsterStage:1,momoName:'Momo',collectibles:{},accessories:[],storySeen:false,storyProgress:{firstCrackSeen:false,mapSeen:{},guidesSeen:{}},days:blankDays(),migrationVersion:9};
 }
 function migrate(p){
   const version=Number(p.migrationVersion)||0,wasLegacy=version<3;
@@ -891,6 +931,7 @@ function migrate(p){
   }
   COSMETIC_REWARDS.forEach(a=>{ if(collectibleTotal(p)>=a.total&&!p.accessories.includes(a.id)) p.accessories.push(a.id); });
   storyProgressOf(p);
+  daysOf(p);
   p.monsterStage=p.devMonsterOverride||artForPlayer(p);
   if(p.storySeen===undefined) p.storySeen=true;
   dropRetiredPlayerFields(p);
@@ -1594,10 +1635,12 @@ function renderHome(){
   $('wardrobeBox').innerHTML=COSMETIC_REWARDS.filter(a=>P.accessories.includes(a.id)).map(a=>'<span class="accessory-chip">'+a.emoji+' '+a.name+'</span>').join('');
   // plain words and a number that says what it is out of: "path lights" and "kind
   // answers" were the game's own vocabulary, which is no use to the child reading them
+  const run=liveStreak(daysOf(P),dayKey());
   $('statBox').innerHTML=
     '<div><b class="mono">'+count+' of '+MATH_STAGES.length+'</b><span>lessons lit</span></div>'+
     '<div><b class="mono">'+P.right+'</b><span>right answers</span></div>'+
-    '<div><b class="mono">'+P.best+'</b><span>best streak</span></div>';
+    '<div><b class="mono">'+P.best+'</b><span>answers in a row</span></div>'+
+    '<div><b class="mono">'+run+'</b><span>'+(run===1?'day in a row':'days in a row')+'</span></div>';
   $('playBtn').textContent=count===0?'Help the egg awaken':count===MATH_STAGES.length?'Revisit the enchanted lessons':'Continue '+petName()+"'s adventure";
 }
 
@@ -2069,6 +2112,8 @@ function awardCollectible(){
 
 function maybeCompleteStage(){
   if(!S.stageId||S.mastered<S.pass) return false;
+  // a lesson passed is a lesson passed, whether it is the first sit or a replay
+  S.dayStreak=markLessonDay(P,dayKey());
   S.newBadge=awardBadges(P,S.stageId,S.difficulty);
   if(S.wasCompleted){ S.reward=awardCollectible(); save(); return 'collectible'; }
   const beforeArt=P.monsterStage;
@@ -2101,8 +2146,13 @@ function endSession(){
   $('endPet').innerHTML=monsterMarkup(P.monsterStage,S.mastered>=S.pass?'streak':'idle','bob',petName());
   $('endStats').innerHTML=
     '<div><b class="mono">'+S.mastered+'</b><span>answers mastered</span></div>'+
-    '<div><b class="mono">'+S.best+'</b><span>brightest streak</span></div>'+
+    '<div><b class="mono">'+S.best+'</b><span>answers in a row</span></div>'+
     '<div><b class="mono">'+completedCount(P)+' of '+MATH_STAGES.length+'</b><span>lessons lit</span></div>';
+  const run=liveStreak(daysOf(P),dayKey());
+  $('endStreak').textContent=S.mastered<S.pass?''
+    :run<=1?"That is today's maths done."
+    :(S.dayStreak&&S.dayStreak.grew?'That is '+run+' days in a row!':run+' days in a row so far.');
+  $('endStreak').style.display=$('endStreak').textContent?'block':'none';
   if(result==='collectible'){
     const cosmetic=S.reward.newCosmetics[0];
     $('endReward').textContent=petName()+' found '+S.reward.item.emoji+' '+S.reward.item.name+'!'+(cosmetic?' A new '+cosmetic.name+' appeared in the magic wardrobe!':'');
@@ -2580,7 +2630,7 @@ function openDeveloper(){ renderDeveloper(); show('s-dev'); }
 function resetPlayerProgress(){
   P.stageProgress=blankStageProgress(); P.monsterStage=1; delete P.devMonsterOverride;
   P.collectibles={}; COLLECTIBLES.forEach(c=>P.collectibles[c.id]=0); P.accessories=[];
-  P.right=0; P.best=0; P.total=0; P.storySeen=false; P.storyProgress={firstCrackSeen:false,mapSeen:{},guidesSeen:{}}; P.migrationVersion=9; save();
+  P.right=0; P.best=0; P.total=0; P.storySeen=false; P.storyProgress={firstCrackSeen:false,mapSeen:{},guidesSeen:{}}; P.days=blankDays(); P.migrationVersion=9; save();
 }
 
 /* ---------------- wiring ---------------- */
@@ -2634,13 +2684,13 @@ const SPEAK_PANELS={
   sayUnlock:['unlockTitle','unlockText'],
   sayGrown:['luTitle','luMsg'],
   sayCrack:['crackTitle','crackStats','crackReward'],
-  sayEnd:['endTitle','endStats','endReward'],
+  sayEnd:['endTitle','endStats','endStreak','endReward'],
   sayNode:['nodeLesson','nodeTitle','nodeStory'],
   sayStory:['storyTitle','storyText'],
   sayGuide:['guideTitle','guideSum','guideLines']
 };
 /* A block of stats is several little elements, and textContent runs them together into
-   "7answers mastered7brightest streak". Each part is read on its own instead. */
+   "7answers mastered7answers in a row". Each part is read on its own instead. */
 function partWords(el){
   const kids=el&&el.children;
   if(!kids||!kids.length) return String((el&&el.textContent)||'').replace(/\s+/g,' ').trim();

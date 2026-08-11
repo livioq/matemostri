@@ -173,7 +173,7 @@ public release.
   end of a lesson. One button reads its whole panel in the order it is
   written, and `SPEAK_PANELS` says which parts belong to which button. A
   block of little stats is read as separate parts — `textContent` alone
-  runs them together into "7answers mastered7brightest streak". Leaving
+  runs them together into "7answers mastered7answers in a row". Leaving
   a screen stops whatever it was reading, so a panel never talks over
   the next one.
 - Speech is feature-detected at every step, and the buttons carry
@@ -181,6 +181,17 @@ public release.
   button, changes no layout, and runs no speech code. `speechReady`
   checks for `window` itself, so the test suite, which has none, is
   untouched.
+- A daily streak counts how many days in a row a lesson has been passed,
+  a replay included: doing your maths is doing your maths. The date is the
+  child's own, not UTC, so a lesson finished at nine in the evening
+  belongs to that evening. `markLessonDay` is the only thing that moves
+  it and `liveStreak` is what any screen shows, because a run is only
+  alive while unbroken — a child who last played on Monday must not be
+  told on Thursday that they are on a run of five. The best run is kept
+  even after one is broken.
+- With two kinds of streak on screen, neither is called just a streak:
+  the home tiles say "answers in a row" and "days in a row", and the end
+  of a lesson says the same.
 - The player names the creature. Default is Momo. All story and
   evolution text uses the player-chosen name, and the name can be
   changed at any time in settings, not only during the opening story.

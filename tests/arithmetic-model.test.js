@@ -1302,6 +1302,73 @@ assert.match(functionSource('renderMenu'), /<p class="map-lesson">'\+esc\(stage\
 assert.equal(/\.map-location\.major \.map-lesson/.test(source), false,
   'and a landmark card is not written in a different size either');
 
+// a daily streak: how many days in a row a lesson has been passed
+const dayCtx = {Date, Number, Math, String};
+vm.createContext(dayCtx);
+vm.runInContext([
+  source.match(/const dayKey=[\s\S]*?\n\};/)[0],
+  functionSource('dayBefore'),
+  source.match(/const blankDays=.*;\n/)[0],
+  functionSource('daysOf'),
+  functionSource('liveStreak'),
+  functionSource('markLessonDay'),
+  'this.dayKey=dayKey;this.dayBefore=dayBefore;this.daysOf=daysOf;this.live=liveStreak;this.mark=markLessonDay;this.blank=blankDays;'
+].join('\n'), dayCtx);
+
+// the date is the child's own, not UTC: a lesson finished late on the 5th belongs to the 5th
+assert.equal(dayCtx.dayKey(new Date(2026, 7, 5, 23, 30)), '2026-08-05',
+  'a lesson at half past eleven at night still belongs to that day');
+assert.equal(dayCtx.dayKey(new Date(2026, 7, 5, 0, 5)), '2026-08-05');
+assert.equal(dayCtx.dayBefore('2026-08-05'), '2026-08-04');
+assert.equal(dayCtx.dayBefore('2026-08-01'), '2026-07-31', 'across the end of a month');
+assert.equal(dayCtx.dayBefore('2026-01-01'), '2025-12-31', 'and across the end of a year');
+assert.equal(dayCtx.dayBefore('2028-03-01'), '2028-02-29', 'and a leap day');
+
+// three days running
+let player = {};
+assert.deepEqual(plain(dayCtx.daysOf(player)), {last:'', run:0, best:0}, 'a new player is on no run');
+assert.equal(dayCtx.live(player.days, '2026-08-05'), 0);
+assert.deepEqual(plain(dayCtx.mark(player, '2026-08-05')), {run:1, grew:true}, 'the first lesson starts a run');
+assert.deepEqual(plain(dayCtx.mark(player, '2026-08-06')), {run:2, grew:true});
+assert.deepEqual(plain(dayCtx.mark(player, '2026-08-07')), {run:3, grew:true});
+assert.equal(player.days.best, 3);
+
+// a second lesson on the same day does not count twice
+assert.deepEqual(plain(dayCtx.mark(player, '2026-08-07')), {run:3, grew:false},
+  'a second lesson the same day does not count twice');
+
+// a missed day starts again, but the best is remembered
+assert.deepEqual(plain(dayCtx.mark(player, '2026-08-10')), {run:1, grew:true}, 'a missed day starts again');
+assert.equal(player.days.best, 3, 'and the best run is remembered');
+
+// a run that has been broken is never displayed as if it were alive
+assert.equal(dayCtx.live(player.days, '2026-08-10'), 1, 'played today');
+assert.equal(dayCtx.live(player.days, '2026-08-11'), 1, 'played yesterday, so still going');
+assert.equal(dayCtx.live(player.days, '2026-08-12'), 0,
+  'but two days later the run is over, and the screen must not claim otherwise');
+assert.equal(player.days.run, 1, 'showing 0 does not rewrite what was saved');
+
+// a save that never had the field, or has nonsense in it, comes back sane
+assert.deepEqual(plain(dayCtx.daysOf({})), {last:'', run:0, best:0});
+const messy = {days:{last:5, run:-2, best:'x'}};
+assert.deepEqual(plain(dayCtx.daysOf(messy)), {last:'', run:0, best:0}, 'nonsense is cleaned rather than trusted');
+const behind = {days:{last:'2026-08-01', run:7, best:3}};
+assert.equal(dayCtx.daysOf(behind).best, 7, 'a best lower than the run is raised to it');
+
+// it is counted where a lesson is passed, and read out with the rest of the end screen
+assert.match(functionSource('maybeCompleteStage'), /markLessonDay\(P,dayKey\(\)\)/,
+  'the run moves when a lesson is passed');
+assert.ok(source.indexOf('markLessonDay(P,dayKey())') < source.indexOf('if(S.wasCompleted)'),
+  'including a replay, which is still that day\'s maths done');
+assert.match(source, /sayEnd:\['endTitle','endStats','endStreak','endReward'\]/,
+  'and the end screen reads it out with the rest');
+assert.match(functionSource('renderHome'), /liveStreak\(daysOf\(P\),dayKey\(\)\)/,
+  'the home screen shows the run that is actually alive');
+assert.match(functionSource('renderHome'), /day in a row.*days in a row|days in a row/,
+  'and says what it is counting');
+assert.equal(/brightest streak|best streak/.test(source), false,
+  'with two kinds of streak on screen, neither is called just a streak');
+
 // speech: symbols become words before anything is read aloud, and every part of it is
 // feature-detected so a browser without speech — and this suite, which has no window at
 // all — is untouched
