@@ -656,6 +656,7 @@ const DIFFICULTIES=[
 const DIFFICULTY_IDS=DIFFICULTIES.map(d=>d.id);
 const difficultyOf=id=>DIFFICULTIES.find(d=>d.id===id)||DIFFICULTIES[1];
 const nextDifficulty=id=>DIFFICULTY_IDS[DIFFICULTY_IDS.indexOf(id)+1]||null;
+const easierDifficulty=id=>DIFFICULTY_IDS.indexOf(id)>0?DIFFICULTY_IDS[DIFFICULTY_IDS.indexOf(id)-1]:null;
 function blankBadges(){ const o={}; DIFFICULTY_IDS.forEach(d=>o[d]=false); return o; }
 function badgesFor(p,stageId){
   if(!p.stageProgress.badges) p.stageProgress.badges={};
@@ -1973,8 +1974,12 @@ function keepResume(){
   save();
 }
 function dropResume(){ if(P.resume){ P.resume=null; save(); } }
+/* Once there are not enough questions left to reach the pass mark, finishing the rest
+   proves nothing and only asks a child who is already struggling to keep going. */
+const passOutOfReach=s=>!!s&&s.mastered+(s.total-s.i)<s.pass;
 function nextQuestion(){
   if(S.i>=S.total){ dropResume(); endSession(); return; }
+  if(passOutOfReach(S)){ S.stoppedEarly=true; dropResume(); endSession(); return; }
   keepResume();
   S.i++; S.input=''; S.locked=false; S.attempt=0; S.mode='answer'; S.crackMoment=false; $('fb').textContent='';
   setPlayMood('beforeQuestion');
@@ -2283,7 +2288,8 @@ let endRetryDifficulty='medium';
 function endSession(){
   lastSessionStageId=S.stageId;
   const result=maybeCompleteStage(); save();
-  $('endTitle').textContent=S.mastered>=S.pass?(S.wasCompleted?'Treasure discovered!':'The path is glowing!'):'The magic needs another try';
+  $('endTitle').textContent=S.mastered>=S.pass?(S.wasCompleted?'Treasure discovered!':'The path is glowing!')
+    :S.stoppedEarly?"Let's start this one again":'The magic needs another try';
   $('endPet').innerHTML=monsterMarkup(P.monsterStage,S.mastered>=S.pass?'streak':'idle','bob',petName());
   $('endStats').innerHTML=
     '<div><b class="mono">'+S.mastered+'</b><span>answers mastered</span></div>'+
@@ -2297,17 +2303,25 @@ function endSession(){
   if(result==='collectible'){
     const cosmetic=S.reward.newCosmetics[0];
     $('endReward').textContent=petName()+' found '+S.reward.item.emoji+' '+S.reward.item.name+'!'+(cosmetic?' A new '+cosmetic.name+' appeared in the magic wardrobe!':'');
+  }else if(S.stoppedEarly){
+    const easier=easierDifficulty(S.difficulty);
+    $('endReward').textContent='This one was being tricky, so we stopped early for a fresh go. Nothing is lost, and '
+      +petName()+' is proud of every try.'+(easier?' '+difficultyOf(easier).label+' has '+difficultyOf(easier).blurb.toLowerCase():'');
   }else if(S.mastered<S.pass) $('endReward').textContent=petName()+' is proud of every try. Master '+S.pass+' answers to light this path.';
   else {
     const node=NODE_BY_LESSON(S.stageId);
     $('endReward').textContent=node?node.storyAfter.replaceAll('{name}',petName()):petName()+' has grown because you learned together.';
   }
   const up=S.mastered>=S.pass?nextDifficulty(S.difficulty):null;
+  const down=S.stoppedEarly?easierDifficulty(S.difficulty):null;
   if(up&&!badgesFor(P,S.stageId)[up]){
     $('endHome').textContent='Try it on '+difficultyOf(up).label;
     endRetryDifficulty=up;
+  }else if(down){
+    $('endHome').textContent='Try it on '+difficultyOf(down).label;
+    endRetryDifficulty=down;
   }else{
-    $('endHome').textContent='Practise Again';
+    $('endHome').textContent=S.stoppedEarly?'Start again':'Practise Again';
     endRetryDifficulty=S.difficulty;
   }
   const won=badgeCount(P,S.stageId);

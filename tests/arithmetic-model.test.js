@@ -1379,6 +1379,44 @@ dayCtx.mark(gappy, '2026-09-05');
 assert.equal(gappy.days.run, 1, 'the run restarts');
 assert.equal(gappy.days.inMonth, 2, 'but both days still count towards the month');
 
+// once the pass mark is out of reach, finishing the rest proves nothing
+const reachCtx = {};
+vm.createContext(reachCtx);
+vm.runInContext([
+  source.match(/const passOutOfReach=.*;\n/)[0],
+  source.match(/const easierDifficulty=.*;\n/)[0].replace(/^/, "const DIFFICULTY_IDS=['easy','medium','hard'];\n"),
+  'this.out=passOutOfReach;this.easier=easierDifficulty;'
+].join('\n'), reachCtx);
+assert.equal(reachCtx.out(null), false, 'no session, nothing to stop');
+// ten questions needing eight: three missed makes it impossible, two does not
+assert.equal(reachCtx.out({mastered:0, i:2, total:10, pass:8}), false, 'two missed still leaves eight');
+assert.equal(reachCtx.out({mastered:0, i:3, total:10, pass:8}), true, 'three missed cannot reach eight');
+assert.equal(reachCtx.out({mastered:2, i:4, total:10, pass:8}), false, 'two mastered and six to go is exactly enough');
+assert.equal(reachCtx.out({mastered:1, i:4, total:10, pass:8}), true);
+assert.equal(reachCtx.out({mastered:8, i:8, total:10, pass:8}), false, 'already passed is never stopped');
+// and it never fires on a lesson still winnable at the last question
+assert.equal(reachCtx.out({mastered:7, i:9, total:10, pass:8}), false);
+assert.equal(reachCtx.out({mastered:6, i:9, total:10, pass:8}), true);
+[[8, 7], [7, 6], [5, 4]].forEach(([total, pass]) => {
+  assert.equal(reachCtx.out({mastered:0, i:total, total:total, pass:pass}), true,
+    `a ${total}-question lesson with none mastered is out of reach by the end`);
+  assert.equal(reachCtx.out({mastered:pass, i:pass, total:total, pass:pass}), false);
+});
+assert.equal(reachCtx.easier('hard'), 'medium');
+assert.equal(reachCtx.easier('medium'), 'easy');
+assert.equal(reachCtx.easier('easy'), null, 'there is nothing gentler than easy to offer');
+
+assert.match(functionSource('nextQuestion'), /passOutOfReach\(S\)/,
+  'the check runs before another question is asked');
+assert.match(functionSource('nextQuestion'), /S\.stoppedEarly=true; dropResume\(\)/,
+  'and the half-finished lesson is let go of, so next time starts fresh');
+assert.match(functionSource('endSession'), /stoppedEarly\?"Let's start this one again"/,
+  'the end screen invites another go rather than reporting a failure');
+assert.match(functionSource('endSession'), /easierDifficulty\(S\.difficulty\)/,
+  'and offers the gentler difficulty when there is one');
+assert.equal(/fail|failed|wrong again|not good enough/i.test(functionSource('endSession')), false,
+  'nothing on that screen tells the child off');
+
 // a lesson does not have to be one sitting
 const resumeCtx = {Number, Array, Math, String};
 vm.createContext(resumeCtx);

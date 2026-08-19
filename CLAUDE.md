@@ -252,6 +252,17 @@ Division: simple division; long division.
   underneath", "write what is left". That includes the game's own
   vocabulary: the screens say "lessons lit" and "right answers", not
   "path lights" and "kind answers", and a count says what it is out of.
+- A lesson stops as soon as the pass mark is out of reach. Finishing the
+  rest proves nothing and only asks a child who is already struggling to
+  keep going. `passOutOfReach` is the test, run before each question, and
+  the end screen invites another go — "Let's start this one again" — and
+  offers the gentler difficulty if there is one. The half-finished lesson
+  is let go of, so next time starts fresh, and the day's run is kept,
+  because they did do their maths.
+- Because the pass mark is 8 in 10 of the answers got right first time,
+  that stop can come early: three stumbles in a ten-question lesson, two
+  in a seven or an eight. That is the honest arithmetic of the pass mark
+  rather than a separate rule, so soften the pass mark if it bites.
 - Feedback must never feel punishing. A wrong answer gets a second try
   with nothing revealed; only after that is the answer shown, and the
   child still types it in and still moves forward.
