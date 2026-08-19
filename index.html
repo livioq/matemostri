@@ -56,14 +56,6 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
 .pet-stage svg{width:min(48vw,175px);height:auto}
 .bob{animation:bob 3.2s ease-in-out infinite}
 @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
-.ink-fill{fill:#EAF1FB;stroke:var(--ink);stroke-width:3;stroke-linejoin:round}
-.ink-line{fill:none;stroke:var(--ink);stroke-width:3;stroke-linecap:round}
-.cheek{fill:rgba(214,48,58,.35);stroke:none}
-.quadretti{display:flex;gap:2px;margin:10px 0 4px}
-.quadretti i{flex:1;aspect-ratio:1;border:1px solid var(--grid);border-radius:2px;background:#fff}
-.quadretti i.f{background:var(--ink);border-color:var(--ink)}
-.lvline{display:flex;justify-content:space-between;align-items:baseline}
-.lvline b{font-size:26px;color:var(--ink)}
 .reward-line{font-size:13px;font-weight:700;color:var(--ink-soft);text-align:center;margin-top:4px}
 .magic-status{text-align:center;padding:9px 8px 3px;color:var(--ink);font-size:18px;font-weight:900;line-height:1.25}
 .magic-whisper{text-align:center;color:var(--ink-soft);font-size:13px;font-weight:750;line-height:1.35;margin-top:5px}
@@ -71,17 +63,14 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
 .collectible{background:linear-gradient(145deg,#fff,#fff3c9);border:1.5px solid rgba(122,82,173,.25);border-radius:999px;padding:5px 9px;font-size:12px;font-weight:850;color:#664391;box-shadow:0 2px 6px rgba(80,49,154,.1)}
 .wardrobe{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-top:8px}.wardrobe .accessory-chip{font-size:11px;padding:5px 8px}
 .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center;margin-top:8px}
+/* the end of a lesson has three of these; home has four, which sit better two by two than
+   three across with one stranded underneath */
+#statBox{grid-template-columns:repeat(2,1fr)}
 .stats div{background:#fff;border:2px solid var(--grid);border-radius:12px;padding:8px 4px}
 .stats b{display:block;font-size:20px;color:var(--ink)}
 .stats span{font-size:11px;font-weight:700;color:var(--ink-soft)}
 .link{color:var(--pen);font-weight:800;font-size:14px;text-decoration:underline;padding:8px 0}
 /* practice menu */
-.pick{display:flex;align-items:center;gap:14px;width:100%;padding:12px 14px;border:2px solid var(--ink);border-radius:16px;background:#fff;margin-bottom:11px;text-align:left;box-shadow:3px 3px 0 rgba(27,58,140,.16)}
-.pick:active{transform:translate(2px,2px);box-shadow:1px 1px 0 rgba(27,58,140,.16)}
-.pick .sign{font-family:ui-monospace,"Roboto Mono",monospace;font-size:34px;font-weight:700;color:var(--ink);width:38px;text-align:center;flex:0 0 38px}
-.pick .nm{font-weight:800;font-size:18px;color:var(--ink);display:block}
-.pick .rate{font-size:13px;font-weight:800;color:var(--pen)}
-.pick .togo{font-size:12px;font-weight:700;color:var(--ink-soft)}
 /* question */
 .qhead{display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:700;color:var(--ink-soft)}
 .question{font-size:clamp(30px,10vw,42px);font-weight:700;color:var(--ink);text-align:center;padding:14px 0 6px}
@@ -180,9 +169,6 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
 .levelup.on{display:flex}
 .levelup h2{color:#fff;font-size:34px}
 .levelup svg{width:min(58vw,200px);height:auto;margin:10px 0}
-.levelup .ink-fill{fill:#fff;stroke:#fff}
-.levelup .ink-line{stroke:#fff}
-.levelup .cheek{fill:rgba(255,255,255,.5)}
 
 .pet-stage{
   position:relative;
@@ -212,10 +198,6 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
 .wing-left{transform-origin:31px 65px;animation:wingflap 1.8s ease-in-out infinite}
 .wing-right{transform-origin:89px 65px;animation:wingflap2 1.8s ease-in-out infinite}
 .heart-pop{transform-origin:center;animation:heartpop 2.6s ease-in-out infinite}
-.monster-eyes{transform-box:fill-box;transform-origin:center;animation:blink 6.4s infinite}
-.monster-heart{transform-origin:center;animation:heartglow 2.4s ease-in-out infinite}
-.monster-wrap{position:relative;display:grid;place-items:center}
-.monster-wrap.sleepy{filter:saturate(.72)}
 .monster-asset{display:grid;place-items:center;position:relative;max-width:100%;max-height:100%}.monster-asset>img{display:block;max-width:100%;max-height:100%;object-fit:contain;filter:drop-shadow(0 8px 8px rgba(27,58,140,.18))}.monster-asset.asset-image>img{animation:monsterGlow 3.8s ease-in-out infinite}.monster-asset.asset-image.bob>img{animation:bob 3.2s ease-in-out infinite,monsterGlow 3.8s ease-in-out infinite}.monster-fallback{display:grid;place-items:center;width:100%;height:100%}.monster-fallback[hidden]{display:none}
 .mood-excited{animation:evolve .55s ease-out}.mood-proud{filter:drop-shadow(0 0 8px rgba(242,185,59,.5))}.mood-thinking{transform:rotate(-2deg)}.mood-surprised{animation:sh .3s}.mood-sleepy{filter:saturate(.72)}.mood-love{filter:drop-shadow(0 0 9px rgba(255,108,168,.55))}
 .play-monster{width:48px;height:48px;display:grid;place-items:center;margin-left:auto}
@@ -247,6 +229,34 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
 .badge.won{color:var(--gold);text-shadow:0 0 6px rgba(242,185,59,.6)}
 .badge-row.end .badge{font-size:22px}
 .badge-caption{margin-left:8px;font-size:12px;font-weight:800;color:var(--ink-soft)}
+.month-card{margin-top:10px;padding:11px 13px;background:#fff;border:2px solid var(--grid);border-radius:14px}
+.month-line{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:12px;font-weight:800;color:var(--ink-soft)}
+.month-line b{font-size:14px;color:var(--ink)}
+.month-bar{height:10px;border-radius:999px;background:var(--grid);overflow:hidden;margin-top:7px}
+.month-bar i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#ffd977,var(--gold));width:0;transition:width .5s ease-out}
+.month-medals{margin-top:6px;font-size:15px;line-height:1;letter-spacing:2px}
+.day-streak{margin-top:9px;text-align:center;font-size:14px;font-weight:900;color:var(--gold);text-shadow:0 1px 0 rgba(122,84,0,.25)}
+/* the run moving is the reward, so it is the whole screen for a moment */
+.daywon{position:fixed;inset:0;z-index:60;display:none;align-items:center;justify-content:center;padding:18px;
+  background:linear-gradient(rgba(49,28,112,.86),rgba(89,37,136,.93))}
+.daywon.on{display:flex;animation:fadeIn .22s ease-out}
+.daywon-card{width:100%;max-width:320px;text-align:center;color:#fff;padding:20px 18px 18px;
+  border-radius:26px;background:linear-gradient(165deg,#5b34a8,#3d2179);
+  box-shadow:0 18px 40px rgba(20,8,54,.55),inset 0 0 0 2px rgba(255,255,255,.12)}
+.daywon-card .eyebrow{color:#d9ccff;display:block;margin:6px 0 0}
+.daywon-icon{font-size:44px;line-height:1.1;filter:drop-shadow(0 4px 14px rgba(255,206,84,.6))}
+.daywon-count{margin:4px 0 0;line-height:1}
+.daywon-number{display:inline-block;font-size:66px;font-weight:900;color:var(--gold);line-height:1.05;
+  text-shadow:0 0 22px rgba(255,206,84,.7);transition:transform .18s ease-out}
+.daywon-number.counting{transform:scale(1.18)}
+.daywon-unit{font-size:18px;font-weight:900;margin-top:4px}
+.daywon-pet{margin:10px auto 0;width:118px;height:118px;display:grid;place-items:center}
+.daywon-pet img,.daywon-pet svg{max-width:118px;max-height:118px}
+.daywon-month{margin-top:10px;font-size:13px;font-weight:800;color:#e8dcff}
+.daywon-bar{height:12px;border-radius:999px;background:rgba(255,255,255,.22);overflow:hidden;margin:8px 0 14px}
+.daywon-bar i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#ffd977,var(--gold));
+  width:0;transition:width .7s ease-out}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
 .difficulty-row{display:grid;gap:8px;margin-bottom:12px}
 .difficulty{display:grid;grid-template-columns:30px 1fr;gap:4px 10px;text-align:left;padding:10px 12px;border:2px solid var(--grid);border-radius:14px;background:#fff}
 .difficulty .difficulty-badge{grid-row:1 / span 2;align-self:center;font-size:20px;color:rgba(80,49,154,.28);text-align:center}
@@ -254,18 +264,11 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
 .difficulty .difficulty-blurb{font-size:12px;font-weight:700;color:var(--ink-soft);line-height:1.25}
 .difficulty.won .difficulty-badge{color:var(--gold)}
 .difficulty-won{grid-column:2;font-size:11px;font-weight:800;color:var(--grass);text-transform:uppercase;letter-spacing:.08em}
-.journey-stage{display:grid;grid-template-columns:78px 1fr;gap:12px;align-items:center;min-height:98px;padding:9px 12px;background:#fff;border:2px solid var(--grid);border-radius:16px;overflow:hidden}
-.journey-stage.current{border-color:var(--gold);box-shadow:0 0 0 3px rgba(242,185,59,.2)}
-.journey-stage.locked{background:linear-gradient(145deg,#f3f1f7,#e2e5ee);border-color:#a7aec1}
-.journey-stage.available{border-color:#e477b4;box-shadow:0 0 0 3px rgba(228,119,180,.12)}.journey-stage.completed{border-color:#65b782}.journey-stage:disabled{cursor:default}
-.journey-art{width:76px;height:76px;display:grid;place-items:center}.journey-art img,.journey-art svg{max-width:76px;max-height:76px}
-.journey-stage h3{margin:0;color:var(--ink);font-size:17px}.journey-stage p{margin:3px 0 0;font-size:12px;font-weight:700;color:var(--ink-soft);line-height:1.3}
 /* a span is inline, so width and height were ignored: the body collapsed to nothing and only
    the two absolutely-placed ears rendered, as a pair of dark blobs over the words below */
 .silhouette{display:block;margin:0 auto;width:60px;height:68px;background:#a8adc4;border-radius:48% 48% 42% 42%;position:relative}
 .silhouette::before,.silhouette::after{content:"";position:absolute;top:-12px;width:22px;height:30px;background:#a8adc4;border-radius:70% 20% 60% 30%}.silhouette::before{left:4px;transform:rotate(-25deg)}.silhouette::after{right:4px;transform:rotate(25deg)}
-.accessory-list{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px}.accessory-chip{font-size:10px;font-weight:800;background:#fff4c9;color:#785800;border-radius:999px;padding:3px 7px}
-.journey-stage .badge{display:inline-block;margin:5px 5px 0 0;padding:3px 7px;border-radius:999px;background:#e6e9ff;color:#493aa1;font-size:10px;font-weight:900}
+.accessory-chip{font-size:10px;font-weight:800;background:#fff4c9;color:#785800;border-radius:999px;padding:3px 7px}
 .adventure-map{position:relative;min-height:var(--map-height,8400px);margin:10px 0 18px;padding:0;background:linear-gradient(180deg,#fff8ff 0%,#f2fbff 18%,#f5fff3 34%,#eef7ff 50%,#fff7dc 68%,#f4ecff 84%,#fff7fb 100%);border:2px solid rgba(80,49,154,.22);border-radius:30px;overflow:hidden;box-shadow:inset 0 0 0 6px rgba(255,255,255,.45)}
 /* Painted map sections stack down the map, each drawn at full width, one after the other,
    so adding the next panel is one more entry in MAP_ART_PANELS. They sit under the path,
@@ -331,30 +334,6 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
 @keyframes eggWiggle{0%,100%{transform:rotate(0) scale(1)}25%{transform:rotate(-4deg) scale(1.03)}75%{transform:rotate(4deg) scale(1.03)}}
 
 .dev-grid{display:grid;gap:9px}.dev-grid select{width:100%;padding:11px;border:2px solid var(--ink);border-radius:12px;background:#fff;color:var(--ink);font:inherit;font-weight:800}.dev-note{text-align:center;color:var(--ink-soft);font-size:12px;font-weight:700}
-
-
-.pick.locked{
-  opacity:.58;
-  border-color:#9AA9C5;
-  box-shadow:none;
-  cursor:default;
-}
-.pick.locked .sign,
-.pick.locked .nm{color:#7183A7}
-.pick .lock{
-  margin-left:auto;
-  font-size:22px;
-}
-.pick .badge{
-  display:inline-block;
-  margin-top:4px;
-  padding:3px 7px;
-  border-radius:999px;
-  background:#FFF1C7;
-  color:#8A6200;
-  font-size:11px;
-  font-weight:900;
-}
 .unlock{
   position:fixed;
   inset:0;
@@ -379,7 +358,7 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
 .unlock-card p{font-size:16px;line-height:1.35;font-weight:700;color:var(--graphite)}
 .unlock-icon{font-size:54px;line-height:1}
 
-@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.bob,.monster-eyes,.monster-heart{transform:none!important}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.bob{transform:none!important}}
 </style>
 </head>
 <body>
@@ -430,9 +409,16 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
       <div class="collection-shelf" id="collectionBox"></div>
       <div class="wardrobe" id="wardrobeBox"></div>
     </div>
-    <div class="stats" id="statBox"></div>
     <div style="height:12px"></div>
+    <button class="btn" id="carryBtn" style="display:none">Carry on</button>
+    <div style="height:10px" id="carryGap"></div>
     <button class="btn" id="playBtn">Continue the adventure</button>
+    <div class="month-card" id="monthCard">
+      <div class="month-line"><span id="monthLabel">This month</span><b id="monthCount">0 of 25 days</b></div>
+      <div class="month-bar"><i id="monthFill"></i></div>
+      <div class="month-medals" id="monthMedals"></div>
+    </div>
+    <div class="stats" id="statBox"></div>
     <div style="height:10px"></div>
     <button class="btn ghost" id="setBtn">Settings</button>
   </section>
@@ -520,6 +506,7 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
       <div class="pet-stage" id="endPet"></div>
       <div class="stats" id="endStats"></div>
       <div class="badge-row end" id="endBadges"></div>
+      <div class="day-streak" id="endStreak" style="display:none"></div>
       <div class="reward-line" id="endReward" style="margin-top:12px"></div>
     </div>
     <button class="btn" id="againBtn">Continue Adventure</button>
@@ -561,6 +548,19 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
     <div id="luMsg" style="font-weight:700;max-width:280px"></div>
     <div style="height:18px"></div>
     <button class="btn ghost" id="luOk" style="width:200px">Ok!</button>
+  </div>
+
+  <div class="daywon" id="dayBox">
+    <div class="daywon-card">
+      <div class="daywon-icon" id="dayIcon">⭐</div>
+      <div class="eyebrow" id="dayEyebrow">your run</div>
+      <div class="daywon-count"><span class="daywon-number mono" id="dayNumber">0</span></div>
+      <div class="daywon-unit" id="dayUnit">days in a row</div>
+      <div class="daywon-pet" id="dayPet"></div>
+      <div class="daywon-month" id="dayMonth"></div>
+      <div class="daywon-bar"><i id="dayBarFill"></i></div>
+      <button class="btn" id="dayOk">Keep going</button>
+    </div>
   </div>
 
   <div class="unlock" id="unlockBox">
@@ -656,6 +656,7 @@ const DIFFICULTIES=[
 const DIFFICULTY_IDS=DIFFICULTIES.map(d=>d.id);
 const difficultyOf=id=>DIFFICULTIES.find(d=>d.id===id)||DIFFICULTIES[1];
 const nextDifficulty=id=>DIFFICULTY_IDS[DIFFICULTY_IDS.indexOf(id)+1]||null;
+const easierDifficulty=id=>DIFFICULTY_IDS.indexOf(id)>0?DIFFICULTY_IDS[DIFFICULTY_IDS.indexOf(id)-1]:null;
 function blankBadges(){ const o={}; DIFFICULTY_IDS.forEach(d=>o[d]=false); return o; }
 function badgesFor(p,stageId){
   if(!p.stageProgress.badges) p.stageProgress.badges={};
@@ -738,13 +739,6 @@ const EVOLUTIONS=[
   ...PROGRESSION_NODES.map((node,i)=>({completed:i+1,art:node.stage,title:MONSTER_STAGE_DATA[node.stage-1].name,message:node.storyAfter,majorEvolution:!!node.majorEvolution,nodeId:node.id}))
 ];
 const EVOLUTION_LEVELS=EVOLUTIONS.map(e=>e.art);
-const ACC=[
-  {lvl:8,id:'scarf',name:'scarf'}, {lvl:9,id:'backpack',name:'backpack'},
-  {lvl:10,id:'goggles',name:'goggles'}, {lvl:11,id:'pencilWand',name:'pencil wand'},
-  {lvl:12,id:'map',name:'map'}, {lvl:14,id:'flowerCrown',name:'flower crown'},
-  {lvl:15,id:'headphones',name:'headphones'}, {lvl:15,id:'book',name:'book'},
-  {lvl:16,id:'starCape',name:'star cape'}, {lvl:17,id:'magicStaff',name:'magic staff'}
-];
 const COLLECTIBLES=[
   {id:'stars',emoji:'⭐',name:'Magic Stars'},{id:'flowers',emoji:'🌸',name:'Flowers'},
   {id:'berries',emoji:'🍓',name:'Magic Berries'},{id:'feathers',emoji:'🪶',name:'Feathers'},
@@ -757,7 +751,6 @@ const COSMETIC_REWARDS=[
   {total:22,id:'magicPencil',name:'Magic Pencil',emoji:'✏️'},{total:30,id:'crystalCrown',name:'Crystal Crown',emoji:'💎'},
   {total:40,id:'guardianStaff',name:'Guardian Staff',emoji:'🪄'}
 ];
-const STAGE_GROUPS=[{from:1,to:2,name:'Egg & hatchling'},{from:3,to:6,name:'Toddler'},{from:7,to:12,name:'Explorer'},{from:13,to:16,name:'Mage'},{from:17,to:17,name:'Guardian'}];
 const MONSTER_PALETTES=[
   ['#F9D9F0','#FFF5FC','#D98AD3'],['#E8D5FA','#FFF5FC','#A66DD4'],['#D9CBFA','#F8F4FF','#8762D9'],['#C9CDFB','#F3F6FF','#667BE0'],
   ['#B9D9FB','#F1FAFF','#4D96DF'],['#A9E7F2','#EFFDFF','#3AAEC4'],['#A5EBD8','#F1FFF9','#36B78B'],['#B7EBCB','#F5FFF8','#49B66E'],
@@ -767,7 +760,7 @@ const MONSTER_PALETTES=[
 ];
 const MONSTER_STAGES=MONSTER_STAGE_DATA.map((stage,i)=>({
   id:'stage-'+String(stage.stage).padStart(2,'0'),minLevel:stage.stage,maxLevel:stage.stage,name:stage.name,
-  slug:stage.slug,group:stage.stage<3?'Egg & hatchling':stage.stage<7?'Toddler':stage.stage<13?'Explorer':'Guardian',
+  slug:stage.slug,
   image:'assets/monsters/'+stage.image,palette:MONSTER_PALETTES[i],fallback:stage.stage===1?'egg':'momo',
   assetReady:!!stage.ready,majorEvolution:!!stage.majorEvolution,intermediate:!!stage.intermediate
 }));
@@ -776,12 +769,75 @@ const PRAISE=['Correct!','Nice one.',"Yes, that's it.",'Spot on.','Exactly.','We
 
 const stageOf = lvl => Math.max(1,Math.min(MONSTER_STAGES.length,Math.floor(Number(lvl)||1)));
 const artLevelOf = lvl => { let art=1; EVOLUTION_LEVELS.forEach(L=>{ if(stageOf(lvl)>=L) art=L; }); return art; };
-const stageGroup = lvl => STAGE_GROUPS.find(g=>stageOf(lvl)>=g.from&&stageOf(lvl)<=g.to);
-const accsOf  = lvl => { const o={}; ACC.forEach(a=>{ if(stageOf(lvl)>=a.lvl) o[a.id]=true; }); return o; };
 const monsterStage = lvl => MONSTER_STAGES[stageOf(lvl)-1];
 const completedCount=p=>MATH_STAGES.filter(s=>p.stageProgress&&p.stageProgress.completed&&p.stageProgress.completed[s.id]).length;
 function evolutionForCount(count){ let found=EVOLUTIONS[0]; EVOLUTIONS.forEach(e=>{ if(count>=e.completed) found=e; }); return found; }
 const artForCount=count=>evolutionForCount(count).art;
+/* How many days in a row a lesson has been passed. The date is the child's own, not UTC:
+   a lesson finished at nine in the evening belongs to that evening, not to tomorrow. The
+   run is only alive while it is unbroken, so a player who last played on Monday is not
+   told on Thursday that they are on a run of five — `liveStreak` is what any screen shows,
+   and `markLessonDay` is the only thing that moves it. */
+const dayKey=when=>{
+  const d=when||new Date();
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+};
+function dayBefore(key){
+  const parts=String(key).split('-').map(Number);
+  const d=new Date(parts[0],parts[1]-1,parts[2]);
+  d.setDate(d.getDate()-1);
+  return dayKey(d);
+}
+/* A calendar month's worth of days, kept alongside the run. `month` is the month being
+   counted, `inMonth` how many of its days have been played, and `won` the months that
+   reached the goal — one entry each, so a medal is never awarded twice. */
+const MONTH_GOAL=25;
+const monthKey=key=>String(key).slice(0,7);
+const blankDays=()=>({last:'',run:0,best:0,month:'',inMonth:0,won:{}});
+function daysOf(p){
+  if(!p.days||typeof p.days!=='object') p.days=blankDays();
+  if(typeof p.days.last!=='string') p.days.last='';
+  if(typeof p.days.month!=='string') p.days.month='';
+  if(!p.days.won||typeof p.days.won!=='object') p.days.won={};
+  p.days.run=Math.max(0,Number(p.days.run)||0);
+  p.days.best=Math.max(0,Number(p.days.best)||0,p.days.run);
+  p.days.inMonth=Math.max(0,Number(p.days.inMonth)||0);
+  return p.days;
+}
+const monthDays=(days,today)=>days&&days.month===monthKey(today)?days.inMonth:0;
+const monthWon=(days,today)=>!!(days&&days.won&&days.won[monthKey(today)]);
+function liveStreak(days,today){
+  if(!days||!days.last) return 0;
+  return days.last===today||days.last===dayBefore(today)?days.run:0;
+}
+function markLessonDay(p,today){
+  const days=daysOf(p);
+  if(days.last===today) return {run:days.run,grew:false,inMonth:days.inMonth,wonMonth:false};
+  days.run=days.last===dayBefore(today)?days.run+1:1;
+  days.last=today;
+  days.best=Math.max(days.best,days.run);
+  const month=monthKey(today);
+  if(days.month!==month){ days.month=month; days.inMonth=0; }
+  days.inMonth++;
+  const wonMonth=days.inMonth>=MONTH_GOAL&&!days.won[month];
+  if(wonMonth) days.won[month]=true;
+  return {run:days.run,grew:true,inMonth:days.inMonth,wonMonth:wonMonth};
+}
+
+/* Ten questions is a lot in one sitting, so a lesson does not have to be one sitting. What
+   has been answered is kept on the player and picked up again next time, whether that is
+   five minutes or a day later. The question itself is not kept — only how far in the child
+   got — so re-entering asks a fresh question at that point rather than the one abandoned. */
+function resumeOf(p){
+  const r=p&&p.resume;
+  if(!r||typeof r!=='object'||!STAGE_BY_ID(r.stageId)) return null;
+  const answered=Math.max(0,Number(r.answered)||0),total=Math.max(0,Number(r.total)||0);
+  if(answered<1||answered>=total) return null;        // nothing to carry, or already finished
+  return {stageId:r.stageId,difficulty:DIFFICULTY_IDS.includes(r.difficulty)?r.difficulty:'medium',
+    answered:answered,total:total,marks:Array.isArray(r.marks)?r.marks.slice(0,answered):[],
+    mastered:Math.max(0,Number(r.mastered)||0),right:Math.max(0,Number(r.right)||0),
+    best:Math.max(0,Number(r.best)||0),crackSeen:!!r.crackSeen};
+}
 function storyProgressOf(p){ if(!p.storyProgress||typeof p.storyProgress!=='object') p.storyProgress={}; if(p.storyProgress.firstCrackSeen===undefined) p.storyProgress.firstCrackSeen=false; if(!p.storyProgress.mapSeen||typeof p.storyProgress.mapSeen!=='object') p.storyProgress.mapSeen={}; if(!p.storyProgress.guidesSeen||typeof p.storyProgress.guidesSeen!=='object') p.storyProgress.guidesSeen={}; return p.storyProgress; }
 function artForPlayer(p){ const count=completedCount(p); return count===0&&storyProgressOf(p).firstCrackSeen?2:artForCount(count); }
 function mapSideX(side){ return side==='left'?29:side==='right'?71:50; }
@@ -925,7 +981,7 @@ function newPlayer(name,look){
   return {id:'p'+Date.now(),name:name,look:look==='boy'?'boy':'girl',total:0,right:0,best:0,
           groups:{add:true,sub:true,mul:true,div:true},
           unlocked:{add2:false,sub2:false,mul2:false,div2:false},
-          stageProgress:blankStageProgress(),monsterStage:1,momoName:'Momo',collectibles:{},accessories:[],storySeen:false,storyProgress:{firstCrackSeen:false,mapSeen:{},guidesSeen:{}},migrationVersion:9};
+          stageProgress:blankStageProgress(),monsterStage:1,momoName:'Momo',collectibles:{},accessories:[],storySeen:false,storyProgress:{firstCrackSeen:false,mapSeen:{},guidesSeen:{}},days:blankDays(),resume:null,migrationVersion:9};
 }
 function migrate(p){
   const version=Number(p.migrationVersion)||0,wasLegacy=version<3;
@@ -953,6 +1009,7 @@ function migrate(p){
   }
   COSMETIC_REWARDS.forEach(a=>{ if(collectibleTotal(p)>=a.total&&!p.accessories.includes(a.id)) p.accessories.push(a.id); });
   storyProgressOf(p);
+  daysOf(p);
   p.monsterStage=p.devMonsterOverride||artForPlayer(p);
   if(p.storySeen===undefined) p.storySeen=true;
   dropRetiredPlayerFields(p);
@@ -1656,10 +1713,22 @@ function renderHome(){
   $('wardrobeBox').innerHTML=COSMETIC_REWARDS.filter(a=>P.accessories.includes(a.id)).map(a=>'<span class="accessory-chip">'+a.emoji+' '+a.name+'</span>').join('');
   // plain words and a number that says what it is out of: "path lights" and "kind
   // answers" were the game's own vocabulary, which is no use to the child reading them
+  const today=dayKey(),days=daysOf(P),run=liveStreak(days,today);
+  const inMonth=monthDays(days,today),medals=Object.keys(days.won).length;
+  $('monthLabel').textContent=monthWon(days,today)?'This month — medal won!':'This month';
+  $('monthCount').textContent=inMonth+' of '+MONTH_GOAL+' days';
+  $('monthFill').style.width=Math.min(100,Math.round(100*inMonth/MONTH_GOAL))+'%';
+  $('monthMedals').textContent=medals?'\uD83C\uDFC5'.repeat(Math.min(12,medals)):'';
+  const carry=resumeOf(P),carryBtn=$('carryBtn');
+  carryBtn.style.display=carry?'block':'none';
+  $('carryGap').style.display=carry?'block':'none';
+  if(carry) carryBtn.textContent='Carry on \u00B7 '+STAGE_BY_ID(carry.stageId).label+
+    ' ('+carry.answered+' of '+carry.total+')';
   $('statBox').innerHTML=
     '<div><b class="mono">'+count+' of '+MATH_STAGES.length+'</b><span>lessons lit</span></div>'+
     '<div><b class="mono">'+P.right+'</b><span>right answers</span></div>'+
-    '<div><b class="mono">'+P.best+'</b><span>best streak</span></div>';
+    '<div><b class="mono">'+P.best+'</b><span>answers in a row</span></div>'+
+    '<div><b class="mono">'+run+'</b><span>'+(run===1?'day in a row':'days in a row')+'</span></div>';
   $('playBtn').textContent=count===0?'Help the egg awaken':count===MATH_STAGES.length?'Revisit the enchanted lessons':'Continue '+petName()+"'s adventure";
 }
 
@@ -1878,17 +1947,40 @@ function renderStars(justWon){
   box.setAttribute('aria-label',won+' of '+S.total+' stars, '+S.pass+' needed');
 }
 function markQuestion(mark){ if(S.marks.length<S.total) S.marks.push(mark); renderStars(true); }
-function startSession(stageId,difficulty){
+function startSession(stageId,difficulty,carry){
   const stage=STAGE_BY_ID(stageId);
   if(!stage||stageStatus(P,stage.id)==='locked') return;
   const level=DIFFICULTY_IDS.includes(difficulty)?difficulty:'medium';
   const plan=sessionPlan(stage,level);
   const cracked=stage.id==='add_1digit'&&!P.stageProgress.completed[stage.id]&&!!storyProgressOf(P).firstCrackSeen;
   S={gid:stage.gid,vid:stage.id,stageId:stage.id,stage:stage,wasCompleted:P.stageProgress.completed[stage.id],i:0,right:0,mastered:0,streak:0,best:0,q:null,input:'',col:null,longMul:null,div:null,locked:false,attempt:0,mode:'answer',crackMoment:false,crackSeen:cracked,reward:null,total:plan.total,pass:plan.pass,marks:[],difficulty:level,newBadge:false};
+  if(carry&&carry.stageId===stage.id){
+    S.i=carry.answered; S.marks=carry.marks.slice(); S.mastered=carry.mastered;
+    S.right=carry.right; S.best=carry.best; S.crackSeen=carry.crackSeen||cracked;
+  }else if(!carry) dropResume();
   show('s-play'); nextQuestion();
 }
+function resumeLesson(){
+  const carry=resumeOf(P);
+  if(!carry) return false;
+  startSession(carry.stageId,carry.difficulty,carry);
+  return true;
+}
+/* Where the child has got to, kept between questions rather than during one: leaving
+   halfway through a question comes back to a fresh question at that point. */
+function keepResume(){
+  P.resume={stageId:S.stageId,difficulty:S.difficulty,answered:S.i,total:S.total,
+    marks:S.marks.slice(),mastered:S.mastered,right:S.right,best:S.best,crackSeen:!!S.crackSeen};
+  save();
+}
+function dropResume(){ if(P.resume){ P.resume=null; save(); } }
+/* Once there are not enough questions left to reach the pass mark, finishing the rest
+   proves nothing and only asks a child who is already struggling to keep going. */
+const passOutOfReach=s=>!!s&&s.mastered+(s.total-s.i)<s.pass;
 function nextQuestion(){
-  if(S.i>=S.total){ endSession(); return; }
+  if(S.i>=S.total){ dropResume(); endSession(); return; }
+  if(passOutOfReach(S)){ S.stoppedEarly=true; dropResume(); endSession(); return; }
+  keepResume();
   S.i++; S.input=''; S.locked=false; S.attempt=0; S.mode='answer'; S.crackMoment=false; $('fb').textContent='';
   setPlayMood('beforeQuestion');
   renderStars(false);
@@ -2096,7 +2188,36 @@ function shouldShowCrackPause(){
   return S&&S.stageId==='add_1digit'&&!S.wasCompleted&&!S.crackSeen&&S.i===5&&S.mastered>=4;
 }
 function afterAnswerDelay(ms){
-  setTimeout(()=>{ if(shouldShowCrackPause()) showCrackPause(); else nextQuestion(); },ms);
+  setTimeout(()=>{
+    if(S.dayWon){ showDayWon(); return; }
+    if(shouldShowCrackPause()) showCrackPause(); else nextQuestion();
+  },ms);
+}
+/* The moment the run moves. Big, and it counts up, because a number that lands already
+   changed is a number the child did not see change. */
+function showDayWon(){
+  const won=S.dayWon,goal=MONTH_GOAL;
+  $('dayIcon').textContent=won.wonMonth?'\uD83C\uDFC5':'\u2B50';
+  $('dayEyebrow').textContent=won.wonMonth?'a month of maths':'your run';
+  $('dayNumber').textContent=won.from;
+  $('dayUnit').textContent=won.to===1?'day in a row':'days in a row';
+  $('dayPet').innerHTML=monsterMarkup(P.monsterStage,'levelUp','evolution-burst',petName());
+  $('dayMonth').textContent=won.wonMonth
+    ?'You did maths on '+won.inMonth+' days this month. Medal won!'
+    :won.inMonth+' of '+goal+' days this month.';
+  const bar=Math.min(100,Math.round(100*won.inMonth/goal));
+  $('dayBarFill').style.width=bar+'%';
+  $('dayBox').classList.add('on');
+  sLvl();
+  let shown=won.from;
+  const tick=()=>{
+    if(shown>=won.to){ $('dayNumber').classList.remove('counting'); return; }
+    shown++; $('dayNumber').textContent=shown;
+    $('dayNumber').classList.add('counting');
+    setTimeout(()=>$('dayNumber').classList.remove('counting'),240);
+    if(shown<won.to) setTimeout(tick,320);
+  };
+  setTimeout(tick,420);
 }
 function showCrackPause(){
   S.crackSeen=true; S.crackMoment=false; storyProgressOf(P).firstCrackSeen=true; P.monsterStage=P.devMonsterOverride||artForPlayer(P); save();
@@ -2110,7 +2231,15 @@ function showCrackPause(){
   show('s-crack');
   sLvl();
 }
+/* One question is the day's maths. Ten in a row is a lot to ask of a seven-year-old, and
+   asking for all ten before the run moves would make the run the thing they cannot reach. */
+function countToday(){
+  const today=dayKey(),before=liveStreak(daysOf(P),today),moved=markLessonDay(P,today);
+  if(moved.grew) S.dayWon={from:before,to:moved.run,inMonth:moved.inMonth,wonMonth:moved.wonMonth};
+  return moved;
+}
 function award(mastered){
+  countToday();
   S.streak++; S.right++; P.right++;
   if(mastered) S.mastered++;
   markQuestion(mastered?'won':'helped');
@@ -2120,7 +2249,7 @@ function award(mastered){
   if(shouldShowCrackPause()) S.crackMoment=true;
 }
 /* the child got there, but with help: the answer counts, the mastery does not */
-function awardHelped(){ S.right++; P.right++; S.streak=0; P.total=(Number(P.total)||0)+1; markQuestion('helped'); }
+function awardHelped(){ countToday(); S.right++; P.right++; S.streak=0; P.total=(Number(P.total)||0)+1; markQuestion('helped'); }
 function awardCollectible(){
   const item=COLLECTIBLES[Math.floor(Math.random()*COLLECTIBLES.length)];
   P.collectibles[item.id]=(P.collectibles[item.id]||0)+1;
@@ -2159,26 +2288,40 @@ let endRetryDifficulty='medium';
 function endSession(){
   lastSessionStageId=S.stageId;
   const result=maybeCompleteStage(); save();
-  $('endTitle').textContent=S.mastered>=S.pass?(S.wasCompleted?'Treasure discovered!':'The path is glowing!'):'The magic needs another try';
+  $('endTitle').textContent=S.mastered>=S.pass?(S.wasCompleted?'Treasure discovered!':'The path is glowing!')
+    :S.stoppedEarly?"Let's start this one again":'The magic needs another try';
   $('endPet').innerHTML=monsterMarkup(P.monsterStage,S.mastered>=S.pass?'streak':'idle','bob',petName());
   $('endStats').innerHTML=
     '<div><b class="mono">'+S.mastered+'</b><span>answers mastered</span></div>'+
-    '<div><b class="mono">'+S.best+'</b><span>brightest streak</span></div>'+
+    '<div><b class="mono">'+S.best+'</b><span>answers in a row</span></div>'+
     '<div><b class="mono">'+completedCount(P)+' of '+MATH_STAGES.length+'</b><span>lessons lit</span></div>';
+  const run=liveStreak(daysOf(P),dayKey());
+  $('endStreak').textContent=S.mastered<S.pass?''
+    :run<=1?"That is today's maths done."
+    :(S.dayStreak&&S.dayStreak.grew?'That is '+run+' days in a row!':run+' days in a row so far.');
+  $('endStreak').style.display=$('endStreak').textContent?'block':'none';
   if(result==='collectible'){
     const cosmetic=S.reward.newCosmetics[0];
     $('endReward').textContent=petName()+' found '+S.reward.item.emoji+' '+S.reward.item.name+'!'+(cosmetic?' A new '+cosmetic.name+' appeared in the magic wardrobe!':'');
+  }else if(S.stoppedEarly){
+    const easier=easierDifficulty(S.difficulty);
+    $('endReward').textContent='This one was being tricky, so we stopped early for a fresh go. Nothing is lost, and '
+      +petName()+' is proud of every try.'+(easier?' '+difficultyOf(easier).label+' has '+difficultyOf(easier).blurb.toLowerCase():'');
   }else if(S.mastered<S.pass) $('endReward').textContent=petName()+' is proud of every try. Master '+S.pass+' answers to light this path.';
   else {
     const node=NODE_BY_LESSON(S.stageId);
     $('endReward').textContent=node?node.storyAfter.replaceAll('{name}',petName()):petName()+' has grown because you learned together.';
   }
   const up=S.mastered>=S.pass?nextDifficulty(S.difficulty):null;
+  const down=S.stoppedEarly?easierDifficulty(S.difficulty):null;
   if(up&&!badgesFor(P,S.stageId)[up]){
     $('endHome').textContent='Try it on '+difficultyOf(up).label;
     endRetryDifficulty=up;
+  }else if(down){
+    $('endHome').textContent='Try it on '+difficultyOf(down).label;
+    endRetryDifficulty=down;
   }else{
-    $('endHome').textContent='Practise Again';
+    $('endHome').textContent=S.stoppedEarly?'Start again':'Practise Again';
     endRetryDifficulty=S.difficulty;
   }
   const won=badgeCount(P,S.stageId);
@@ -2642,7 +2785,7 @@ function openDeveloper(){ renderDeveloper(); show('s-dev'); }
 function resetPlayerProgress(){
   P.stageProgress=blankStageProgress(); P.monsterStage=1; delete P.devMonsterOverride;
   P.collectibles={}; COLLECTIBLES.forEach(c=>P.collectibles[c.id]=0); P.accessories=[];
-  P.right=0; P.best=0; P.total=0; P.storySeen=false; P.storyProgress={firstCrackSeen:false,mapSeen:{},guidesSeen:{}}; P.migrationVersion=9; save();
+  P.right=0; P.best=0; P.total=0; P.storySeen=false; P.storyProgress={firstCrackSeen:false,mapSeen:{},guidesSeen:{}}; P.days=blankDays(); P.resume=null; P.migrationVersion=9; save();
 }
 
 /* ---------------- wiring ---------------- */
@@ -2696,13 +2839,13 @@ const SPEAK_PANELS={
   sayUnlock:['unlockTitle','unlockText'],
   sayGrown:['luTitle','luMsg'],
   sayCrack:['crackTitle','crackStats','crackReward'],
-  sayEnd:['endTitle','endStats','endReward'],
+  sayEnd:['endTitle','endStats','endStreak','endReward'],
   sayNode:['nodeLesson','nodeTitle','nodeStory'],
   sayStory:['storyTitle','storyText'],
   sayGuide:['guideTitle','guideSum','guideLines']
 };
 /* A block of stats is several little elements, and textContent runs them together into
-   "7answers mastered7brightest streak". Each part is read on its own instead. */
+   "7answers mastered7answers in a row". Each part is read on its own instead. */
 function partWords(el){
   const kids=el&&el.children;
   if(!kids||!kids.length) return String((el&&el.textContent)||'').replace(/\s+/g,' ').trim();
@@ -2722,6 +2865,11 @@ function offerSpeech(){
   englishVoice();
   Array.prototype.forEach.call(document.querySelectorAll('.speak'),b=>{ b.hidden=false; });
 }
+$('carryBtn').onclick=()=>{ sTap(); resumeLesson(); };
+$('dayOk').onclick=()=>{
+  sTap(); $('dayBox').classList.remove('on'); S.dayWon=null;
+  if(shouldShowCrackPause()) showCrackPause(); else nextQuestion();
+};
 $('guideStart').onclick=()=>{
   sTap();
   if(!guidePending) { show('s-menu'); renderMenu(); return; }
