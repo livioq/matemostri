@@ -181,7 +181,27 @@ public release.
   button, changes no layout, and runs no speech code. `speechReady`
   checks for `window` itself, so the test suite, which has none, is
   untouched.
-- A daily streak counts how many days in a row a lesson has been passed,
+- Ten questions is a lot in one sitting, so a lesson does not have to be
+  one sitting. What has been answered is kept on the player in `resume`
+  and picked up next time, whether that is five minutes or a day later.
+  Only how far in the child got is kept, not the question itself, so
+  re-entering asks a fresh question at that point rather than the one
+  abandoned; `keepResume` runs before each question and `dropResume` when
+  the lesson ends. The home screen offers it as the first button, above
+  the fold, because it is what a returning child wants.
+- One question is the day's maths. Ten in a row before the run moves
+  would make the run the thing they cannot reach, so `countToday` fires
+  from `award` and `awardHelped` — a question that needed a hand still
+  counts, because it is still that day's maths done.
+- The run moving is the reward, so it takes the whole screen for a
+  moment: a big number that counts up from where it was, the creature,
+  and how the month is going. A number that lands already changed is a
+  number the child did not see change.
+- A month is worth something of its own. `MONTH_GOAL` days of maths in a
+  calendar month wins a medal, kept per month in `days.won` so it is
+  never awarded twice, and the home screen carries the tally and the
+  medals won. A missed day costs the run but not the month's count.
+- A daily streak counts how many days in a row a lesson has been sat,
   a replay included: doing your maths is doing your maths. The date is the
   child's own, not UTC, so a lesson finished at nine in the evening
   belongs to that evening. `markLessonDay` is the only thing that moves

@@ -1308,11 +1308,13 @@ vm.createContext(dayCtx);
 vm.runInContext([
   source.match(/const dayKey=[\s\S]*?\n\};/)[0],
   functionSource('dayBefore'),
+  source.match(/const MONTH_GOAL=\d+;/)[0],
+  source.match(/const monthKey=.*;\n/)[0],
   source.match(/const blankDays=.*;\n/)[0],
   functionSource('daysOf'),
   functionSource('liveStreak'),
   functionSource('markLessonDay'),
-  'this.dayKey=dayKey;this.dayBefore=dayBefore;this.daysOf=daysOf;this.live=liveStreak;this.mark=markLessonDay;this.blank=blankDays;'
+  'this.dayKey=dayKey;this.dayBefore=dayBefore;this.daysOf=daysOf;this.live=liveStreak;this.mark=markLessonDay;this.blank=blankDays;this.GOAL=MONTH_GOAL;'
 ].join('\n'), dayCtx);
 
 // the date is the child's own, not UTC: a lesson finished late on the 5th belongs to the 5th
@@ -1326,19 +1328,21 @@ assert.equal(dayCtx.dayBefore('2028-03-01'), '2028-02-29', 'and a leap day');
 
 // three days running
 let player = {};
-assert.deepEqual(plain(dayCtx.daysOf(player)), {last:'', run:0, best:0}, 'a new player is on no run');
+assert.deepEqual(plain(dayCtx.daysOf(player)), {last:'', run:0, best:0, month:'', inMonth:0, won:{}},
+  'a new player is on no run');
 assert.equal(dayCtx.live(player.days, '2026-08-05'), 0);
-assert.deepEqual(plain(dayCtx.mark(player, '2026-08-05')), {run:1, grew:true}, 'the first lesson starts a run');
-assert.deepEqual(plain(dayCtx.mark(player, '2026-08-06')), {run:2, grew:true});
-assert.deepEqual(plain(dayCtx.mark(player, '2026-08-07')), {run:3, grew:true});
+assert.deepEqual(plain(dayCtx.mark(player, '2026-08-05')),
+  {run:1, grew:true, inMonth:1, wonMonth:false}, 'the first lesson starts a run');
+assert.equal(dayCtx.mark(player, '2026-08-06').run, 2);
+assert.equal(dayCtx.mark(player, '2026-08-07').run, 3);
 assert.equal(player.days.best, 3);
 
 // a second lesson on the same day does not count twice
-assert.deepEqual(plain(dayCtx.mark(player, '2026-08-07')), {run:3, grew:false},
+assert.deepEqual(plain(dayCtx.mark(player, '2026-08-07')), {run:3, grew:false, inMonth:3, wonMonth:false},
   'a second lesson the same day does not count twice');
 
 // a missed day starts again, but the best is remembered
-assert.deepEqual(plain(dayCtx.mark(player, '2026-08-10')), {run:1, grew:true}, 'a missed day starts again');
+assert.equal(dayCtx.mark(player, '2026-08-10').run, 1, 'a missed day starts again');
 assert.equal(player.days.best, 3, 'and the best run is remembered');
 
 // a run that has been broken is never displayed as if it were alive
@@ -1349,20 +1353,82 @@ assert.equal(dayCtx.live(player.days, '2026-08-12'), 0,
 assert.equal(player.days.run, 1, 'showing 0 does not rewrite what was saved');
 
 // a save that never had the field, or has nonsense in it, comes back sane
-assert.deepEqual(plain(dayCtx.daysOf({})), {last:'', run:0, best:0});
-const messy = {days:{last:5, run:-2, best:'x'}};
-assert.deepEqual(plain(dayCtx.daysOf(messy)), {last:'', run:0, best:0}, 'nonsense is cleaned rather than trusted');
+assert.deepEqual(plain(dayCtx.daysOf({})), {last:'', run:0, best:0, month:'', inMonth:0, won:{}});
+const messy = {days:{last:5, run:-2, best:'x', inMonth:-9, won:'nope'}};
+assert.deepEqual(plain(dayCtx.daysOf(messy)), {last:'', run:0, best:0, month:'', inMonth:0, won:{}},
+  'nonsense is cleaned rather than trusted');
 const behind = {days:{last:'2026-08-01', run:7, best:3}};
 assert.equal(dayCtx.daysOf(behind).best, 7, 'a best lower than the run is raised to it');
 
-// it is counted where a lesson is passed, and read out with the rest of the end screen
-assert.match(functionSource('maybeCompleteStage'), /markLessonDay\(P,dayKey\(\)\)/,
-  'the run moves when a lesson is passed');
-assert.ok(source.indexOf('markLessonDay(P,dayKey())') < source.indexOf('if(S.wasCompleted)'),
-  'including a replay, which is still that day\'s maths done');
+// a calendar month of days, and a medal at the goal
+const monther = {};
+for (let d = 1; d <= 24; d += 1) dayCtx.mark(monther, '2026-09-' + String(d).padStart(2, '0'));
+assert.equal(monther.days.inMonth, 24);
+assert.equal(dayCtx.live(monther.days, '2026-09-24'), 24, 'twenty-four days running');
+const wins = dayCtx.mark(monther, '2026-09-25');
+assert.equal(wins.inMonth, dayCtx.GOAL, 'the twenty-fifth day of the month is the goal');
+assert.equal(wins.wonMonth, true, 'and wins the medal');
+assert.equal(dayCtx.mark(monther, '2026-09-26').wonMonth, false, 'which is not won twice');
+assert.equal(dayCtx.mark(monther, '2026-10-01').inMonth, 1, 'a new month starts its count again');
+assert.equal(monther.days.won['2026-09'], true, 'and the month already won is kept');
+assert.equal(monther.days.won['2026-10'], undefined);
+// a gap in the middle costs the run but not the month's tally
+const gappy = {};
+dayCtx.mark(gappy, '2026-09-01');
+dayCtx.mark(gappy, '2026-09-05');
+assert.equal(gappy.days.run, 1, 'the run restarts');
+assert.equal(gappy.days.inMonth, 2, 'but both days still count towards the month');
+
+// a lesson does not have to be one sitting
+const resumeCtx = {Number, Array, Math, String};
+vm.createContext(resumeCtx);
+vm.runInContext([
+  "const DIFFICULTY_IDS=['easy','medium','hard'];",
+  "const STAGE_BY_ID=id=>/^(add|sub|mul|div)_/.test(String(id))?{id:id}:null;",
+  functionSource('resumeOf'),
+  'this.resumeOf=resumeOf;'
+].join('\n'), resumeCtx);
+assert.equal(resumeCtx.resumeOf({}), null, 'nothing saved, nothing to carry');
+assert.equal(resumeCtx.resumeOf({resume:{stageId:'nope', answered:2, total:10}}), null,
+  'a lesson that no longer exists is not offered');
+assert.equal(resumeCtx.resumeOf({resume:{stageId:'add_3column', answered:0, total:7}}), null,
+  'a lesson not started is not something to carry on with');
+assert.equal(resumeCtx.resumeOf({resume:{stageId:'add_3column', answered:7, total:7}}), null,
+  'nor is one already finished');
+const carried = resumeCtx.resumeOf({resume:{stageId:'add_3column', difficulty:'hard', answered:3, total:7,
+  marks:['won', 'won', 'helped', 'won', 'won'], mastered:2, right:3, best:2, crackSeen:true}});
+assert.equal(carried.answered, 3);
+assert.equal(carried.difficulty, 'hard', 'on the difficulty it was being sat');
+assert.deepEqual(plain(carried.marks), ['won', 'won', 'helped'],
+  'with one star per question answered, and no more than that');
+assert.equal(carried.mastered, 2);
+assert.equal(carried.crackSeen, true);
+const junk = resumeCtx.resumeOf({resume:{stageId:'add_3column', difficulty:'sideways', answered:2, total:7,
+  marks:'not a list', mastered:-4, right:null}});
+assert.equal(junk.difficulty, 'medium', 'a difficulty that is not one falls back to medium');
+assert.deepEqual(plain(junk.marks), [], 'and nonsense elsewhere is cleaned rather than trusted');
+assert.equal(junk.mastered, 0);
+
+assert.match(functionSource('nextQuestion'), /keepResume\(\)/,
+  'where the child has got to is kept before each question');
+assert.match(functionSource('nextQuestion'), /dropResume\(\);\s*endSession\(\)/,
+  'and let go of when the lesson finishes');
+assert.match(functionSource('startSession'), /carry&&carry\.stageId===stage\.id/,
+  'a carried lesson picks up its own progress and nobody else\'s');
+assert.match(functionSource('renderHome'), /resumeOf\(P\)/, 'the home screen offers it');
+
+// one question is the day's maths: ten in a row is a lot to ask, and asking for all ten
+// before the run moves would make the run the thing they cannot reach
+assert.match(functionSource('countToday'), /markLessonDay\(P,today\)/,
+  'the run moves when a question is answered');
+assert.match(functionSource('award'), /countToday\(\)/, 'a question answered counts');
+assert.match(functionSource('awardHelped'), /countToday\(\)/,
+  'and so does one that needed a hand, because it is still that day\'s maths done');
+assert.equal(/markLessonDay/.test(functionSource('maybeCompleteStage')), false,
+  'finishing the lesson is no longer what moves it');
 assert.match(source, /sayEnd:\['endTitle','endStats','endStreak','endReward'\]/,
   'and the end screen reads it out with the rest');
-assert.match(functionSource('renderHome'), /liveStreak\(daysOf\(P\),dayKey\(\)\)/,
+assert.match(functionSource('renderHome'), /liveStreak\(days,today\)/,
   'the home screen shows the run that is actually alive');
 assert.match(functionSource('renderHome'), /day in a row.*days in a row|days in a row/,
   'and says what it is counting');

@@ -229,7 +229,34 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
 .badge.won{color:var(--gold);text-shadow:0 0 6px rgba(242,185,59,.6)}
 .badge-row.end .badge{font-size:22px}
 .badge-caption{margin-left:8px;font-size:12px;font-weight:800;color:var(--ink-soft)}
+.month-card{margin-top:10px;padding:11px 13px;background:#fff;border:2px solid var(--grid);border-radius:14px}
+.month-line{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:12px;font-weight:800;color:var(--ink-soft)}
+.month-line b{font-size:14px;color:var(--ink)}
+.month-bar{height:10px;border-radius:999px;background:var(--grid);overflow:hidden;margin-top:7px}
+.month-bar i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#ffd977,var(--gold));width:0;transition:width .5s ease-out}
+.month-medals{margin-top:6px;font-size:15px;line-height:1;letter-spacing:2px}
 .day-streak{margin-top:9px;text-align:center;font-size:14px;font-weight:900;color:var(--gold);text-shadow:0 1px 0 rgba(122,84,0,.25)}
+/* the run moving is the reward, so it is the whole screen for a moment */
+.daywon{position:fixed;inset:0;z-index:60;display:none;align-items:center;justify-content:center;padding:18px;
+  background:linear-gradient(rgba(49,28,112,.86),rgba(89,37,136,.93))}
+.daywon.on{display:flex;animation:fadeIn .22s ease-out}
+.daywon-card{width:100%;max-width:320px;text-align:center;color:#fff;padding:20px 18px 18px;
+  border-radius:26px;background:linear-gradient(165deg,#5b34a8,#3d2179);
+  box-shadow:0 18px 40px rgba(20,8,54,.55),inset 0 0 0 2px rgba(255,255,255,.12)}
+.daywon-card .eyebrow{color:#d9ccff;display:block;margin:6px 0 0}
+.daywon-icon{font-size:44px;line-height:1.1;filter:drop-shadow(0 4px 14px rgba(255,206,84,.6))}
+.daywon-count{margin:4px 0 0;line-height:1}
+.daywon-number{display:inline-block;font-size:66px;font-weight:900;color:var(--gold);line-height:1.05;
+  text-shadow:0 0 22px rgba(255,206,84,.7);transition:transform .18s ease-out}
+.daywon-number.counting{transform:scale(1.18)}
+.daywon-unit{font-size:18px;font-weight:900;margin-top:4px}
+.daywon-pet{margin:10px auto 0;width:118px;height:118px;display:grid;place-items:center}
+.daywon-pet img,.daywon-pet svg{max-width:118px;max-height:118px}
+.daywon-month{margin-top:10px;font-size:13px;font-weight:800;color:#e8dcff}
+.daywon-bar{height:12px;border-radius:999px;background:rgba(255,255,255,.22);overflow:hidden;margin:8px 0 14px}
+.daywon-bar i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#ffd977,var(--gold));
+  width:0;transition:width .7s ease-out}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
 .difficulty-row{display:grid;gap:8px;margin-bottom:12px}
 .difficulty{display:grid;grid-template-columns:30px 1fr;gap:4px 10px;text-align:left;padding:10px 12px;border:2px solid var(--grid);border-radius:14px;background:#fff}
 .difficulty .difficulty-badge{grid-row:1 / span 2;align-self:center;font-size:20px;color:rgba(80,49,154,.28);text-align:center}
@@ -382,9 +409,16 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
       <div class="collection-shelf" id="collectionBox"></div>
       <div class="wardrobe" id="wardrobeBox"></div>
     </div>
-    <div class="stats" id="statBox"></div>
     <div style="height:12px"></div>
+    <button class="btn" id="carryBtn" style="display:none">Carry on</button>
+    <div style="height:10px" id="carryGap"></div>
     <button class="btn" id="playBtn">Continue the adventure</button>
+    <div class="month-card" id="monthCard">
+      <div class="month-line"><span id="monthLabel">This month</span><b id="monthCount">0 of 25 days</b></div>
+      <div class="month-bar"><i id="monthFill"></i></div>
+      <div class="month-medals" id="monthMedals"></div>
+    </div>
+    <div class="stats" id="statBox"></div>
     <div style="height:10px"></div>
     <button class="btn ghost" id="setBtn">Settings</button>
   </section>
@@ -514,6 +548,19 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
     <div id="luMsg" style="font-weight:700;max-width:280px"></div>
     <div style="height:18px"></div>
     <button class="btn ghost" id="luOk" style="width:200px">Ok!</button>
+  </div>
+
+  <div class="daywon" id="dayBox">
+    <div class="daywon-card">
+      <div class="daywon-icon" id="dayIcon">⭐</div>
+      <div class="eyebrow" id="dayEyebrow">your run</div>
+      <div class="daywon-count"><span class="daywon-number mono" id="dayNumber">0</span></div>
+      <div class="daywon-unit" id="dayUnit">days in a row</div>
+      <div class="daywon-pet" id="dayPet"></div>
+      <div class="daywon-month" id="dayMonth"></div>
+      <div class="daywon-bar"><i id="dayBarFill"></i></div>
+      <button class="btn" id="dayOk">Keep going</button>
+    </div>
   </div>
 
   <div class="unlock" id="unlockBox">
@@ -740,25 +787,55 @@ function dayBefore(key){
   d.setDate(d.getDate()-1);
   return dayKey(d);
 }
-const blankDays=()=>({last:'',run:0,best:0});
+/* A calendar month's worth of days, kept alongside the run. `month` is the month being
+   counted, `inMonth` how many of its days have been played, and `won` the months that
+   reached the goal — one entry each, so a medal is never awarded twice. */
+const MONTH_GOAL=25;
+const monthKey=key=>String(key).slice(0,7);
+const blankDays=()=>({last:'',run:0,best:0,month:'',inMonth:0,won:{}});
 function daysOf(p){
   if(!p.days||typeof p.days!=='object') p.days=blankDays();
   if(typeof p.days.last!=='string') p.days.last='';
+  if(typeof p.days.month!=='string') p.days.month='';
+  if(!p.days.won||typeof p.days.won!=='object') p.days.won={};
   p.days.run=Math.max(0,Number(p.days.run)||0);
   p.days.best=Math.max(0,Number(p.days.best)||0,p.days.run);
+  p.days.inMonth=Math.max(0,Number(p.days.inMonth)||0);
   return p.days;
 }
+const monthDays=(days,today)=>days&&days.month===monthKey(today)?days.inMonth:0;
+const monthWon=(days,today)=>!!(days&&days.won&&days.won[monthKey(today)]);
 function liveStreak(days,today){
   if(!days||!days.last) return 0;
   return days.last===today||days.last===dayBefore(today)?days.run:0;
 }
 function markLessonDay(p,today){
   const days=daysOf(p);
-  if(days.last===today) return {run:days.run,grew:false};
+  if(days.last===today) return {run:days.run,grew:false,inMonth:days.inMonth,wonMonth:false};
   days.run=days.last===dayBefore(today)?days.run+1:1;
   days.last=today;
   days.best=Math.max(days.best,days.run);
-  return {run:days.run,grew:true};
+  const month=monthKey(today);
+  if(days.month!==month){ days.month=month; days.inMonth=0; }
+  days.inMonth++;
+  const wonMonth=days.inMonth>=MONTH_GOAL&&!days.won[month];
+  if(wonMonth) days.won[month]=true;
+  return {run:days.run,grew:true,inMonth:days.inMonth,wonMonth:wonMonth};
+}
+
+/* Ten questions is a lot in one sitting, so a lesson does not have to be one sitting. What
+   has been answered is kept on the player and picked up again next time, whether that is
+   five minutes or a day later. The question itself is not kept — only how far in the child
+   got — so re-entering asks a fresh question at that point rather than the one abandoned. */
+function resumeOf(p){
+  const r=p&&p.resume;
+  if(!r||typeof r!=='object'||!STAGE_BY_ID(r.stageId)) return null;
+  const answered=Math.max(0,Number(r.answered)||0),total=Math.max(0,Number(r.total)||0);
+  if(answered<1||answered>=total) return null;        // nothing to carry, or already finished
+  return {stageId:r.stageId,difficulty:DIFFICULTY_IDS.includes(r.difficulty)?r.difficulty:'medium',
+    answered:answered,total:total,marks:Array.isArray(r.marks)?r.marks.slice(0,answered):[],
+    mastered:Math.max(0,Number(r.mastered)||0),right:Math.max(0,Number(r.right)||0),
+    best:Math.max(0,Number(r.best)||0),crackSeen:!!r.crackSeen};
 }
 function storyProgressOf(p){ if(!p.storyProgress||typeof p.storyProgress!=='object') p.storyProgress={}; if(p.storyProgress.firstCrackSeen===undefined) p.storyProgress.firstCrackSeen=false; if(!p.storyProgress.mapSeen||typeof p.storyProgress.mapSeen!=='object') p.storyProgress.mapSeen={}; if(!p.storyProgress.guidesSeen||typeof p.storyProgress.guidesSeen!=='object') p.storyProgress.guidesSeen={}; return p.storyProgress; }
 function artForPlayer(p){ const count=completedCount(p); return count===0&&storyProgressOf(p).firstCrackSeen?2:artForCount(count); }
@@ -903,7 +980,7 @@ function newPlayer(name,look){
   return {id:'p'+Date.now(),name:name,look:look==='boy'?'boy':'girl',total:0,right:0,best:0,
           groups:{add:true,sub:true,mul:true,div:true},
           unlocked:{add2:false,sub2:false,mul2:false,div2:false},
-          stageProgress:blankStageProgress(),monsterStage:1,momoName:'Momo',collectibles:{},accessories:[],storySeen:false,storyProgress:{firstCrackSeen:false,mapSeen:{},guidesSeen:{}},days:blankDays(),migrationVersion:9};
+          stageProgress:blankStageProgress(),monsterStage:1,momoName:'Momo',collectibles:{},accessories:[],storySeen:false,storyProgress:{firstCrackSeen:false,mapSeen:{},guidesSeen:{}},days:blankDays(),resume:null,migrationVersion:9};
 }
 function migrate(p){
   const version=Number(p.migrationVersion)||0,wasLegacy=version<3;
@@ -1635,7 +1712,17 @@ function renderHome(){
   $('wardrobeBox').innerHTML=COSMETIC_REWARDS.filter(a=>P.accessories.includes(a.id)).map(a=>'<span class="accessory-chip">'+a.emoji+' '+a.name+'</span>').join('');
   // plain words and a number that says what it is out of: "path lights" and "kind
   // answers" were the game's own vocabulary, which is no use to the child reading them
-  const run=liveStreak(daysOf(P),dayKey());
+  const today=dayKey(),days=daysOf(P),run=liveStreak(days,today);
+  const inMonth=monthDays(days,today),medals=Object.keys(days.won).length;
+  $('monthLabel').textContent=monthWon(days,today)?'This month — medal won!':'This month';
+  $('monthCount').textContent=inMonth+' of '+MONTH_GOAL+' days';
+  $('monthFill').style.width=Math.min(100,Math.round(100*inMonth/MONTH_GOAL))+'%';
+  $('monthMedals').textContent=medals?'\uD83C\uDFC5'.repeat(Math.min(12,medals)):'';
+  const carry=resumeOf(P),carryBtn=$('carryBtn');
+  carryBtn.style.display=carry?'block':'none';
+  $('carryGap').style.display=carry?'block':'none';
+  if(carry) carryBtn.textContent='Carry on \u00B7 '+STAGE_BY_ID(carry.stageId).label+
+    ' ('+carry.answered+' of '+carry.total+')';
   $('statBox').innerHTML=
     '<div><b class="mono">'+count+' of '+MATH_STAGES.length+'</b><span>lessons lit</span></div>'+
     '<div><b class="mono">'+P.right+'</b><span>right answers</span></div>'+
@@ -1859,17 +1946,36 @@ function renderStars(justWon){
   box.setAttribute('aria-label',won+' of '+S.total+' stars, '+S.pass+' needed');
 }
 function markQuestion(mark){ if(S.marks.length<S.total) S.marks.push(mark); renderStars(true); }
-function startSession(stageId,difficulty){
+function startSession(stageId,difficulty,carry){
   const stage=STAGE_BY_ID(stageId);
   if(!stage||stageStatus(P,stage.id)==='locked') return;
   const level=DIFFICULTY_IDS.includes(difficulty)?difficulty:'medium';
   const plan=sessionPlan(stage,level);
   const cracked=stage.id==='add_1digit'&&!P.stageProgress.completed[stage.id]&&!!storyProgressOf(P).firstCrackSeen;
   S={gid:stage.gid,vid:stage.id,stageId:stage.id,stage:stage,wasCompleted:P.stageProgress.completed[stage.id],i:0,right:0,mastered:0,streak:0,best:0,q:null,input:'',col:null,longMul:null,div:null,locked:false,attempt:0,mode:'answer',crackMoment:false,crackSeen:cracked,reward:null,total:plan.total,pass:plan.pass,marks:[],difficulty:level,newBadge:false};
+  if(carry&&carry.stageId===stage.id){
+    S.i=carry.answered; S.marks=carry.marks.slice(); S.mastered=carry.mastered;
+    S.right=carry.right; S.best=carry.best; S.crackSeen=carry.crackSeen||cracked;
+  }else if(!carry) dropResume();
   show('s-play'); nextQuestion();
 }
+function resumeLesson(){
+  const carry=resumeOf(P);
+  if(!carry) return false;
+  startSession(carry.stageId,carry.difficulty,carry);
+  return true;
+}
+/* Where the child has got to, kept between questions rather than during one: leaving
+   halfway through a question comes back to a fresh question at that point. */
+function keepResume(){
+  P.resume={stageId:S.stageId,difficulty:S.difficulty,answered:S.i,total:S.total,
+    marks:S.marks.slice(),mastered:S.mastered,right:S.right,best:S.best,crackSeen:!!S.crackSeen};
+  save();
+}
+function dropResume(){ if(P.resume){ P.resume=null; save(); } }
 function nextQuestion(){
-  if(S.i>=S.total){ endSession(); return; }
+  if(S.i>=S.total){ dropResume(); endSession(); return; }
+  keepResume();
   S.i++; S.input=''; S.locked=false; S.attempt=0; S.mode='answer'; S.crackMoment=false; $('fb').textContent='';
   setPlayMood('beforeQuestion');
   renderStars(false);
@@ -2077,7 +2183,36 @@ function shouldShowCrackPause(){
   return S&&S.stageId==='add_1digit'&&!S.wasCompleted&&!S.crackSeen&&S.i===5&&S.mastered>=4;
 }
 function afterAnswerDelay(ms){
-  setTimeout(()=>{ if(shouldShowCrackPause()) showCrackPause(); else nextQuestion(); },ms);
+  setTimeout(()=>{
+    if(S.dayWon){ showDayWon(); return; }
+    if(shouldShowCrackPause()) showCrackPause(); else nextQuestion();
+  },ms);
+}
+/* The moment the run moves. Big, and it counts up, because a number that lands already
+   changed is a number the child did not see change. */
+function showDayWon(){
+  const won=S.dayWon,goal=MONTH_GOAL;
+  $('dayIcon').textContent=won.wonMonth?'\uD83C\uDFC5':'\u2B50';
+  $('dayEyebrow').textContent=won.wonMonth?'a month of maths':'your run';
+  $('dayNumber').textContent=won.from;
+  $('dayUnit').textContent=won.to===1?'day in a row':'days in a row';
+  $('dayPet').innerHTML=monsterMarkup(P.monsterStage,'levelUp','evolution-burst',petName());
+  $('dayMonth').textContent=won.wonMonth
+    ?'You did maths on '+won.inMonth+' days this month. Medal won!'
+    :won.inMonth+' of '+goal+' days this month.';
+  const bar=Math.min(100,Math.round(100*won.inMonth/goal));
+  $('dayBarFill').style.width=bar+'%';
+  $('dayBox').classList.add('on');
+  sLvl();
+  let shown=won.from;
+  const tick=()=>{
+    if(shown>=won.to){ $('dayNumber').classList.remove('counting'); return; }
+    shown++; $('dayNumber').textContent=shown;
+    $('dayNumber').classList.add('counting');
+    setTimeout(()=>$('dayNumber').classList.remove('counting'),240);
+    if(shown<won.to) setTimeout(tick,320);
+  };
+  setTimeout(tick,420);
 }
 function showCrackPause(){
   S.crackSeen=true; S.crackMoment=false; storyProgressOf(P).firstCrackSeen=true; P.monsterStage=P.devMonsterOverride||artForPlayer(P); save();
@@ -2091,7 +2226,15 @@ function showCrackPause(){
   show('s-crack');
   sLvl();
 }
+/* One question is the day's maths. Ten in a row is a lot to ask of a seven-year-old, and
+   asking for all ten before the run moves would make the run the thing they cannot reach. */
+function countToday(){
+  const today=dayKey(),before=liveStreak(daysOf(P),today),moved=markLessonDay(P,today);
+  if(moved.grew) S.dayWon={from:before,to:moved.run,inMonth:moved.inMonth,wonMonth:moved.wonMonth};
+  return moved;
+}
 function award(mastered){
+  countToday();
   S.streak++; S.right++; P.right++;
   if(mastered) S.mastered++;
   markQuestion(mastered?'won':'helped');
@@ -2101,7 +2244,7 @@ function award(mastered){
   if(shouldShowCrackPause()) S.crackMoment=true;
 }
 /* the child got there, but with help: the answer counts, the mastery does not */
-function awardHelped(){ S.right++; P.right++; S.streak=0; P.total=(Number(P.total)||0)+1; markQuestion('helped'); }
+function awardHelped(){ countToday(); S.right++; P.right++; S.streak=0; P.total=(Number(P.total)||0)+1; markQuestion('helped'); }
 function awardCollectible(){
   const item=COLLECTIBLES[Math.floor(Math.random()*COLLECTIBLES.length)];
   P.collectibles[item.id]=(P.collectibles[item.id]||0)+1;
@@ -2112,8 +2255,6 @@ function awardCollectible(){
 
 function maybeCompleteStage(){
   if(!S.stageId||S.mastered<S.pass) return false;
-  // a lesson passed is a lesson passed, whether it is the first sit or a replay
-  S.dayStreak=markLessonDay(P,dayKey());
   S.newBadge=awardBadges(P,S.stageId,S.difficulty);
   if(S.wasCompleted){ S.reward=awardCollectible(); save(); return 'collectible'; }
   const beforeArt=P.monsterStage;
@@ -2630,7 +2771,7 @@ function openDeveloper(){ renderDeveloper(); show('s-dev'); }
 function resetPlayerProgress(){
   P.stageProgress=blankStageProgress(); P.monsterStage=1; delete P.devMonsterOverride;
   P.collectibles={}; COLLECTIBLES.forEach(c=>P.collectibles[c.id]=0); P.accessories=[];
-  P.right=0; P.best=0; P.total=0; P.storySeen=false; P.storyProgress={firstCrackSeen:false,mapSeen:{},guidesSeen:{}}; P.days=blankDays(); P.migrationVersion=9; save();
+  P.right=0; P.best=0; P.total=0; P.storySeen=false; P.storyProgress={firstCrackSeen:false,mapSeen:{},guidesSeen:{}}; P.days=blankDays(); P.resume=null; P.migrationVersion=9; save();
 }
 
 /* ---------------- wiring ---------------- */
@@ -2710,6 +2851,11 @@ function offerSpeech(){
   englishVoice();
   Array.prototype.forEach.call(document.querySelectorAll('.speak'),b=>{ b.hidden=false; });
 }
+$('carryBtn').onclick=()=>{ sTap(); resumeLesson(); };
+$('dayOk').onclick=()=>{
+  sTap(); $('dayBox').classList.remove('on'); S.dayWon=null;
+  if(shouldShowCrackPause()) showCrackPause(); else nextQuestion();
+};
 $('guideStart').onclick=()=>{
   sTap();
   if(!guidePending) { show('s-menu'); renderMenu(); return; }
