@@ -918,6 +918,20 @@ assert.match(source, /\.den-shelf\{[^}]*grid-template-columns:repeat\(4,minmax\(
   'the four summary columns stay equal even when a treasure has a long name');
 assert.match(source, /\.den-trophy\{[^}]*min-width:0[^}]*width:100%/,
   'each summary card shrinks inside its equal grid track instead of widening the column');
+assert.match(source, /class="den-trophy[^>]*data-family=/,
+  'each summary collectible is a tappable family status control');
+assert.match(functionSource('showCollectibleStatus'), /collected[^;]*more to reach/,
+  'tapping a collectible explains its count and progress to the next display level');
+const statusContext = {};
+vm.createContext(statusContext);
+vm.runInContext(source.match(/const COLLECTIBLE_DISPLAY_LEVELS=\[[^;]+;/)[0]+'\n'+
+  functionSource('collectibleDisplayStatus')+'\nthis.status=collectibleDisplayStatus;', statusContext);
+assert.deepEqual(plain(statusContext.status(8)),
+  {count:8,current:'Sparkling display',next:'Master display',remaining:2,progress:80},
+  'eight collected reports two more to the next level, as the child-facing example requires');
+assert.deepEqual(plain(statusContext.status(10)),
+  {count:10,current:'Master display',next:null,remaining:0,progress:100},
+  'the completed master level has no invented next target');
 
 // the approved separate-layer spec carries the same Phase 1 geometry as the code
 const denSpec = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'docs', 'DEN_ART_SPEC.json'), 'utf8'));

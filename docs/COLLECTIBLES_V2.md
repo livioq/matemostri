@@ -104,6 +104,8 @@ The den continues to grow from badge totals at 1, 15, 30 and 45 badges. Badge pr
 
 The main den shows one representative per family, using the highest-tier specimen owned. Quantities and the other specimens belong in the family detail view. Empty families remain visible as silhouettes/question marks so there is always something left to seek.
 
+Each summary card is tappable. Its status panel names the displayed specimen and difficulty tier, gives the total collected, and states the exact number remaining to the next duplicate-display milestone. At 10 copies it reports that the Master display is complete instead of inventing another target.
+
 The 24 production files are transparent 256×256 WebP assets named `assets/collectibles/{family}-{tier}.webp`, where tiers 1, 2 and 3 mean Easy, Medium and Hard. They are rendered above the separate cabinet overlay and below Momo.
 
 ## Design principle

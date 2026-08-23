@@ -294,7 +294,10 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
 .den-shelf-label{margin:11px 0 6px}
 .den-shelf{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
 .den-trophy{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:0;width:100%;padding:7px 4px;
-  background:#fff;border:2px solid var(--ink);border-radius:14px;box-shadow:2px 2px 0 rgba(27,58,140,.14)}
+  background:#fff;border:2px solid var(--ink);border-radius:14px;box-shadow:2px 2px 0 rgba(27,58,140,.14);
+  color:inherit;font:inherit;cursor:pointer}
+.den-trophy:active{transform:translateY(1px)}
+.den-trophy.selected{background:#fff7d8;box-shadow:0 0 0 3px rgba(242,185,59,.42)}
 .collectible-art{display:inline-grid;place-items:center;flex:0 0 auto}
 .collectible-art img{display:block;width:100%;height:100%;object-fit:contain}
 .collectible-art .collectible-fallback{font-size:inherit;line-height:1}
@@ -306,6 +309,15 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
 .den-trophy.empty .den-emoji{display:grid;place-items:center;filter:grayscale(1);opacity:.3}
 .reward-collectible{display:inline-flex;vertical-align:middle;width:34px;height:34px;margin:0 3px}
 .den-trophy.empty .den-name,.den-trophy.empty b{color:rgba(80,49,154,.36)}
+.collectible-status{display:grid;grid-template-columns:62px 1fr;align-items:center;gap:12px;margin-top:10px;
+  padding:12px;background:linear-gradient(145deg,#fff,#fff7d8);border:2px solid var(--ink);border-radius:16px;
+  box-shadow:2px 2px 0 rgba(27,58,140,.14)}
+.collectible-status[hidden]{display:none}
+.collectible-status-art{width:62px;height:62px;font-size:34px}
+.collectible-status h2{font-size:17px;line-height:1.1;margin:2px 0 4px}
+.collectible-status p{margin:0;color:var(--ink-soft);font-size:12px;font-weight:800;line-height:1.35}
+.collectible-progress{height:8px;margin-top:8px;border-radius:999px;background:var(--grid);overflow:hidden}
+.collectible-progress i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#e95bae,var(--gold))}
 /* the run moving is the reward, so it is the whole screen for a moment */
 .daywon{position:fixed;inset:0;z-index:60;display:none;align-items:center;justify-content:center;padding:18px;
   background:linear-gradient(rgba(49,28,112,.86),rgba(89,37,136,.93))}
@@ -632,6 +644,11 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
     </div>
     <div class="den-shelf-label eyebrow" id="denShelfLabel">On the shelf</div>
     <div class="den-shelf" id="denShelf"></div>
+    <div class="collectible-status" id="collectibleStatus" role="status" hidden>
+      <div class="collectible-status-art collectible-art" id="collectibleStatusArt"></div>
+      <div><div class="eyebrow" id="collectibleStatusFamily"></div><h2 id="collectibleStatusTitle"></h2>
+        <p id="collectibleStatusText"></p><div class="collectible-progress" aria-hidden="true"><i id="collectibleStatusProgress"></i></div></div>
+    </div>
     <div style="height:10px"></div>
     <button class="btn ghost" id="denDone">Back home</button>
   </section>
@@ -2247,6 +2264,27 @@ function collectibleArt(item,p,extraClass){
     '<span class="collectible-fallback" hidden>'+item.emoji+'</span></span>';
 }
 
+const COLLECTIBLE_DISPLAY_LEVELS=[{at:1,name:'Discovered'},{at:5,name:'Sparkling display'},{at:10,name:'Master display'}];
+function collectibleDisplayStatus(count){
+  count=Math.max(0,Number(count)||0);
+  const next=COLLECTIBLE_DISPLAY_LEVELS.find(level=>count<level.at);
+  const current=[...COLLECTIBLE_DISPLAY_LEVELS].reverse().find(level=>count>=level.at);
+  return {count:count,current:current?current.name:'Not found yet',next:next?next.name:null,
+    remaining:next?next.at-count:0,progress:next?Math.round(100*count/next.at):100};
+}
+function showCollectibleStatus(item){
+  const count=P.collectibles[item.id]||0,status=collectibleDisplayStatus(count),specimen=collectibleSpecimen(item,P);
+  const tier=collectibleTier(P,item),tierName=tier?['Easy','Medium','Hard'][tier-1]+' specimen displayed':'No specimen displayed';
+  $('collectibleStatusArt').innerHTML=count?collectibleArt(item,P,''):item.emoji;
+  $('collectibleStatusFamily').textContent=item.name+' · '+status.current;
+  $('collectibleStatusTitle').textContent=specimen?specimen.name:item.name;
+  $('collectibleStatusText').textContent=tierName+' · '+count+' collected'+
+    (status.next?' · '+status.remaining+' more to reach '+status.next+'.':' · Master display complete!');
+  $('collectibleStatusProgress').style.width=status.progress+'%';
+  $('collectibleStatus').hidden=false;
+  document.querySelectorAll('#denShelf .den-trophy').forEach(card=>card.classList.toggle('selected',card.dataset.family===item.id));
+}
+
 /* Phase 1 publishes all eight family positions at once. Missing treasures remain visible as
    question-mark silhouettes, while found ones replace only their own fixed family slot. */
 function denProps(level,p){
@@ -2288,11 +2326,13 @@ function renderDen(){
   // space says there is one out there still to find, which a bare list never did
   $('denShelf').innerHTML=COLLECTIBLES.map(item=>{
     const held=P.collectibles[item.id]||0;
-    return '<div class="den-trophy'+(held?'':' empty')+'">'+
+    return '<button type="button" class="den-trophy'+(held?'':' empty')+'" data-family="'+item.id+'" aria-label="'+
+      esc((held?collectibleSpecimen(item,P).name:item.name)+' · '+held+' collected · view status')+'">'+
       '<span class="den-emoji">'+(held?collectibleArt(item,P,''):item.emoji)+'</span>'+
       '<span class="den-name">'+esc(held?collectibleSpecimen(item,P).name:item.name)+'</span>'+
-      '<b>'+(held?'\u00D7'+held:'\u2014')+'</b></div>';
+      '<b>'+(held?'\u00D7'+held:'\u2014')+'</b></button>';
   }).join('');
+  $('collectibleStatus').hidden=true;
   const found=COLLECTIBLES.filter(item=>P.collectibles[item.id]>0).length;
   $('denShelfLabel').textContent=found?'On the shelf \u00B7 '+found+' of '+COLLECTIBLES.length+' kinds found'
     :'On the shelf \u00B7 nothing found yet';
@@ -3528,6 +3568,10 @@ $('taleBtn').onclick=()=>{ sTap(); openTale(); };
 $('denBtn').onclick=()=>{ sTap(); openDen(); };
 $('denBack').onclick=()=>{ sTap(); renderHome(); show('s-home'); };
 $('denDone').onclick=()=>{ sTap(); renderHome(); show('s-home'); };
+$('denShelf').onclick=e=>{
+  const card=e.target.closest('[data-family]'); if(!card) return;
+  const item=COLLECTIBLES.find(c=>c.id===card.dataset.family); if(item){ sTap(); showCollectibleStatus(item); }
+};
 $('taleBack').onclick=()=>{ sTap(); renderHome(); show('s-home'); };
 $('taleShelf').onclick=e=>{
   const item=e.target.closest('[data-chapter]'); if(!item) return;
