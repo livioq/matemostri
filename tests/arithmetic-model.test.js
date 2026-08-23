@@ -782,6 +782,9 @@ vm.runInContext('this.stages=MATH_STAGES;this.denCanvas=DEN_CANVAS;this.denRooms
   'this.denPctX=denPctX;this.denPctY=denPctY;this.badgesForTest=badgesFor;' +
   'this.collectibleFamilies=COLLECTIBLES;this.collectibleTierForTest=collectibleTier;', saveContext);
 const denRooms = plain(saveContext.denRooms), denCanvas = plain(saveContext.denCanvas);
+assert.deepEqual(denRooms.map(room => room.display.slots.filter((_,i) => i % 2 === 0).map(slot => slot.y)),
+  [[116,177,236,296],[121,177,233,287],[129,181,229,278],[138,184,229,274]],
+  'collectible anchors stay at the visual centre of each cubby, above its shelf ledge');
 const collectibleFamilies = plain(saveContext.collectibleFamilies);
 assert.equal(collectibleFamilies.length, 8, 'the cabinet keeps one slot for each approved family');
 assert.equal(collectibleFamilies.flatMap(family => family.specimens).length, 24,
@@ -930,10 +933,11 @@ denSpec.backgrounds.forEach((specRoom, i) => {
   assert.equal(specRoom.level, room.level, 'spec and code agree on the room');
   assert.equal(specRoom.unlockedAtBadges, room.badges, `room ${room.level}: the badge threshold matches`);
 });
-const firstSpecDisplay = denSpec.displayFurniture.levels.find(level => level.level === 1);
-assert.equal(firstSpecDisplay.asset, denRooms[0].display.art);
-assert.deepEqual(firstSpecDisplay.slotCentres, denRooms[0].display.slots,
-  'the eight Phase 1 treasure centres cannot drift away from their cubbies');
+denSpec.displayFurniture.levels.forEach((specDisplay,i)=>{
+  assert.equal(specDisplay.asset, denRooms[i].display.art);
+  assert.deepEqual(specDisplay.slotCentres, denRooms[i].display.slots,
+    `the eight Phase ${i+1} treasure centres cannot drift away from their cubbies`);
+});
 assert.deepEqual(denSpec.overlayGeometry.displayZone,
   {preferredSide:'right', x:denRooms[0].display.x, y:denRooms[0].display.y,
     width:denRooms[0].display.width, height:denRooms[0].display.height,
