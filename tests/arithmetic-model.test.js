@@ -1803,6 +1803,12 @@ assert.ok(manifest.icons.some(icon => icon.purpose === 'any' && icon.sizes === '
 [/rel="icon"/, /rel="apple-touch-icon"/].forEach(re => assert.match(source, re,
   'icon link tags cover the case where the manifest is not read'));
 
+// the whole app is one file. A stale index-before.html sat in the repo for weeks because
+// nothing looked, so now something does.
+const rootFiles = fs.readdirSync(path.join(__dirname, '..'));
+assert.deepEqual(rootFiles.filter(f => /\.html?$/i.test(f)), ['index.html'],
+  'index.html is the only page in the repo: no backups, no second copy');
+
 // nothing anywhere still points at a png
 assert.equal(/\.png\b/.test(source), false, 'index.html references no png files');
 const strayPngs = fs.readdirSync(path.join(__dirname, '..', 'assets'), {recursive: true})
