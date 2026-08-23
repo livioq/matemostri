@@ -1,253 +1,292 @@
 {
-  "generatedFrom": "index.html DEN_CANVAS / DEN_ROOMS — regenerate with tools/den-art-spec.js",
-  "purpose": "Brief for painting the den rooms. Each room is one image on the canvas below. Paint the backdrop only: the creature and the treasures are drawn over it by the game, at the anchors given here. Keep those areas clear.",
+  "generatedFrom": "Den art direction v2 — background, display furniture, treasures and Momo are separate composited layers",
+  "purpose": "Brief for the den artwork. The den is assembled from separate layers so generated environment art never has to hit pixel-exact shelf coordinates. Backgrounds communicate the same home improving from run-down shelter to palace, while display furniture, treasures and Momo remain crisp, controllable overlays.",
   "style": {
-    "medium": "Painted digital illustration, the same hand as the rest of the game: soft airbrushed rendering with real light and shadow, not flat vector art and not a photo.",
-    "palette": "Warm gold (#F2B93B) light against deep plum-purple walls (#50319A family), with sage green, dusty pink and cream accents. Matches the game's own colour tokens so the room does not clash with the card it sits inside.",
-    "mood": "Cosy and a little magical, never dark or spooky despite \"den\": firefly-soft glow, gentle sparkle particles, the same wonder as a bedtime story rather than an adventure peril.",
-    "continuity": "All four rooms are the SAME physical space, shown as it is furnished over time — the same walls, floor and cave shape in every image, with furniture added at each level. They should read as one den growing, not four different rooms. Room 4 keeps everything room 3 had, plus more.",
-    "framing": "A clean rectangular scene, full-bleed to the canvas edge. NOT a parchment scroll or vignette border like the map art — this sits inside the app's own rounded card, which supplies its own frame.",
-    "doNotInclude": [
-      "The creature herself — the app draws her over the scene at the pet anchor below.",
-      "Any of the treasures/collectibles — the app overlays those as small emoji on the shelves.",
-      "Text, UI, logos, or a signature anywhere in the image."
-    ],
-    "referenceNote": "This document has no pixels in it and cannot carry style on its own. When briefing an image model, attach one of the existing assets/monsters WebP files (for the painted-fur, sparkle, warm-light treatment) and one assets/map panel (for how an environment in this world is painted) alongside this spec."
+    "medium": "Painted digital illustration matching the rest of Matemostri: soft airbrushed rendering with real light and shadow, not flat vector art and not a photo.",
+    "palette": "Warm gold light against plum-purple, with sage green, dusty pink and cream accents. Materials become richer as the den improves.",
+    "mood": "Cosy and magical, never dark or spooky. The progression must read as objectively better living conditions: run-down -> cosy -> luxurious -> palace.",
+    "continuity": "All four backgrounds are the SAME physical room. Keep the same major walls, openings, floor perspective and overall camera. Each stage repairs, enlarges, finishes and enriches what was already there. Do not turn stages into different themes or biomes.",
+    "visualHierarchy": "Momo and the child's treasures are the heroes. Background detail must be restrained. Use broad calm wall/floor shapes, keep small props mainly at the perimeter, and avoid decorative objects that compete with or resemble collectibles. Later dens become richer through better materials, architecture, light and a few larger furnishings, not through filling every surface with clutter.",
+    "framing": "Clean rectangular full-bleed scene. No parchment border or vignette frame. The app supplies its own rounded card.",
+    "doNotIncludeInBackground": [
+      "Momo or any creature",
+      "Shelves, plinths, cabinets or other collectible display furniture",
+      "Any treasures or objects that could be mistaken for collectible rewards",
+      "Text, UI, logos or signatures",
+      "Dense shelves of books, bottles, trinkets or tiny props",
+      "Strong focal objects in the Momo or treasure-display zones"
+    ]
   },
   "coordinateSystem": {
     "canvasWidth": 640,
     "canvasHeight": 400,
     "aspectRatio": 1.6,
-    "note": "Export at any size with this exact ratio; 1280x800 is a good target. The image is object-fit: cover inside a rounded frame, so keep anything that matters away from the outermost 12px and expect the corners to be rounded off."
+    "recommendedGenerationSize": "1280x800",
+    "note": "Export backgrounds at exact 1.6:1. The game composites display furniture, treasures and Momo over the background. Keep important background architecture away from the outermost 12px because the card rounds the corners."
   },
-  "swapProcedure": [
-    "Paint one image per room, named den-1.webp .. den-4.webp, and put them in assets/den.",
-    "Set the matching room's art field in DEN_ROOMS to \"assets/den/den-N.webp\".",
-    "Change nothing else: the creature and the treasures are positioned from the anchors.",
-    "If the painting puts its shelves or its floor somewhere else, edit that room's pet/shelves numbers here in canvas units and regenerate this file. Do not edit index.html's CSS.",
-    "Ship WebP. A test fails if a PNG appears in assets."
+  "layerOrder": [
+    "den background image",
+    "display furniture transparent image(s)",
+    "collectible transparent image(s)",
+    "Momo overlay",
+    "app UI"
   ],
-  "rooms": [
+  "backgrounds": [
     {
       "level": 1,
-      "name": "A cosy hollow",
+      "name": "Run-down hideaway",
       "unlockedAtBadges": 1,
-      "art": null,
-      "mood": "A scrape in the rock, a bed of straw, and somewhere out of the wind. It is not much yet, but it is hers.",
-      "petAnchor": {
-        "x": 320,
-        "y": 348,
-        "height": 196,
-        "note": "x is her centre, y is the floor line her feet stand on, height is how tall she is drawn. Keep this footprint clear of detail: a box 176 wide by 196 tall, centred on x, sitting on y."
-      },
-      "shelves": [],
-      "clearAreas": [
-        {
-          "x": 232,
-          "y": 152,
-          "width": 176,
-          "height": 196,
-          "what": "the creature"
-        }
-      ]
+      "asset": "assets/den/den-1.webp",
+      "artDirection": "The original humble room: weathered walls, rough floor, simple sleeping nook, one warm light, signs of age and repair needed. Charming and safe, but clearly poor. Keep it sparse.",
+      "progression": "Baseline architecture for every later background."
     },
     {
       "level": 2,
-      "name": "A den with a shelf",
+      "name": "Cosy home",
       "unlockedAtBadges": 15,
-      "art": null,
-      "mood": "A proper shelf now, and a lantern to read by. Her treasures have somewhere to sit instead of a pocket.",
-      "petAnchor": {
-        "x": 320,
-        "y": 348,
-        "height": 196,
-        "note": "x is her centre, y is the floor line her feet stand on, height is how tall she is drawn. Keep this footprint clear of detail: a box 176 wide by 196 tall, centred on x, sitting on y."
-      },
-      "shelves": [
-        {
-          "index": 0,
-          "surfaceY": 192,
-          "x1": 392,
-          "x2": 588,
-          "slots": 4,
-          "slotCentresX": [
-            417,
-            466,
-            515,
-            564
-          ],
-          "note": "Paint a plank whose TOP SURFACE is exactly y=192. Treasures are drawn standing on that line at the x centres listed, about 26 canvas units tall."
-        }
-      ],
-      "clearAreas": [
-        {
-          "x": 232,
-          "y": 152,
-          "width": 176,
-          "height": 196,
-          "what": "the creature"
-        },
-        {
-          "x": 392,
-          "y": 162,
-          "width": 196,
-          "height": 30,
-          "what": "treasures on the plank"
-        }
-      ]
+      "asset": "assets/den/den-2.webp",
+      "artDirection": "Exactly the same room repaired and cared for: sound floor, comfortable sleeping area, rug, curtains, warmer lighting, a plant and a few homely touches. Noticeably better than level 1, still simple and uncluttered.",
+      "progression": "Repair and comfort."
     },
     {
       "level": 3,
-      "name": "A warm burrow",
+      "name": "Beautiful magical home",
       "unlockedAtBadges": 30,
-      "art": null,
-      "mood": "A window, a rug, and a plant by the door. This is a place she comes back to rather than shelters in.",
-      "petAnchor": {
-        "x": 320,
-        "y": 348,
-        "height": 196,
-        "note": "x is her centre, y is the floor line her feet stand on, height is how tall she is drawn. Keep this footprint clear of detail: a box 176 wide by 196 tall, centred on x, sitting on y."
-      },
-      "shelves": [
-        {
-          "index": 0,
-          "surfaceY": 192,
-          "x1": 392,
-          "x2": 588,
-          "slots": 4,
-          "slotCentresX": [
-            417,
-            466,
-            515,
-            564
-          ],
-          "note": "Paint a plank whose TOP SURFACE is exactly y=192. Treasures are drawn standing on that line at the x centres listed, about 26 canvas units tall."
-        }
-      ],
-      "clearAreas": [
-        {
-          "x": 232,
-          "y": 152,
-          "width": 176,
-          "height": 196,
-          "what": "the creature"
-        },
-        {
-          "x": 392,
-          "y": 162,
-          "width": 196,
-          "height": 30,
-          "what": "treasures on the plank"
-        }
-      ]
+      "asset": "assets/den/den-3.webp",
+      "artDirection": "Same room now genuinely luxurious: fine carved wood, richer fabrics, larger/brighter window treatment, elegant architectural finishing, subtle magical glow and better furnishings. It must be obviously more desirable than level 2 without changing theme. Preserve generous empty display space.",
+      "progression": "Craftsmanship and luxury."
     },
     {
       "level": 4,
-      "name": "A guardian's hall",
+      "name": "Guardian palace",
       "unlockedAtBadges": 45,
-      "art": null,
-      "mood": "Tall windows, banners, and a whole wall of shelves. She has somewhere to keep everything now, and something to keep in it.",
-      "petAnchor": {
-        "x": 320,
-        "y": 348,
-        "height": 196,
-        "note": "x is her centre, y is the floor line her feet stand on, height is how tall she is drawn. Keep this footprint clear of detail: a box 176 wide by 196 tall, centred on x, sitting on y."
-      },
-      "shelves": [
-        {
-          "index": 0,
-          "surfaceY": 192,
-          "x1": 392,
-          "x2": 588,
-          "slots": 4,
-          "slotCentresX": [
-            417,
-            466,
-            515,
-            564
-          ],
-          "note": "Paint a plank whose TOP SURFACE is exactly y=192. Treasures are drawn standing on that line at the x centres listed, about 26 canvas units tall."
-        },
-        {
-          "index": 1,
-          "surfaceY": 128,
-          "x1": 392,
-          "x2": 588,
-          "slots": 4,
-          "slotCentresX": [
-            417,
-            466,
-            515,
-            564
-          ],
-          "note": "Paint a plank whose TOP SURFACE is exactly y=128. Treasures are drawn standing on that line at the x centres listed, about 26 canvas units tall."
-        }
-      ],
-      "clearAreas": [
-        {
-          "x": 232,
-          "y": 152,
-          "width": 176,
-          "height": 196,
-          "what": "the creature"
-        },
-        {
-          "x": 392,
-          "y": 162,
-          "width": 196,
-          "height": 30,
-          "what": "treasures on the plank"
-        },
-        {
-          "x": 392,
-          "y": 98,
-          "width": 196,
-          "height": 30,
-          "what": "treasures on the plank"
-        }
-      ]
+      "asset": "assets/den/den-4.webp",
+      "artDirection": "The same humble home transformed into a small magical palace: polished stone or marble integrated with the original wood, taller architecture, refined gold details, grand windows, banners and beautiful light. Spectacular but compositionally calm so the complete treasure collection dominates the room.",
+      "progression": "Palace-level architecture and materials, not more clutter."
     }
   ],
-  "treasures": [
-    {
-      "id": "stars",
-      "emoji": "⭐",
-      "name": "Magic Stars"
+  "overlayGeometry": {
+    "momo": {
+      "x": 168,
+      "floorY": 350,
+      "height": 178,
+      "clearBackgroundArea": {
+        "x": 88,
+        "y": 172,
+        "width": 160,
+        "height": 178
+      },
+      "note": "Phase 1 places Momo on the left beside the sleeping nook, leaving the right-hand collection area unobstructed."
     },
-    {
-      "id": "flowers",
-      "emoji": "🌸",
-      "name": "Flowers"
-    },
-    {
-      "id": "berries",
-      "emoji": "🍓",
-      "name": "Magic Berries"
-    },
-    {
-      "id": "feathers",
-      "emoji": "🪶",
-      "name": "Feathers"
-    },
-    {
-      "id": "mushrooms",
-      "emoji": "🍄",
-      "name": "Mushrooms"
-    },
-    {
-      "id": "crystals",
-      "emoji": "💎",
-      "name": "Crystals"
-    },
-    {
-      "id": "leaves",
-      "emoji": "🍀",
-      "name": "Lucky Leaves"
-    },
-    {
-      "id": "shells",
-      "emoji": "🐚",
-      "name": "Forest Shells"
+    "displayZone": {
+      "preferredSide": "right",
+      "x": 370,
+      "y": 41,
+      "width": 260,
+      "height": 318,
+      "note": "The Phase 1 cabinet occupies this calm right-hand zone. Display furniture is composited separately; exact treasure slots belong to the display layout data, not the generated background."
     }
+  },
+  "displayFurniture": {
+    "purpose": "Separate transparent WebP artwork placed over the den background. It carries all pixel-exact surfaces on which treasures sit.",
+    "format": "transparent WebP",
+    "artDirection": "Furniture should visibly improve with the den while remaining part of the same home's design language: rough/simple -> finished wood -> carved luxury -> ornate palace display.",
+    "levels": [
+      {
+        "level": 1,
+        "asset": "assets/den/display-1.webp",
+        "brief": "A humble worn wooden cabinet with eight clearly empty cubbies, arranged two by four.",
+        "slotCentres": [
+          {
+            "x": 465,
+            "y": 143
+          },
+          {
+            "x": 534,
+            "y": 143
+          },
+          {
+            "x": 465,
+            "y": 202
+          },
+          {
+            "x": 534,
+            "y": 202
+          },
+          {
+            "x": 465,
+            "y": 261
+          },
+          {
+            "x": 534,
+            "y": 261
+          },
+          {
+            "x": 465,
+            "y": 317
+          },
+          {
+            "x": 534,
+            "y": 317
+          }
+        ],
+        "geometry": {
+          "x": 370,
+          "y": 41,
+          "width": 260,
+          "height": 318
+        }
+      },
+      {
+        "level": 2,
+        "asset": "assets/den/display-2.webp",
+        "brief": "Simple but well-made wooden treasure display.",
+        "geometry": {
+          "x": 330,
+          "y": 48,
+          "width": 250,
+          "height": 305
+        },
+        "slotCentres": [
+          {
+            "x": 414,
+            "y": 146
+          },
+          {
+            "x": 496,
+            "y": 146
+          },
+          {
+            "x": 414,
+            "y": 202
+          },
+          {
+            "x": 496,
+            "y": 202
+          },
+          {
+            "x": 414,
+            "y": 259
+          },
+          {
+            "x": 496,
+            "y": 259
+          },
+          {
+            "x": 414,
+            "y": 313
+          },
+          {
+            "x": 496,
+            "y": 313
+          }
+        ]
+      },
+      {
+        "level": 3,
+        "asset": "assets/den/display-3.webp",
+        "brief": "Elegant carved treasure display with richer materials.",
+        "geometry": {
+          "x": 320,
+          "y": 57,
+          "width": 240,
+          "height": 286
+        },
+        "slotCentres": [
+          {
+            "x": 399,
+            "y": 140
+          },
+          {
+            "x": 481,
+            "y": 140
+          },
+          {
+            "x": 399,
+            "y": 192
+          },
+          {
+            "x": 481,
+            "y": 192
+          },
+          {
+            "x": 399,
+            "y": 244
+          },
+          {
+            "x": 481,
+            "y": 244
+          },
+          {
+            "x": 399,
+            "y": 296
+          },
+          {
+            "x": 481,
+            "y": 296
+          }
+        ]
+      },
+      {
+        "level": 4,
+        "asset": "assets/den/display-4.webp",
+        "brief": "Ornate palace-quality display for all eight collectible families.",
+        "geometry": {
+          "x": 320,
+          "y": 57,
+          "width": 240,
+          "height": 286
+        },
+        "slotCentres": [
+          {
+            "x": 405,
+            "y": 135
+          },
+          {
+            "x": 475,
+            "y": 135
+          },
+          {
+            "x": 405,
+            "y": 184
+          },
+          {
+            "x": 475,
+            "y": 184
+          },
+          {
+            "x": 405,
+            "y": 232
+          },
+          {
+            "x": 475,
+            "y": 232
+          },
+          {
+            "x": 405,
+            "y": 280
+          },
+          {
+            "x": 475,
+            "y": 280
+          }
+        ]
+      }
+    ],
+    "implementationNote": "Do not bake display furniture into den-N.webp. Code owns its position and treasure slot coordinates. Phase 1 exposes all eight family positions immediately; later display assets should preserve that clear missing-slot read."
+  },
+  "collectibles": {
+    "format": "transparent WebP",
+    "rendering": "Separate artwork, composited above the display furniture. Each collectible needs a clear silhouette and stronger local contrast than the den background.",
+    "v2Plan": "8 families x 3 progression tiers = 24 specimens. Replays can earn duplicates/upgrades, but the den should show a curated/best representative rather than filling the scene with duplicate clutter."
+  },
+  "productionWorkflow": [
+    "Approve den-1 background architecture first, with no display furniture, collectibles or Momo.",
+    "Generate/paint den-2, den-3 and den-4 as upgrades of that exact same room, keeping backgrounds intentionally restrained.",
+    "Implement/confirm Collectibles v2 slot counts and display behaviour.",
+    "Create one transparent display-furniture asset per den level against the exact code geometry.",
+    "Create the 24 transparent collectible specimen assets.",
+    "Composite in the game and adjust overlay coordinates in layout data, never by regenerating a background to chase pixel positions.",
+    "Ship WebP assets. PNG files must not be added to assets."
   ]
 }
