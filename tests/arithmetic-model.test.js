@@ -914,6 +914,10 @@ assert.ok(source.indexOf('id="denArt"') < source.indexOf('id="denDisplay"') &&
   source.indexOf('id="denDisplay"') < source.indexOf('id="denProps"') &&
   source.indexOf('id="denProps"') < source.indexOf('id="denPet"'),
   'the DOM fixes the visual order at background -> display -> collectibles -> Momo');
+assert.match(source, /\.den-shelf\{[^}]*grid-template-columns:repeat\(4,minmax\(0,1fr\)\)/,
+  'the four summary columns stay equal even when a treasure has a long name');
+assert.match(source, /\.den-trophy\{[^}]*min-width:0[^}]*width:100%/,
+  'each summary card shrinks inside its equal grid track instead of widening the column');
 
 // the approved separate-layer spec carries the same Phase 1 geometry as the code
 const denSpec = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'docs', 'DEN_ART_SPEC.json'), 'utf8'));
