@@ -822,7 +822,27 @@ denRooms.forEach(room => {
   assert.ok(room.pet.x > 0 && room.pet.x < denCanvas.width, `room ${room.level} stands her on the canvas`);
   assert.ok(room.pet.y > 0 && room.pet.y <= denCanvas.height, `room ${room.level} has a floor on the canvas`);
   assert.ok(room.pet.y - room.pet.height > 0, `room ${room.level} does not stand her through the ceiling`);
-  assert.equal(room.art, null, 'the rooms are still drawn, not painted — set art to swap one in');
+  if (room.level <= 4) {
+    assert.equal(room.art, `assets/den/den-${room.level}.webp`, `Phase ${room.level} serves its approved background`);
+    assert.equal(room.display.art, `assets/den/display-${room.level}.webp`,
+      `Phase ${room.level} display is a separate overlay`);
+    [room.art, room.display.art].forEach(asset => {
+      assert.equal(fs.existsSync(path.join(__dirname, '..', asset)), true, `${asset} exists`);
+      assert.match(asset, /\.webp$/, `${asset} ships in the repo format`);
+    });
+    assert.ok(room.display.x >= 0 && room.display.x + room.display.width <= denCanvas.width,
+      `the Phase ${room.level} display stays inside the canvas horizontally`);
+    assert.ok(room.display.y >= 0 && room.display.y + room.display.height <= denCanvas.height,
+      `the Phase ${room.level} display stays inside the canvas vertically`);
+    assert.ok(Math.abs(room.display.y + room.display.height / 2 - denCanvas.height / 2) <= .5,
+      `the Phase ${room.level} display is centred vertically instead of floating near the ceiling`);
+    assert.equal(room.display.slots.length, 8, `all eight collectible families are visible in Phase ${room.level}`);
+    room.display.slots.forEach(slot => {
+      assert.ok(slot.x > room.display.x && slot.x < room.display.x + room.display.width,
+        'every collectible slot is inside the separate display');
+      assert.ok(slot.y > room.display.y && slot.y < room.display.y + room.display.height);
+    });
+  }
   room.shelves.forEach(shelf => {
     assert.ok(shelf.x1 >= 0 && shelf.x2 <= denCanvas.width, `room ${room.level} keeps its plank on the canvas`);
     assert.ok(shelf.y > 0 && shelf.y < room.pet.y, `room ${room.level} hangs its plank above the floor`);
@@ -843,42 +863,60 @@ assert.equal(saveContext.denRoomOf(99), null, 'a level with no room drawn for it
 const denSvgSrc = functionSource('denSVG');
 assert.match(denSvgSrc, /room\.shelves/, 'every plank is drawn where the room says the plank is');
 assert.match(denSvgSrc, /room\?room\.pet\.y/, 'and the floor is the line she stands on');
+assert.match(functionSource('denProps'), /room\.display&&room\.display\.slots/,
+  'production treasures use the fixed slots owned by the separate display');
 assert.match(functionSource('denProps'), /denSlotPoints\(shelf\)/,
-  'treasures are laid out on the same slots the spec publishes');
+  'placeholder rooms still use their own plank geometry');
+assert.match(functionSource('denProps'), /held\?'found':'empty'/,
+  'missing treasure positions stay visible in the room');
 assert.match(functionSource('denPetStyle'), /room\.pet\.x/, 'and she is placed from her own anchor');
 assert.match(functionSource('denBackdrop'), /room\.art/,
   'a painted room is served instead of the drawing when there is one');
+assert.match(functionSource('denDisplay'), /room&&room\.display/,
+  'display furniture is served from its own layer rather than baked into the background');
+assert.match(source, /\.den-pet\{[^}]*aspect-ratio:1/,
+  'Momo has a definite square overlay box instead of sizing from the image intrinsic width');
+assert.match(source, /\.den-pet \.monster-asset>img\{[^}]*width:100%[^}]*height:100%[^}]*object-fit:contain/,
+  'the full Momo artwork is contained inside that box rather than clipped at the room floor');
+assert.ok(source.indexOf('id="denArt"') < source.indexOf('id="denDisplay"') &&
+  source.indexOf('id="denDisplay"') < source.indexOf('id="denProps"') &&
+  source.indexOf('id="denProps"') < source.indexOf('id="denPet"'),
+  'the DOM fixes the visual order at background -> display -> collectibles -> Momo');
 
-// the spec an artist works to is generated from those same tables, so it cannot go stale
+// the approved separate-layer spec carries the same Phase 1 geometry as the code
 const denSpec = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'docs', 'DEN_ART_SPEC.json'), 'utf8'));
 assert.equal(denSpec.coordinateSystem.canvasWidth, denCanvas.width, 'the spec states the real canvas');
 assert.equal(denSpec.coordinateSystem.canvasHeight, denCanvas.height);
-assert.equal(denSpec.rooms.length, denRooms.length, 'and covers every room');
-// geometry alone cannot brief an image model — a JSON file has no pixels in it, so a style
-// section and a pointer to real reference images are what makes the handoff actually usable
-['medium', 'palette', 'mood', 'continuity', 'framing', 'referenceNote'].forEach(key =>
+assert.equal(denSpec.backgrounds.length, denRooms.length, 'and covers every room');
+['medium', 'palette', 'mood', 'continuity', 'framing', 'visualHierarchy'].forEach(key =>
   assert.ok(denSpec.style && denSpec.style[key] && denSpec.style[key].length > 20,
     `the spec says something real about ${key}, not just the geometry`));
-assert.ok(denSpec.style.doNotInclude.length >= 2,
-  'the spec says what NOT to paint: the creature and the treasures are overlaid by the app');
-assert.match(denSpec.style.referenceNote, /assets\/monsters/,
-  'and points at a real asset to attach, since text cannot carry a painted style on its own');
-assert.match(denSpec.style.referenceNote, /assets\/map/);
-denSpec.rooms.forEach((specRoom, i) => {
+assert.ok(denSpec.style.doNotIncludeInBackground.length >= 4,
+  'the background brief excludes the three overlay layers and distracting props');
+assert.deepEqual(denSpec.layerOrder.slice(0, 4),
+  ['den background image', 'display furniture transparent image(s)',
+    'collectible transparent image(s)', 'Momo overlay']);
+denSpec.backgrounds.forEach((specRoom, i) => {
   const room = denRooms[i];
   assert.equal(specRoom.level, room.level, 'spec and code agree on the room');
   assert.equal(specRoom.unlockedAtBadges, room.badges, `room ${room.level}: the badge threshold matches`);
-  assert.deepEqual(specRoom.petAnchor.x, room.pet.x, `room ${room.level}: the pet anchor matches`);
-  assert.deepEqual(specRoom.petAnchor.y, room.pet.y);
-  assert.deepEqual(specRoom.petAnchor.height, room.pet.height);
-  assert.equal(specRoom.shelves.length, room.shelves.length, `room ${room.level}: the shelves match`);
-  specRoom.shelves.forEach((specShelf, j) => {
-    assert.equal(specShelf.surfaceY, room.shelves[j].y, 'the plank is at the y the spec publishes');
-    assert.deepEqual(specShelf.slotCentresX,
-      plain(saveContext.denSlotPoints(room.shelves[j])).map(x => Math.round(x)),
-      'and the slot centres are the ones the game will use');
-  });
 });
+const firstSpecDisplay = denSpec.displayFurniture.levels.find(level => level.level === 1);
+assert.equal(firstSpecDisplay.asset, denRooms[0].display.art);
+assert.deepEqual(firstSpecDisplay.slotCentres, denRooms[0].display.slots,
+  'the eight Phase 1 treasure centres cannot drift away from their cubbies');
+assert.deepEqual(denSpec.overlayGeometry.displayZone,
+  {preferredSide:'right', x:denRooms[0].display.x, y:denRooms[0].display.y,
+    width:denRooms[0].display.width, height:denRooms[0].display.height,
+    note:denSpec.overlayGeometry.displayZone.note});
+assert.equal(denSpec.overlayGeometry.momo.x, denRooms[0].pet.x, 'the approved left-side Momo anchor matches');
+const secondSpecDisplay = denSpec.displayFurniture.levels.find(level => level.level === 2);
+assert.equal(secondSpecDisplay.asset, denRooms[1].display.art);
+assert.deepEqual(secondSpecDisplay.geometry,
+  {x:denRooms[1].display.x, y:denRooms[1].display.y,
+    width:denRooms[1].display.width, height:denRooms[1].display.height});
+assert.deepEqual(secondSpecDisplay.slotCentres, denRooms[1].display.slots,
+  'the eight Phase 2 treasure centres cannot drift away from their upgraded cabinet');
 
 // the story: a chapter per lesson, each one picking up whatever the last one left in the way
 vm.runInContext('this.nodes=PROGRESSION_NODES;this.chapters=STORY_CHAPTERS;this.chapterByNode=CHAPTER_BY_NODE;' +

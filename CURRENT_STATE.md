@@ -252,10 +252,13 @@ themselves are untouched.
 | `assets/map` — the 8 painted sections | 8 | 3.5 MB |
 | `assets/story` — the opening scenes | 3 | 165 KB |
 | `assets/ui` — icons and the glow | 4 | 79 KB |
-| **total** | 32 | **8.9 MB**, from 40 MB of PNG |
+| `assets/den` — all four backgrounds and displays | 8 | 2.4 MB |
+| **total** | 40 | **11.2 MB**, from 40 MB of PNG plus the new den art |
 
 - Monster art is 1024×1024 RGBA, converted at quality 90 to keep alpha and detail.
 - Map sections are 1024 wide by 2010-3302 tall, converted at quality 80.
+- All four den phases use a 1280x800 opaque WebP background and a separate transparent
+  WebP display; the game then draws the eight family slots and Momo above them in that order.
 - `monsterMarkup` still keeps the inline SVG fallback if an image fails to load.
 - `assets/monsters/stages.json` lists the 17 stages and their WebP filenames. It is the only
   data file left under `assets`. `accessories/manifest.json` and `expressions/manifest.json`

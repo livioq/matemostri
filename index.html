@@ -267,19 +267,25 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
 .chapter-pet .monster-asset>img{max-height:158px}
 .chapter-text p{margin:11px 2px 0;font-size:15px;font-weight:650;line-height:1.5;color:var(--ink)}
 .chapter-text p:first-child{margin-top:6px}
-/* the den: one drawn room that gains furniture, and the collectibles on a shelf under it */
+/* the den: background, display, collectibles and Momo stay as separate composited layers */
 .den-room{position:relative;border:2px solid var(--ink);border-radius:16px;overflow:hidden;
   aspect-ratio:1.6;margin:6px 0 2px;box-shadow:3px 3px 0 rgba(27,58,140,.16)}
 .den-art{position:absolute;inset:0}
 .den-art svg,.den-art .den-painting{display:block;width:100%;height:100%;object-fit:cover}
+.den-display-layer{position:absolute;inset:0;pointer-events:none}
+.den-display{position:absolute;object-fit:contain;object-position:center bottom;
+  filter:drop-shadow(0 5px 7px rgba(20,10,50,.34))}
 .den-props{position:absolute;inset:0;pointer-events:none}
-.den-props span{position:absolute;transform:translateX(-50%);font-size:min(4.6vw,17px);line-height:1;
+.den-props span{position:absolute;transform:translate(-50%,-50%);display:grid;place-items:center;
+  width:min(6vw,22px);height:min(6vw,22px);font-size:min(4.6vw,17px);line-height:1;
   filter:drop-shadow(0 2px 3px rgba(20,10,50,.5))}
+.den-props .empty{border:1.5px dashed rgba(255,243,201,.62);border-radius:50%;color:rgba(255,243,201,.74);
+  background:rgba(50,27,17,.22);font-size:min(3.8vw,14px);font-weight:900;filter:none}
 /* placed from the room's own pet anchor, so the inline style owns left/bottom/height */
-.den-pet{position:absolute;transform:translateX(-50%);display:flex;
+.den-pet{position:absolute;transform:translateX(-50%);display:flex;aspect-ratio:1;
   align-items:flex-end;justify-content:center;pointer-events:none}
-.den-pet .monster-asset{height:100%}
-.den-pet .monster-asset>img{max-height:100%;width:auto;
+.den-pet .monster-asset{width:100%;height:100%;min-width:0}
+.den-pet .monster-asset>img{width:100%;height:100%;max-width:100%;max-height:100%;object-fit:contain;
   filter:drop-shadow(0 6px 10px rgba(20,10,50,.45))}
 .den-blurb{margin:9px 2px 0;font-size:14px;font-weight:700;line-height:1.4;color:var(--ink);text-align:center}
 .den-next{margin-top:9px;font-size:12px;font-weight:800;color:var(--ink-soft);text-align:center}
@@ -615,7 +621,7 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
     </div>
     <div class="card">
       <div class="ask"><h1 style="font-size:24px;margin:2px 0" id="denTitle">The den</h1><button class="speak" id="sayDen" aria-label="Hear this" hidden>▶</button></div>
-      <div class="den-room" id="denRoom"><div class="den-art" id="denArt"></div><div class="den-props" id="denProps"></div><div class="den-pet" id="denPet"></div></div>
+      <div class="den-room" id="denRoom"><div class="den-art" id="denArt"></div><div class="den-display-layer" id="denDisplay"></div><div class="den-props" id="denProps"></div><div class="den-pet" id="denPet"></div></div>
       <p class="den-blurb" id="denBlurb"></p>
       <div class="den-next" id="denNext"></div>
     </div>
@@ -874,32 +880,41 @@ const COSMETIC_REWARDS=[
    climbs, and — because passing hard quietly wins easy and medium too — nobody jumps a level
    the way a rule reading "all of easy" would have let them.
 
-   Each room is drawn against a fixed canvas, the way the map art is, so the placeholder
-   drawing here can be replaced by a painting later without moving anything that sits in it.
-   Every position below is in canvas units. `pet` is where her feet go and how tall she
-   stands; each shelf gives the top surface of a plank and how many treasures fit along it.
-   `denSVG` draws the placeholder FROM these anchors rather than from its own numbers, so the
-   plank a child sees and the slot a collectible lands on cannot drift apart — and when `art`
-   names a WebP, only the backdrop changes and the anchors still hold. `docs/DEN_ART_SPEC.json`
-   is these same numbers, written out for whoever paints the rooms. */
+   Each room uses a fixed canvas. `art` is the background only; `display` is an independent
+   transparent furniture overlay with exact treasure slots; `pet` places Momo above both.
+   That keeps the production order background -> display -> collectibles -> Momo and lets the
+   furniture be scaled or moved without repainting the approved room. Older room placeholders
+   still draw their planks from `shelves` until their own display art is produced. */
 const DEN_CANVAS={width:640,height:400};
 const DEN_ROOMS=[
-  {level:1,badges:1,name:'A cosy hollow',art:null,
+  {level:1,badges:1,name:'Run-down hideaway',art:'assets/den/den-1.webp',
    blurb:'A scrape in the rock, a bed of straw, and somewhere out of the wind. It is not much yet, but it is hers.',
-   pet:{x:320,y:348,height:196},
+   pet:{x:168,y:350,height:178},
+   display:{art:'assets/den/display-1.webp',x:370,y:41,width:260,height:318,
+    slots:[{x:465,y:143},{x:534,y:143},{x:465,y:202},{x:534,y:202},
+      {x:465,y:261},{x:534,y:261},{x:465,y:317},{x:534,y:317}]},
    shelves:[]},
-  {level:2,badges:15,name:'A den with a shelf',art:null,
-   blurb:'A proper shelf now, and a lantern to read by. Her treasures have somewhere to sit instead of a pocket.',
-   pet:{x:320,y:348,height:196},
-   shelves:[{x1:392,x2:588,y:192,slots:4}]},
-  {level:3,badges:30,name:'A warm burrow',art:null,
-   blurb:'A window, a rug, and a plant by the door. This is a place she comes back to rather than shelters in.',
-   pet:{x:320,y:348,height:196},
-   shelves:[{x1:392,x2:588,y:192,slots:4}]},
-  {level:4,badges:45,name:"A guardian's hall",art:null,
-   blurb:'Tall windows, banners, and a whole wall of shelves. She has somewhere to keep everything now, and something to keep in it.',
-   pet:{x:320,y:348,height:196},
-   shelves:[{x1:392,x2:588,y:192,slots:4},{x1:392,x2:588,y:128,slots:4}]}
+  {level:2,badges:15,name:'Cosy home',art:'assets/den/den-2.webp',
+   blurb:'The room is repaired and cared for, with warmer light and a proper place for every treasure.',
+   pet:{x:158,y:350,height:178},
+   display:{art:'assets/den/display-2.webp',x:330,y:48,width:250,height:305,
+    slots:[{x:414,y:146},{x:496,y:146},{x:414,y:202},{x:496,y:202},
+      {x:414,y:259},{x:496,y:259},{x:414,y:313},{x:496,y:313}]},
+   shelves:[]},
+  {level:3,badges:30,name:'Beautiful magical home',art:'assets/den/den-3.webp',
+   blurb:'Fine wood, rich fabrics and a gentle magical glow make this a home she is proud to return to.',
+   pet:{x:158,y:350,height:178},
+   display:{art:'assets/den/display-3.webp',x:320,y:57,width:240,height:286,
+    slots:[{x:399,y:140},{x:481,y:140},{x:399,y:192},{x:481,y:192},
+      {x:399,y:244},{x:481,y:244},{x:399,y:296},{x:481,y:296}]},
+   shelves:[]},
+  {level:4,badges:45,name:'Guardian palace',art:'assets/den/den-4.webp',
+   blurb:'Tall windows, banners and palace light frame the complete collection without competing with it.',
+   pet:{x:158,y:350,height:178},
+   display:{art:'assets/den/display-4.webp',x:320,y:57,width:240,height:286,
+    slots:[{x:405,y:135},{x:475,y:135},{x:405,y:184},{x:475,y:184},
+      {x:405,y:232},{x:475,y:232},{x:405,y:280},{x:475,y:280}]},
+   shelves:[]}
 ];
 const denRoomOf=level=>DEN_ROOMS.find(room=>room.level===level)||null;
 /* Canvas units to percentages of the frame, which is what the page positions things in. A
@@ -1558,6 +1573,16 @@ function denBackdrop(level){
     'onerror="this.hidden=true;this.nextElementSibling.hidden=false">'+
     '<span class="den-fallback" hidden>'+denSVG(level)+'</span>';
 }
+/* Display furniture is its own transparent layer. Its box and its slots share the same
+   canvas coordinates, so scaling the den cannot make a treasure drift into the wood. */
+function denDisplay(level){
+  const room=denRoomOf(level),display=room&&room.display;
+  if(!display||!display.art) return '';
+  return '<img class="den-display" src="'+display.art+'" alt="" style="left:'+
+    denPctX(display.x).toFixed(2)+'%;top:'+denPctY(display.y).toFixed(2)+'%;width:'+
+    denPctX(display.width).toFixed(2)+'%;height:'+denPctY(display.height).toFixed(2)+'%" '+
+    'onerror="this.hidden=true">';
+}
 
 /* ---------------- sound ---------------- */
 let AC=null;
@@ -2148,20 +2173,19 @@ function renderChapter(){
 }
 /* ---------------- the den ---------------- */
 
-/* Treasures are laid along whatever planks the room has, read straight off its own anchors,
-   so a painted room with its shelves somewhere else needs only its numbers changed. */
+/* Phase 1 publishes all eight family positions at once. Missing treasures remain visible as
+   question-mark silhouettes, while found ones replace only their own fixed family slot. */
 function denProps(level,p){
   const room=denRoomOf(level); if(!room) return '';
-  const held=COLLECTIBLES.filter(item=>(p.collectibles||{})[item.id]>0);
-  const out=[]; let n=0;
-  room.shelves.forEach(shelf=>{
-    denSlotPoints(shelf).forEach(x=>{
-      const item=held[n++]; if(!item) return;
-      out.push('<span style="left:'+denPctX(x).toFixed(2)+'%;bottom:'+
-        (100-denPctY(shelf.y)).toFixed(2)+'%">'+item.emoji+'</span>');
-    });
-  });
-  return out.join('');
+  const slots=room.display&&room.display.slots
+    ?room.display.slots
+    :room.shelves.flatMap(shelf=>denSlotPoints(shelf).map(x=>({x:x,y:shelf.y-13})));
+  return slots.map((slot,i)=>{
+    const item=COLLECTIBLES[i],held=item&&Number((p.collectibles||{})[item.id])>0;
+    return '<span class="'+(held?'found':'empty')+'" style="left:'+denPctX(slot.x).toFixed(2)+
+      '%;top:'+denPctY(slot.y).toFixed(2)+'%"'+(held?' title="'+esc(item.name)+'"':' aria-hidden="true"')+'>'+
+      (held?item.emoji:'?')+'</span>';
+  }).join('');
 }
 /* She stands where the room says, at the height it says, rather than wherever a percentage
    guessed at. Both come from `pet`, which a painted room restates for its own floor. */
@@ -2176,6 +2200,7 @@ function renderDen(){
   $('denBadges').textContent=won+' of '+possible+' badges';
   $('denTitle').textContent=level?level.name:'A patch of moss';
   $('denArt').innerHTML=denBackdrop(level?level.level:0);
+  $('denDisplay').innerHTML=denDisplay(level?level.level:0);
   $('denProps').innerHTML=denProps(level?level.level:0,P);
   $('denPet').setAttribute('style',denPetStyle(level?level.level:0));
   $('denPet').innerHTML=monsterMarkup(P.monsterStage,'idle','bob',name);
