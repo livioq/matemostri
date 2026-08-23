@@ -229,6 +229,7 @@ withheld for not having read one.
 - Existing completed lessons, availability, profile names, custom monster names, stats, collectibles, accessories, sound settings, and storySeen values are preserved.
 - Collectibles now have 24 production specimens: eight families with Easy, Medium and Hard transparent WebP artwork. `collectibleSpecimens` stores the three quantities per family, while `collectibles` keeps the aggregate family total used by existing cosmetic milestones.
 - Old Magic Stars, Magic Berries, Mushrooms and Lucky Leaves migrate without loss to Constellations, Fruits, Insects and Fish. Every old copy becomes an Easy specimen; duplicate count never grants Medium or Hard artwork.
+- The den's equal-width collectible cards are buttons. Tapping one opens an inline status panel with its displayed difficulty specimen, total copies, current display level and exact distance to the next 1/5/10-copy milestone.
 - Map status is derived from `stageProgress`; old players do not need to replay story beats.
 - New `storyProgress` defaults are added safely:
   - `firstCrackSeen:false`
