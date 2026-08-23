@@ -771,6 +771,115 @@ assert.deepEqual(plain(currentSave.storyProgress),
 assert.equal(currentSave.stageProgress.completed.sub_2column, false, 'no lesson is handed out free');
 assert.equal(currentSave.stageProgress.available.sub_2column, true, 'the next lesson is still open');
 
+// the den: it grows with the badges, and its geometry is a contract the artwork must meet
+vm.runInContext('this.stages=MATH_STAGES;this.denCanvas=DEN_CANVAS;this.denRooms=DEN_ROOMS;this.denRoomOf=denRoomOf;' +
+  'this.denLevelOf=denLevelOf;this.nextDenLevel=nextDenLevel;this.badgeTotal=badgeTotal;' +
+  'this.badgesPossible=BADGES_POSSIBLE;this.denSlotPoints=denSlotPoints;' +
+  'this.denPctX=denPctX;this.denPctY=denPctY;this.badgesForTest=badgesFor;', saveContext);
+const denRooms = plain(saveContext.denRooms), denCanvas = plain(saveContext.denCanvas);
+assert.equal(saveContext.badgesPossible(), 45, 'fifteen lessons on three difficulties is 45 badges');
+// the thresholds are exactly what a clean sweep of each difficulty is worth, which is what
+// makes "easy gets you room 2, medium room 3, hard room 4" true without asking for the sweep
+assert.deepEqual(denRooms.map(r => r.badges), [1, 15, 30, 45],
+  'the rooms unlock at a first badge, then an easy, a medium and a hard sweep');
+const swept = difficulty => {
+  const p = {stageProgress: saveContext.progressFromCount(99)};
+  plain(saveContext.stages).forEach(stage => {
+    const badges = saveContext.badgesForTest(p, stage.id);
+    ['easy', 'medium', 'hard'].slice(0, ['easy', 'medium', 'hard'].indexOf(difficulty) + 1)
+      .forEach(d => { badges[d] = true; });                // a pass cascades down, as the game does
+  });
+  return saveContext.badgeTotal(p);
+};
+assert.equal(swept('easy'), 15, 'an easy sweep is worth 15 badges');
+assert.equal(swept('medium'), 30, 'a medium sweep is worth 30');
+assert.equal(swept('hard'), 45, 'a hard sweep is worth all of them');
+const denAt = won => {
+  const p = {stageProgress: saveContext.progressFromCount(99)};
+  let left = won;
+  plain(saveContext.stages).forEach(stage => {
+    const badges = saveContext.badgesForTest(p, stage.id);
+    ['easy', 'medium', 'hard'].forEach(d => { if (left > 0) { badges[d] = true; left -= 1; } });
+  });
+  return saveContext.denLevelOf(p);
+};
+assert.equal(denAt(0), null, 'no badge, no den');
+assert.equal(denAt(1).level, 1, 'the first badge is somewhere to live');
+assert.equal(denAt(14).level, 1, 'and it stays that until the next threshold');
+[[15, 2], [29, 2], [30, 3], [44, 3], [45, 4]].forEach(([won, level]) =>
+  assert.equal(denAt(won).level, level, `${won} badges is room ${level}`));
+assert.equal(saveContext.nextDenLevel({stageProgress: saveContext.progressFromCount(0)}).badges, 1,
+  'and the next room is always named until there is no next room');
+assert.equal(denAt(45) && saveContext.nextDenLevel(
+  (() => { const p = {stageProgress: saveContext.progressFromCount(99)};
+    plain(saveContext.stages).forEach(st => { const b = saveContext.badgesForTest(p, st.id);
+      ['easy', 'medium', 'hard'].forEach(d => { b[d] = true; }); }); return p; })()), null,
+  'the last room has nothing after it');
+
+// the artwork contract: every anchor sits inside the canvas, so a painting drawn to the spec
+// can be dropped in without anything landing off the edge
+denRooms.forEach(room => {
+  assert.ok(room.pet.x > 0 && room.pet.x < denCanvas.width, `room ${room.level} stands her on the canvas`);
+  assert.ok(room.pet.y > 0 && room.pet.y <= denCanvas.height, `room ${room.level} has a floor on the canvas`);
+  assert.ok(room.pet.y - room.pet.height > 0, `room ${room.level} does not stand her through the ceiling`);
+  assert.equal(room.art, null, 'the rooms are still drawn, not painted — set art to swap one in');
+  room.shelves.forEach(shelf => {
+    assert.ok(shelf.x1 >= 0 && shelf.x2 <= denCanvas.width, `room ${room.level} keeps its plank on the canvas`);
+    assert.ok(shelf.y > 0 && shelf.y < room.pet.y, `room ${room.level} hangs its plank above the floor`);
+    assert.ok(shelf.slots >= 1, `room ${room.level} has somewhere to put something`);
+    const points = plain(saveContext.denSlotPoints(shelf));
+    assert.equal(points.length, shelf.slots, 'a slot for every treasure the plank holds');
+    points.forEach(x => assert.ok(x > shelf.x1 && x < shelf.x2, 'and none hanging off the end'));
+  });
+});
+// the rooms only ever gain, so a child never sees the den lose a shelf by climbing
+denRooms.forEach((room, i) => { if (i) assert.ok(room.shelves.length >= denRooms[i - 1].shelves.length,
+  `room ${room.level} keeps what room ${denRooms[i - 1].level} had`); });
+assert.equal(saveContext.denPctX(denCanvas.width), 100, 'canvas units convert to the whole width');
+assert.equal(saveContext.denPctY(denCanvas.height), 100, 'and the whole height');
+assert.equal(saveContext.denRoomOf(99), null, 'a level with no room drawn for it says so');
+
+// the placeholder draws from those anchors, so what is drawn and what is placed cannot drift
+const denSvgSrc = functionSource('denSVG');
+assert.match(denSvgSrc, /room\.shelves/, 'every plank is drawn where the room says the plank is');
+assert.match(denSvgSrc, /room\?room\.pet\.y/, 'and the floor is the line she stands on');
+assert.match(functionSource('denProps'), /denSlotPoints\(shelf\)/,
+  'treasures are laid out on the same slots the spec publishes');
+assert.match(functionSource('denPetStyle'), /room\.pet\.x/, 'and she is placed from her own anchor');
+assert.match(functionSource('denBackdrop'), /room\.art/,
+  'a painted room is served instead of the drawing when there is one');
+
+// the spec an artist works to is generated from those same tables, so it cannot go stale
+const denSpec = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'docs', 'DEN_ART_SPEC.json'), 'utf8'));
+assert.equal(denSpec.coordinateSystem.canvasWidth, denCanvas.width, 'the spec states the real canvas');
+assert.equal(denSpec.coordinateSystem.canvasHeight, denCanvas.height);
+assert.equal(denSpec.rooms.length, denRooms.length, 'and covers every room');
+// geometry alone cannot brief an image model — a JSON file has no pixels in it, so a style
+// section and a pointer to real reference images are what makes the handoff actually usable
+['medium', 'palette', 'mood', 'continuity', 'framing', 'referenceNote'].forEach(key =>
+  assert.ok(denSpec.style && denSpec.style[key] && denSpec.style[key].length > 20,
+    `the spec says something real about ${key}, not just the geometry`));
+assert.ok(denSpec.style.doNotInclude.length >= 2,
+  'the spec says what NOT to paint: the creature and the treasures are overlaid by the app');
+assert.match(denSpec.style.referenceNote, /assets\/monsters/,
+  'and points at a real asset to attach, since text cannot carry a painted style on its own');
+assert.match(denSpec.style.referenceNote, /assets\/map/);
+denSpec.rooms.forEach((specRoom, i) => {
+  const room = denRooms[i];
+  assert.equal(specRoom.level, room.level, 'spec and code agree on the room');
+  assert.equal(specRoom.unlockedAtBadges, room.badges, `room ${room.level}: the badge threshold matches`);
+  assert.deepEqual(specRoom.petAnchor.x, room.pet.x, `room ${room.level}: the pet anchor matches`);
+  assert.deepEqual(specRoom.petAnchor.y, room.pet.y);
+  assert.deepEqual(specRoom.petAnchor.height, room.pet.height);
+  assert.equal(specRoom.shelves.length, room.shelves.length, `room ${room.level}: the shelves match`);
+  specRoom.shelves.forEach((specShelf, j) => {
+    assert.equal(specShelf.surfaceY, room.shelves[j].y, 'the plank is at the y the spec publishes');
+    assert.deepEqual(specShelf.slotCentresX,
+      plain(saveContext.denSlotPoints(room.shelves[j])).map(x => Math.round(x)),
+      'and the slot centres are the ones the game will use');
+  });
+});
+
 // the story: a chapter per lesson, each one picking up whatever the last one left in the way
 vm.runInContext('this.nodes=PROGRESSION_NODES;this.chapters=STORY_CHAPTERS;this.chapterByNode=CHAPTER_BY_NODE;' +
   'this.chaptersUnlocked=chaptersUnlocked;this.chaptersUnread=chaptersUnread;' +

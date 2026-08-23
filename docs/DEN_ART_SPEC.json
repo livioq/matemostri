@@ -1,0 +1,253 @@
+{
+  "generatedFrom": "index.html DEN_CANVAS / DEN_ROOMS — regenerate with tools/den-art-spec.js",
+  "purpose": "Brief for painting the den rooms. Each room is one image on the canvas below. Paint the backdrop only: the creature and the treasures are drawn over it by the game, at the anchors given here. Keep those areas clear.",
+  "style": {
+    "medium": "Painted digital illustration, the same hand as the rest of the game: soft airbrushed rendering with real light and shadow, not flat vector art and not a photo.",
+    "palette": "Warm gold (#F2B93B) light against deep plum-purple walls (#50319A family), with sage green, dusty pink and cream accents. Matches the game's own colour tokens so the room does not clash with the card it sits inside.",
+    "mood": "Cosy and a little magical, never dark or spooky despite \"den\": firefly-soft glow, gentle sparkle particles, the same wonder as a bedtime story rather than an adventure peril.",
+    "continuity": "All four rooms are the SAME physical space, shown as it is furnished over time — the same walls, floor and cave shape in every image, with furniture added at each level. They should read as one den growing, not four different rooms. Room 4 keeps everything room 3 had, plus more.",
+    "framing": "A clean rectangular scene, full-bleed to the canvas edge. NOT a parchment scroll or vignette border like the map art — this sits inside the app's own rounded card, which supplies its own frame.",
+    "doNotInclude": [
+      "The creature herself — the app draws her over the scene at the pet anchor below.",
+      "Any of the treasures/collectibles — the app overlays those as small emoji on the shelves.",
+      "Text, UI, logos, or a signature anywhere in the image."
+    ],
+    "referenceNote": "This document has no pixels in it and cannot carry style on its own. When briefing an image model, attach one of the existing assets/monsters WebP files (for the painted-fur, sparkle, warm-light treatment) and one assets/map panel (for how an environment in this world is painted) alongside this spec."
+  },
+  "coordinateSystem": {
+    "canvasWidth": 640,
+    "canvasHeight": 400,
+    "aspectRatio": 1.6,
+    "note": "Export at any size with this exact ratio; 1280x800 is a good target. The image is object-fit: cover inside a rounded frame, so keep anything that matters away from the outermost 12px and expect the corners to be rounded off."
+  },
+  "swapProcedure": [
+    "Paint one image per room, named den-1.webp .. den-4.webp, and put them in assets/den.",
+    "Set the matching room's art field in DEN_ROOMS to \"assets/den/den-N.webp\".",
+    "Change nothing else: the creature and the treasures are positioned from the anchors.",
+    "If the painting puts its shelves or its floor somewhere else, edit that room's pet/shelves numbers here in canvas units and regenerate this file. Do not edit index.html's CSS.",
+    "Ship WebP. A test fails if a PNG appears in assets."
+  ],
+  "rooms": [
+    {
+      "level": 1,
+      "name": "A cosy hollow",
+      "unlockedAtBadges": 1,
+      "art": null,
+      "mood": "A scrape in the rock, a bed of straw, and somewhere out of the wind. It is not much yet, but it is hers.",
+      "petAnchor": {
+        "x": 320,
+        "y": 348,
+        "height": 196,
+        "note": "x is her centre, y is the floor line her feet stand on, height is how tall she is drawn. Keep this footprint clear of detail: a box 176 wide by 196 tall, centred on x, sitting on y."
+      },
+      "shelves": [],
+      "clearAreas": [
+        {
+          "x": 232,
+          "y": 152,
+          "width": 176,
+          "height": 196,
+          "what": "the creature"
+        }
+      ]
+    },
+    {
+      "level": 2,
+      "name": "A den with a shelf",
+      "unlockedAtBadges": 15,
+      "art": null,
+      "mood": "A proper shelf now, and a lantern to read by. Her treasures have somewhere to sit instead of a pocket.",
+      "petAnchor": {
+        "x": 320,
+        "y": 348,
+        "height": 196,
+        "note": "x is her centre, y is the floor line her feet stand on, height is how tall she is drawn. Keep this footprint clear of detail: a box 176 wide by 196 tall, centred on x, sitting on y."
+      },
+      "shelves": [
+        {
+          "index": 0,
+          "surfaceY": 192,
+          "x1": 392,
+          "x2": 588,
+          "slots": 4,
+          "slotCentresX": [
+            417,
+            466,
+            515,
+            564
+          ],
+          "note": "Paint a plank whose TOP SURFACE is exactly y=192. Treasures are drawn standing on that line at the x centres listed, about 26 canvas units tall."
+        }
+      ],
+      "clearAreas": [
+        {
+          "x": 232,
+          "y": 152,
+          "width": 176,
+          "height": 196,
+          "what": "the creature"
+        },
+        {
+          "x": 392,
+          "y": 162,
+          "width": 196,
+          "height": 30,
+          "what": "treasures on the plank"
+        }
+      ]
+    },
+    {
+      "level": 3,
+      "name": "A warm burrow",
+      "unlockedAtBadges": 30,
+      "art": null,
+      "mood": "A window, a rug, and a plant by the door. This is a place she comes back to rather than shelters in.",
+      "petAnchor": {
+        "x": 320,
+        "y": 348,
+        "height": 196,
+        "note": "x is her centre, y is the floor line her feet stand on, height is how tall she is drawn. Keep this footprint clear of detail: a box 176 wide by 196 tall, centred on x, sitting on y."
+      },
+      "shelves": [
+        {
+          "index": 0,
+          "surfaceY": 192,
+          "x1": 392,
+          "x2": 588,
+          "slots": 4,
+          "slotCentresX": [
+            417,
+            466,
+            515,
+            564
+          ],
+          "note": "Paint a plank whose TOP SURFACE is exactly y=192. Treasures are drawn standing on that line at the x centres listed, about 26 canvas units tall."
+        }
+      ],
+      "clearAreas": [
+        {
+          "x": 232,
+          "y": 152,
+          "width": 176,
+          "height": 196,
+          "what": "the creature"
+        },
+        {
+          "x": 392,
+          "y": 162,
+          "width": 196,
+          "height": 30,
+          "what": "treasures on the plank"
+        }
+      ]
+    },
+    {
+      "level": 4,
+      "name": "A guardian's hall",
+      "unlockedAtBadges": 45,
+      "art": null,
+      "mood": "Tall windows, banners, and a whole wall of shelves. She has somewhere to keep everything now, and something to keep in it.",
+      "petAnchor": {
+        "x": 320,
+        "y": 348,
+        "height": 196,
+        "note": "x is her centre, y is the floor line her feet stand on, height is how tall she is drawn. Keep this footprint clear of detail: a box 176 wide by 196 tall, centred on x, sitting on y."
+      },
+      "shelves": [
+        {
+          "index": 0,
+          "surfaceY": 192,
+          "x1": 392,
+          "x2": 588,
+          "slots": 4,
+          "slotCentresX": [
+            417,
+            466,
+            515,
+            564
+          ],
+          "note": "Paint a plank whose TOP SURFACE is exactly y=192. Treasures are drawn standing on that line at the x centres listed, about 26 canvas units tall."
+        },
+        {
+          "index": 1,
+          "surfaceY": 128,
+          "x1": 392,
+          "x2": 588,
+          "slots": 4,
+          "slotCentresX": [
+            417,
+            466,
+            515,
+            564
+          ],
+          "note": "Paint a plank whose TOP SURFACE is exactly y=128. Treasures are drawn standing on that line at the x centres listed, about 26 canvas units tall."
+        }
+      ],
+      "clearAreas": [
+        {
+          "x": 232,
+          "y": 152,
+          "width": 176,
+          "height": 196,
+          "what": "the creature"
+        },
+        {
+          "x": 392,
+          "y": 162,
+          "width": 196,
+          "height": 30,
+          "what": "treasures on the plank"
+        },
+        {
+          "x": 392,
+          "y": 98,
+          "width": 196,
+          "height": 30,
+          "what": "treasures on the plank"
+        }
+      ]
+    }
+  ],
+  "treasures": [
+    {
+      "id": "stars",
+      "emoji": "⭐",
+      "name": "Magic Stars"
+    },
+    {
+      "id": "flowers",
+      "emoji": "🌸",
+      "name": "Flowers"
+    },
+    {
+      "id": "berries",
+      "emoji": "🍓",
+      "name": "Magic Berries"
+    },
+    {
+      "id": "feathers",
+      "emoji": "🪶",
+      "name": "Feathers"
+    },
+    {
+      "id": "mushrooms",
+      "emoji": "🍄",
+      "name": "Mushrooms"
+    },
+    {
+      "id": "crystals",
+      "emoji": "💎",
+      "name": "Crystals"
+    },
+    {
+      "id": "leaves",
+      "emoji": "🍀",
+      "name": "Lucky Leaves"
+    },
+    {
+      "id": "shells",
+      "emoji": "🐚",
+      "name": "Forest Shells"
+    }
+  ]
+}
