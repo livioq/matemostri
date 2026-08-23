@@ -762,13 +762,76 @@ assert.equal(currentSave.momoName, 'Sparkle', 'the chosen name survives');
 assert.equal(currentSave.best, 9, 'play stats survive');
 assert.deepEqual(plain(currentSave.collectibles).stars, 3, 'collectibles survive');
 assert.ok(currentSave.accessories.includes('scarf'), 'cosmetics survive');
-assert.deepEqual(plain(currentSave.storyProgress), {firstCrackSeen:false, mapSeen:{}, guidesSeen:{}},
+assert.deepEqual(plain(currentSave.storyProgress),
+  {firstCrackSeen:false, mapSeen:{}, guidesSeen:{}, chaptersRead:{}},
   'map/story migration adds safe defaults without resetting progress');
 ['add_1digit', 'add_2column', 'add_2mental', 'sub_1digit'].forEach(id => {
   assert.equal(currentSave.stageProgress.completed[id], true, `${id} stays completed`);
 });
 assert.equal(currentSave.stageProgress.completed.sub_2column, false, 'no lesson is handed out free');
 assert.equal(currentSave.stageProgress.available.sub_2column, true, 'the next lesson is still open');
+
+// the story: a chapter per lesson, each one picking up whatever the last one left in the way
+vm.runInContext('this.nodes=PROGRESSION_NODES;this.chapters=STORY_CHAPTERS;this.chapterByNode=CHAPTER_BY_NODE;' +
+  'this.chaptersUnlocked=chaptersUnlocked;this.chaptersUnread=chaptersUnread;' +
+  'this.storyProgressOf=storyProgressOf;this.blankStageProgress=blankStageProgress;' +
+  'this.progressFromCount=progressFromCount;', saveContext);
+const chapters = plain(saveContext.chapters);
+assert.equal(chapters.length, saveContext.nodes.length,
+  'every stop on the map has a chapter, so finishing a lesson always writes one');
+assert.deepEqual(chapters.map(c => c.node), plain(saveContext.nodes.map(n => n.id)),
+  'and the chapters run in the order the journey does');
+chapters.forEach((chapter, i) => {
+  assert.ok(chapter.title && chapter.title.length < 40, `chapter ${i + 1} has a short title`);
+  assert.ok(chapter.text.length >= 3, `chapter ${i + 1} is a few paragraphs, not a caption`);
+  // long enough to be a read, short enough to finish in one sitting
+  const words = chapter.text.join(' ').split(/\s+/).length;
+  assert.ok(words > 90 && words < 260, `chapter ${i + 1} is a short chapter, not a page or a novel (${words} words)`);
+  chapter.text.forEach(para => {
+    assert.ok(/[.!?]$/.test(para), `chapter ${i + 1} paragraph ends as prose: ${para.slice(0, 40)}`);
+    assert.equal(/\bMomo\b/.test(para), false,
+      `chapter ${i + 1} uses {name}, because the child names the creature`);
+    assert.equal(/quotient|product|remainder|multiplicand|divisor|minuend/i.test(para), false,
+      `chapter ${i + 1} keeps the jargon out`);
+  });
+  // the cliffhanger chain: each chapter stops on something, and the next one gets past it
+  if (i + 1 < chapters.length) {
+    assert.ok(chapter.obstacle, `chapter ${i + 1} ends on something in the way`);
+    assert.equal(chapters[i + 1].solves, chapter.obstacle,
+      `chapter ${i + 2} opens by getting past what chapter ${i + 1} ended on`);
+  } else {
+    assert.equal(chapter.obstacle, undefined, 'the last chapter has nothing left in the way');
+  }
+});
+assert.equal(chapters[0].solves, undefined, 'the first chapter has nothing to pick up from');
+assert.ok(chapters.some(c => c.text.some(p => p.includes('{name}'))),
+  'the creature is named in the story by the name the child chose');
+assert.equal(saveContext.chapterByNode('rune-ruins'), 7, 'a chapter can be found from its map stop');
+assert.equal(saveContext.chapterByNode('nowhere'), -1, 'and an unknown stop finds nothing');
+
+// a chapter is earned by lighting its lesson, so nothing extra has to be saved to know which
+const reader = {stageProgress: saveContext.progressFromCount(4), storyProgress: {}};
+assert.equal(saveContext.chaptersUnlocked(reader), 4, 'four lessons lit opens four chapters');
+assert.equal(saveContext.chaptersUnread(reader), 4, 'and all four are waiting to be read');
+saveContext.storyProgressOf(reader).chaptersRead[chapters[0].node] = true;
+assert.equal(saveContext.chaptersUnread(reader), 3, 'reading one leaves three');
+const beginner = {stageProgress: saveContext.blankStageProgress(), storyProgress: {}};
+assert.equal(saveContext.chaptersUnlocked(beginner), 0, 'and a fresh player has no story yet');
+const wholeJourney = {stageProgress: saveContext.progressFromCount(99), storyProgress: {}};
+assert.equal(saveContext.chaptersUnlocked(wholeJourney), chapters.length,
+  'while a finished journey opens all of them and no more');
+
+assert.match(functionSource('openChapter'), /index<0\|\|index>=chaptersUnlocked\(P\)/,
+  'a chapter that has not been earned cannot be opened');
+assert.match(functionSource('openChapter'), /chaptersRead\[STORY_CHAPTERS\[index\]\.node\]=true/,
+  'and opening one marks it read');
+assert.match(functionSource('renderTale'), /shut\?'\\uD83D\\uDD12'/,
+  'the shelf shows what is still to come rather than hiding it');
+assert.match(functionSource('endSession'), /result==='completed'\?CHAPTER_BY_NODE/,
+  'the chapter is offered only when a lesson is lit for the first time');
+assert.match(functionSource('renderHome'), /chaptersUnread\(P\)/,
+  'and the home screen says when there is a new one');
+assert.match(source, /sayChapter:\['chapterTitle','chapterText'\]/, 'a chapter can be read aloud');
 
 // the last evolution waits for the last lesson, however many lessons there are
 vm.runInContext('this.stages=MATH_STAGES;this.nodes=PROGRESSION_NODES;this.evolutions=EVOLUTIONS;this.stageData=MONSTER_STAGE_DATA;this.artFor=artForCount;this.artForPlayer=artForPlayer;this.evolutionFor=evolutionForCount;', saveContext);
@@ -1530,21 +1593,69 @@ const guideCtx = {};
 vm.createContext(guideCtx);
 vm.runInContext([
   source.match(/const LESSON_GUIDES=\{[\s\S]*?\n\};/)[0],
-  source.match(/const guideFor=.*;\n/)[0],
-  'this.guides=LESSON_GUIDES;this.guideFor=guideFor;'
+  source.match(/function guideFor\(stageId,difficulty\)\{[\s\S]*?\n\}/)[0],
+  source.match(/const guideKey=[\s\S]*?;\n/)[0],
+  'this.guides=LESSON_GUIDES;this.guideFor=guideFor;this.guideKey=guideKey;'
 ].join('\n'), guideCtx);
 const guided = Object.keys(plain(guideCtx.guides));
-assert.deepEqual(guided.sort(), ['add_2column', 'div_long', 'mul_1x2', 'mul_2x2', 'sub_2column'],
-  'every lesson that introduces a new working has a guide, and no other does');
-guided.forEach(id => {
-  const guide = plain(guideCtx.guides[id]);
+assert.deepEqual(guided.sort(),
+  ['add_2column', 'add_2mental', 'div_long', 'mul_1x2', 'mul_2x2', 'sub_2column', 'sub_2mental'],
+  'every lesson that introduces a new working or is done in the head has a guide, and no other does');
+// a lesson done in the head has no working to draw, and there the difficulty is the whole of
+// what changes, so those hold one guide per difficulty
+const worded = ['add_2mental', 'sub_2mental'];
+worded.forEach(id => {
+  assert.equal(plain(guideCtx.guides[id]).byDifficulty, true, `${id} has a guide for each difficulty`);
+  ['easy', 'medium', 'hard'].forEach(d => {
+    const guide = plain(guideCtx.guideFor(id, d));
+    assert.ok(guide && guide.lines && guide.lines.length >= 3,
+      `${id} on ${d} walks through an example in words`);
+    assert.equal(guide.cells, undefined, `${id} on ${d} draws no working, because there is none`);
+  });
+  const hellos = ['easy', 'medium', 'hard'].map(d => plain(guideCtx.guideFor(id, d)).hello);
+  assert.equal(new Set(hellos).size, 3, `${id} says something different on each difficulty`);
+  assert.match(plain(guideCtx.guideFor(id, 'easy')).hello, /small|gentle|enough/i,
+    `${id} on easy reassures rather than warns`);
+  const mid = plain(guideCtx.guideFor(id, 'medium'));
+  assert.match(mid.hello + ' ' + mid.lines.join(' '), /not enough|spill|past ten|left over/i,
+    `${id} on medium works through the carrying or borrowing`);
+  assert.equal(guideCtx.guideKey(id, 'easy'), id + ':easy',
+    `${id} remembers each difficulty's guide separately`);
+});
+const drawn = guided.filter(id => !worded.includes(id));
+drawn.forEach(id => assert.equal(guideCtx.guideKey(id, 'easy'), id,
+  `${id} teaches one working, so it is read once whatever the difficulty`));
+guided.forEach(id => ['easy', 'medium', 'hard'].forEach(difficulty => {
+  const guide = plain(guideCtx.guideFor(id, difficulty));
   assert.ok(guide.title && guide.sum, `${id} names itself and shows a worked sum`);
-  assert.ok(guide.lines.length >= 3 && guide.lines.length <= 5, `${id} explains itself in a few lines`);
-  guide.lines.forEach(line => {
+  // a wall of instructions is a cold jump, so it opens with a hello and then says one
+  // thing per page, with that one thing lit up in the working
+  assert.ok(/[.!?]$/.test(guide.hello) && guide.hello.length > 40,
+    `${id} says hello before it teaches anything`);
+  const spoken = (guide.pages || []).map(page => page.say)
+    .concat(guide.lines || []).concat([guide.hello]);
+  spoken.forEach(line => {
     assert.ok(/[.!?]$/.test(line), `${id} line ends as a sentence: ${line}`);
     assert.equal(/quotient|product|remainder|multiplicand|divisor|minuend|carry the tens digit/i.test(line), false,
       `${id} keeps the jargon out: ${line}`);
   });
+  if (!guide.pages) return;
+  assert.ok(guide.pages.length >= 4 && guide.pages.length <= 5, `${id} takes it a page at a time`);
+  // every page points at something, and points at a cell that is actually on the page by then
+  guide.pages.forEach((page, i) => {
+    assert.ok(page.ring && page.ring.length, `${id} page ${i + 1} lights up what it is talking about`);
+    page.ring.forEach(([r, c]) => {
+      const cell = guide.cells.find(x => x.r === r && x.c === c);
+      assert.ok(cell, `${id} page ${i + 1} rings a cell that exists (${r},${c})`);
+      assert.ok((cell.step || 0) <= i + 1,
+        `${id} page ${i + 1} rings ${r},${c}, which is not written until page ${cell.step}`);
+    });
+  });
+  // the working builds up: something new is written on all but the first page
+  const steps = guide.cells.map(cell => cell.step || 0);
+  assert.ok(Math.max.apply(null, steps) >= guide.pages.length - 1,
+    `${id} keeps adding to the working as the pages go on`);
+  assert.ok(steps.some(step => step === 0), `${id} shows the question from the start`);
   const rows = guide.cells.map(c => c.r).concat(guide.rules.map(r => r.r));
   assert.ok(Math.min.apply(null, rows) >= 1, `${id} places every cell on a real row`);
   guide.cells.forEach(c => assert.ok(c.c >= 1 && c.c <= guide.cols,
@@ -1552,16 +1663,26 @@ guided.forEach(id => {
   // the rule is drawn on the answer's own row, as its top border, the way the real working does
   guide.rules.forEach(rule => assert.ok(guide.cells.some(c => c.r === rule.r),
     `${id} draws its rule on a row that has digits, not on an empty one`));
-});
+}));
 assert.equal(guideCtx.guideFor('add_1digit'), null, 'a lesson with nothing new to explain has no guide');
 
-assert.match(functionSource('beginLesson'), /guideFor\(stageId\)&&!seen\[stageId\]/,
+assert.match(functionSource('beginLesson'), /guideFor\(stageId,difficulty\)&&!seen\[guideKey\(stageId,difficulty\)\]/,
   'the guide is shown before the first sit, and only then');
-assert.match(source, /guidesSeen\[going\.stageId\]=true/, 'and remembered once it has been read');
+assert.match(source, /guidesSeen\[guideKey\(going\.stageId,going\.difficulty\)\]=true/,
+  'and remembered once it has been read');
+assert.match(functionSource('renderGuideLines'), /i===page-1\?'now'/,
+  'a worded guide lights the line it has just reached');
+assert.match(functionSource('renderGuide'), /worded=!!guide\.lines/,
+  'and the drawn working steps aside for it');
 assert.match(functionSource('storyProgressOf'), /guidesSeen/,
   'so an existing save gains the field rather than losing its progress');
 assert.match(functionSource('renderDifficultyChoice'), /openGuide\(stage\.id,null,false\)/,
   'and the map stop can call it back up afterwards');
+assert.match(functionSource('renderGuideGrid'), /\(cell\.step\|\|0\)>page/,
+  'a page only shows the working as far as it has got');
+assert.match(source, /guidePage<guidePages\(/, 'Next walks the pages before it starts the lesson');
+assert.match(functionSource('renderGuide'), /page===0\?guide\.hello/,
+  'and the first page is the hello, not the maths');
 
 // the trail: it wanders between stops, and what has been walked looks different from
 // what is still ahead
