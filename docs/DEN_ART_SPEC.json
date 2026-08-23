@@ -278,14 +278,18 @@
   "collectibles": {
     "format": "transparent WebP",
     "rendering": "Separate artwork, composited above the display furniture. Each collectible needs a clear silhouette and stronger local contrast than the den background.",
-    "v2Plan": "8 families x 3 progression tiers = 24 specimens. Replays can earn duplicates/upgrades, but the den should show a curated/best representative rather than filling the scene with duplicate clutter."
+    "assetPattern": "assets/collectibles/{family}-{tier}.webp",
+    "canvas": "256 x 256 pixels with transparent alpha and even internal padding",
+    "families": ["flowers", "shells", "crystals", "feathers", "fruits", "insects", "fish", "constellations"],
+    "tierOrder": ["Easy", "Medium", "Hard"],
+    "implementation": "All 24 specimens are production assets. The den shows the highest difficulty specimen actually owned in each family; duplicate counts never promote a specimen into a higher difficulty tier."
   },
   "productionWorkflow": [
     "Approve den-1 background architecture first, with no display furniture, collectibles or Momo.",
     "Generate/paint den-2, den-3 and den-4 as upgrades of that exact same room, keeping backgrounds intentionally restrained.",
     "Implement/confirm Collectibles v2 slot counts and display behaviour.",
     "Create one transparent display-furniture asset per den level against the exact code geometry.",
-    "Create the 24 transparent collectible specimen assets.",
+    "Maintain the 24 transparent collectible specimen assets and their fixed family-tier naming.",
     "Composite in the game and adjust overlay coordinates in layout data, never by regenerating a background to chase pixel positions.",
     "Ship WebP assets. PNG files must not be added to assets."
   ]

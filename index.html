@@ -60,7 +60,8 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
 .magic-status{text-align:center;padding:9px 8px 3px;color:var(--ink);font-size:18px;font-weight:900;line-height:1.25}
 .magic-whisper{text-align:center;color:var(--ink-soft);font-size:13px;font-weight:750;line-height:1.35;margin-top:5px}
 .collection-shelf{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-top:12px}
-.collectible{background:linear-gradient(145deg,#fff,#fff3c9);border:1.5px solid rgba(122,82,173,.25);border-radius:999px;padding:5px 9px;font-size:12px;font-weight:850;color:#664391;box-shadow:0 2px 6px rgba(80,49,154,.1)}
+.collectible{display:inline-flex;align-items:center;gap:5px;background:linear-gradient(145deg,#fff,#fff3c9);border:1.5px solid rgba(122,82,173,.25);border-radius:999px;padding:4px 9px 4px 5px;font-size:12px;font-weight:850;color:#664391;box-shadow:0 2px 6px rgba(80,49,154,.1)}
+.collectible .collectible-art{width:25px;height:25px}
 .wardrobe{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-top:8px}.wardrobe .accessory-chip{font-size:11px;padding:5px 8px}
 .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center;margin-top:8px}
 /* the end of a lesson has three of these; home has four, which sit better two by two than
@@ -276,8 +277,8 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
 .den-display{position:absolute;object-fit:contain;object-position:center bottom;
   filter:drop-shadow(0 5px 7px rgba(20,10,50,.34))}
 .den-props{position:absolute;inset:0;pointer-events:none}
-.den-props span{position:absolute;transform:translate(-50%,-50%);display:grid;place-items:center;
-  width:min(6vw,22px);height:min(6vw,22px);font-size:min(4.6vw,17px);line-height:1;
+.den-props>span{position:absolute;transform:translate(-50%,-50%);display:grid;place-items:center;
+  width:min(7.6vw,29px);height:min(7.6vw,29px);font-size:min(4.6vw,17px);line-height:1;
   filter:drop-shadow(0 2px 3px rgba(20,10,50,.5))}
 .den-props .empty{border:1.5px dashed rgba(255,243,201,.62);border-radius:50%;color:rgba(255,243,201,.74);
   background:rgba(50,27,17,.22);font-size:min(3.8vw,14px);font-weight:900;filter:none}
@@ -294,12 +295,16 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
 .den-shelf{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
 .den-trophy{display:flex;flex-direction:column;align-items:center;gap:2px;padding:7px 4px;
   background:#fff;border:2px solid var(--ink);border-radius:14px;box-shadow:2px 2px 0 rgba(27,58,140,.14)}
-.den-trophy .den-emoji{font-size:23px;line-height:1.1}
+.collectible-art{display:inline-grid;place-items:center;flex:0 0 auto}
+.collectible-art img{display:block;width:100%;height:100%;object-fit:contain}
+.collectible-art .collectible-fallback{font-size:inherit;line-height:1}
+.den-trophy .den-emoji{width:42px;height:42px;font-size:23px;line-height:1.1}
 .den-trophy .den-name{font-size:9.5px;font-weight:800;letter-spacing:.03em;text-transform:uppercase;
   color:var(--ink-soft);text-align:center;line-height:1.2}
 .den-trophy b{font-size:13px;color:var(--ink)}
 .den-trophy.empty{border-color:var(--grid);box-shadow:none;background:rgba(255,255,255,.5)}
-.den-trophy.empty .den-emoji{filter:grayscale(1);opacity:.3}
+.den-trophy.empty .den-emoji{display:grid;place-items:center;filter:grayscale(1);opacity:.3}
+.reward-collectible{display:inline-flex;vertical-align:middle;width:34px;height:34px;margin:0 3px}
 .den-trophy.empty .den-name,.den-trophy.empty b{color:rgba(80,49,154,.36)}
 /* the run moving is the reward, so it is the whole screen for a moment */
 .daywon{position:fixed;inset:0;z-index:60;display:none;align-items:center;justify-content:center;padding:18px;
@@ -858,11 +863,50 @@ const EVOLUTIONS=[
 ];
 const EVOLUTION_LEVELS=EVOLUTIONS.map(e=>e.art);
 const COLLECTIBLES=[
-  {id:'stars',emoji:'⭐',name:'Magic Stars'},{id:'flowers',emoji:'🌸',name:'Flowers'},
-  {id:'berries',emoji:'🍓',name:'Magic Berries'},{id:'feathers',emoji:'🪶',name:'Feathers'},
-  {id:'mushrooms',emoji:'🍄',name:'Mushrooms'},{id:'crystals',emoji:'💎',name:'Crystals'},
-  {id:'leaves',emoji:'🍀',name:'Lucky Leaves'},{id:'shells',emoji:'🐚',name:'Forest Shells'}
+  {id:'flowers',emoji:'🌸',name:'Flowers',specimens:[
+    {name:'Daisy Glow',asset:'assets/collectibles/flowers-1.webp'},
+    {name:'Sunrise Lily',asset:'assets/collectibles/flowers-2.webp'},
+    {name:'Aurora Orchid',asset:'assets/collectibles/flowers-3.webp'}]},
+  {id:'shells',emoji:'🐚',name:'Shells',specimens:[
+    {name:'Pearl Shell',asset:'assets/collectibles/shells-1.webp'},
+    {name:'Spiral Conch',asset:'assets/collectibles/shells-2.webp'},
+    {name:'Nautilus Pearl',asset:'assets/collectibles/shells-3.webp'}]},
+  {id:'crystals',emoji:'💎',name:'Crystals',specimens:[
+    {name:'Amethyst Chip',asset:'assets/collectibles/crystals-1.webp'},
+    {name:'Crystal Cluster',asset:'assets/collectibles/crystals-2.webp'},
+    {name:'Star Crystal',asset:'assets/collectibles/crystals-3.webp'}]},
+  {id:'feathers',emoji:'🪶',name:'Feathers',specimens:[
+    {name:'Sky Feather',asset:'assets/collectibles/feathers-1.webp'},
+    {name:'Peacock Feather',asset:'assets/collectibles/feathers-2.webp'},
+    {name:'Phoenix Feather',asset:'assets/collectibles/feathers-3.webp'}]},
+  {id:'fruits',emoji:'🍓',name:'Fruits',specimens:[
+    {name:'Berry Bud',asset:'assets/collectibles/fruits-1.webp'},
+    {name:'Moonfruit',asset:'assets/collectibles/fruits-2.webp'},
+    {name:'Rainbow Fruit',asset:'assets/collectibles/fruits-3.webp'}]},
+  {id:'insects',emoji:'🪲',name:'Insects',specimens:[
+    {name:'Leaf Beetle',asset:'assets/collectibles/insects-1.webp'},
+    {name:'Jewel Butterfly',asset:'assets/collectibles/insects-2.webp'},
+    {name:'Emerald Dragonfly',asset:'assets/collectibles/insects-3.webp'}]},
+  {id:'fish',emoji:'🐠',name:'Fish',specimens:[
+    {name:'Coral Minnow',asset:'assets/collectibles/fish-1.webp'},
+    {name:'Reef Angelfish',asset:'assets/collectibles/fish-2.webp'},
+    {name:'Galaxy Whale',asset:'assets/collectibles/fish-3.webp'}]},
+  {id:'constellations',emoji:'⭐',name:'Constellations',specimens:[
+    {name:'Twinkle Star',asset:'assets/collectibles/constellations-1.webp'},
+    {name:'Shooting Star',asset:'assets/collectibles/constellations-2.webp'},
+    {name:'Celestial Crown',asset:'assets/collectibles/constellations-3.webp'}]}
 ];
+function collectibleCopies(p,item){
+  const saved=p&&p.collectibleSpecimens&&p.collectibleSpecimens[item.id];
+  return Array.isArray(saved)?[0,1,2].map(i=>Math.max(0,Number(saved[i])||0)):
+    [Math.max(0,Number(p&&p.collectibles&&p.collectibles[item.id])||0),0,0];
+}
+function collectibleTier(p,item){
+  const copies=collectibleCopies(p,item);
+  for(let i=2;i>=0;i--) if(copies[i]>0) return i+1;
+  return 0;
+}
+function collectibleSpecimen(item,p){ const tier=collectibleTier(p,item); return tier&&item?item.specimens[tier-1]:null; }
 const COSMETIC_REWARDS=[
   {total:3,id:'flowerCrown',name:'Flower Crown',emoji:'🌸'},{total:6,id:'scarf',name:'Scarf',emoji:'🧣'},
   {total:10,id:'backpack',name:'Backpack',emoji:'🎒'},{total:15,id:'starCape',name:'Star Cape',emoji:'🌟'},
@@ -1166,7 +1210,7 @@ function newPlayer(name,look){
   return {id:'p'+Date.now(),name:name,look:look==='boy'?'boy':'girl',total:0,right:0,best:0,
           groups:{add:true,sub:true,mul:true,div:true},
           unlocked:{add2:false,sub2:false,mul2:false,div2:false},
-          stageProgress:blankStageProgress(),monsterStage:1,momoName:'Momo',collectibles:{},accessories:[],storySeen:false,storyProgress:{firstCrackSeen:false,mapSeen:{},guidesSeen:{},chaptersRead:{}},days:blankDays(),resume:null,migrationVersion:9};
+          stageProgress:blankStageProgress(),monsterStage:1,momoName:'Momo',collectibles:{},collectibleSpecimens:{},accessories:[],storySeen:false,storyProgress:{firstCrackSeen:false,mapSeen:{},guidesSeen:{},chaptersRead:{}},days:blankDays(),resume:null,migrationVersion:10};
 }
 function migrate(p){
   const version=Number(p.migrationVersion)||0,wasLegacy=version<3;
@@ -1184,7 +1228,27 @@ function migrate(p){
   else p.stageProgress=normalizeStageProgress(p.stageProgress);
   if(!p.momoName) p.momoName='Momo';
   if(!p.collectibles||typeof p.collectibles!=='object') p.collectibles={};
-  COLLECTIBLES.forEach(c=>{ p.collectibles[c.id]=Math.max(0,Number(p.collectibles[c.id])||0); });
+  if(!p.collectibleSpecimens||typeof p.collectibleSpecimens!=='object') p.collectibleSpecimens={};
+  const collectibleAliases={stars:'constellations',berries:'fruits',mushrooms:'insects',leaves:'fish'};
+  Object.keys(collectibleAliases).forEach(oldId=>{
+    if(Object.prototype.hasOwnProperty.call(p.collectibles,oldId)){
+      const newId=collectibleAliases[oldId];
+      p.collectibles[newId]=(Number(p.collectibles[newId])||0)+(Number(p.collectibles[oldId])||0);
+      delete p.collectibles[oldId];
+    }
+    if(Object.prototype.hasOwnProperty.call(p.collectibleSpecimens,oldId)){
+      const newId=collectibleAliases[oldId],oldCopies=p.collectibleSpecimens[oldId];
+      if(!p.collectibleSpecimens[newId]) p.collectibleSpecimens[newId]=oldCopies;
+      delete p.collectibleSpecimens[oldId];
+    }
+  });
+  COLLECTIBLES.forEach(c=>{
+    const total=Math.max(0,Number(p.collectibles[c.id])||0),copies=collectibleCopies(p,c);
+    const recorded=copies.reduce((sum,n)=>sum+n,0);
+    if(recorded<total) copies[0]+=total-recorded;
+    p.collectibleSpecimens[c.id]=copies;
+    p.collectibles[c.id]=copies.reduce((sum,n)=>sum+n,0);
+  });
   if(!Array.isArray(p.accessories)) p.accessories=[];
   if(wasLegacy){
     const aliases={pencilWand:'magicPencil',magicStaff:'guardianStaff'};
@@ -1198,7 +1262,7 @@ function migrate(p){
   p.monsterStage=p.devMonsterOverride||artForPlayer(p);
   if(p.storySeen===undefined) p.storySeen=true;
   dropRetiredPlayerFields(p);
-  p.migrationVersion=9;
+  p.migrationVersion=10;
   return p;
 }
 
@@ -2107,7 +2171,10 @@ function renderHome(){
   if(nextEvolution&&nextEvolution.completed<1) $('nextReward').textContent='Get 4 of the first 5 answers right to see the first crack.';
   else if(nextEvolution){ const left=nextEvolution.completed-count; $('nextReward').textContent=left===1?'One more lesson until '+nextEvolution.title+'!':left+' more lessons until '+nextEvolution.title+'.'; }
   else $('nextReward').textContent='The whole enchanted path is glowing.';
-  $('collectionBox').innerHTML=COLLECTIBLES.filter(c=>P.collectibles[c.id]>0).map(c=>'<span class="collectible">'+c.emoji+' '+c.name+' ×'+P.collectibles[c.id]+'</span>').join('')||'<span class="magic-whisper">Replay a glowing lesson to discover magical treasures.</span>';
+  $('collectionBox').innerHTML=COLLECTIBLES.filter(c=>P.collectibles[c.id]>0).map(c=>{
+    const count=P.collectibles[c.id],specimen=collectibleSpecimen(c,P);
+    return '<span class="collectible">'+collectibleArt(c,P,'')+esc(specimen.name)+' ×'+count+'</span>';
+  }).join('')||'<span class="magic-whisper">Replay a glowing lesson to discover magical treasures.</span>';
   $('wardrobeBox').innerHTML=COSMETIC_REWARDS.filter(a=>P.accessories.includes(a.id)).map(a=>'<span class="accessory-chip">'+a.emoji+' '+a.name+'</span>').join('');
   // plain words and a number that says what it is out of: "path lights" and "kind
   // answers" were the game's own vocabulary, which is no use to the child reading them
@@ -2173,6 +2240,13 @@ function renderChapter(){
 }
 /* ---------------- the den ---------------- */
 
+function collectibleArt(item,p,extraClass){
+  const specimen=collectibleSpecimen(item,p); if(!specimen) return item?item.emoji:'?';
+  return '<span class="collectible-art'+(extraClass?' '+extraClass:'')+'"><img src="'+specimen.asset+
+    '" alt="'+esc(specimen.name)+'" onerror="this.hidden=true;this.nextElementSibling.hidden=false">'+
+    '<span class="collectible-fallback" hidden>'+item.emoji+'</span></span>';
+}
+
 /* Phase 1 publishes all eight family positions at once. Missing treasures remain visible as
    question-mark silhouettes, while found ones replace only their own fixed family slot. */
 function denProps(level,p){
@@ -2184,7 +2258,7 @@ function denProps(level,p){
     const item=COLLECTIBLES[i],held=item&&Number((p.collectibles||{})[item.id])>0;
     return '<span class="'+(held?'found':'empty')+'" style="left:'+denPctX(slot.x).toFixed(2)+
       '%;top:'+denPctY(slot.y).toFixed(2)+'%"'+(held?' title="'+esc(item.name)+'"':' aria-hidden="true"')+'>'+
-      (held?item.emoji:'?')+'</span>';
+      (held?collectibleArt(item,p,''):'?')+'</span>';
   }).join('');
 }
 /* She stands where the room says, at the height it says, rather than wherever a percentage
@@ -2215,8 +2289,8 @@ function renderDen(){
   $('denShelf').innerHTML=COLLECTIBLES.map(item=>{
     const held=P.collectibles[item.id]||0;
     return '<div class="den-trophy'+(held?'':' empty')+'">'+
-      '<span class="den-emoji">'+item.emoji+'</span>'+
-      '<span class="den-name">'+esc(item.name)+'</span>'+
+      '<span class="den-emoji">'+(held?collectibleArt(item,P,''):item.emoji)+'</span>'+
+      '<span class="den-name">'+esc(held?collectibleSpecimen(item,P).name:item.name)+'</span>'+
       '<b>'+(held?'\u00D7'+held:'\u2014')+'</b></div>';
   }).join('');
   const found=COLLECTIBLES.filter(item=>P.collectibles[item.id]>0).length;
@@ -2787,6 +2861,9 @@ function award(mastered){
 function awardHelped(){ countToday(); S.right++; P.right++; S.streak=0; P.total=(Number(P.total)||0)+1; markQuestion('helped'); }
 function awardCollectible(){
   const item=COLLECTIBLES[Math.floor(Math.random()*COLLECTIBLES.length)];
+  const tier=Math.max(1,DIFFICULTY_IDS.indexOf(S.difficulty)+1),copies=collectibleCopies(P,item);
+  copies[tier-1]++;
+  P.collectibleSpecimens[item.id]=copies;
   P.collectibles[item.id]=(P.collectibles[item.id]||0)+1;
   const before=P.accessories.slice();
   COSMETIC_REWARDS.forEach(a=>{ if(collectibleTotal(P)>=a.total&&!P.accessories.includes(a.id)) P.accessories.push(a.id); });
@@ -2837,7 +2914,9 @@ function endSession(){
   $('endStreak').style.display=$('endStreak').textContent?'block':'none';
   if(result==='collectible'){
     const cosmetic=S.reward.newCosmetics[0];
-    $('endReward').textContent=petName()+' found '+S.reward.item.emoji+' '+S.reward.item.name+'!'+(cosmetic?' A new '+cosmetic.name+' appeared in the magic wardrobe!':'');
+    const count=P.collectibles[S.reward.item.id],specimen=collectibleSpecimen(S.reward.item,P);
+    $('endReward').innerHTML=esc(petName()+' found ')+collectibleArt(S.reward.item,P,'reward-collectible')+
+      esc(specimen.name+'!'+(cosmetic?' A new '+cosmetic.name+' appeared in the magic wardrobe!':''));
   }else if(S.stoppedEarly){
     const easier=easierDifficulty(S.difficulty);
     $('endReward').textContent='This one was being tricky, so we stopped early for a fresh go. Nothing is lost, and '
@@ -3326,8 +3405,8 @@ function renderDeveloper(){
 function openDeveloper(){ renderDeveloper(); show('s-dev'); }
 function resetPlayerProgress(){
   P.stageProgress=blankStageProgress(); P.monsterStage=1; delete P.devMonsterOverride;
-  P.collectibles={}; COLLECTIBLES.forEach(c=>P.collectibles[c.id]=0); P.accessories=[];
-  P.right=0; P.best=0; P.total=0; P.storySeen=false; P.storyProgress={firstCrackSeen:false,mapSeen:{},guidesSeen:{},chaptersRead:{}}; P.days=blankDays(); P.resume=null; P.migrationVersion=9; save();
+  P.collectibles={}; P.collectibleSpecimens={}; COLLECTIBLES.forEach(c=>P.collectibles[c.id]=0); P.accessories=[];
+  P.right=0; P.best=0; P.total=0; P.storySeen=false; P.storyProgress={firstCrackSeen:false,mapSeen:{},guidesSeen:{},chaptersRead:{}}; P.days=blankDays(); P.resume=null; P.migrationVersion=10; save();
 }
 
 /* ---------------- wiring ---------------- */
@@ -3488,8 +3567,8 @@ $('devBack').onclick=()=>{ renderHome(); show('s-home'); };
 $('devJump').onclick=()=>{
   const index=Number($('devLesson').value); P.stageProgress=progressFromCount(index); delete P.devMonsterOverride; P.monsterStage=artForPlayer(P); save(); show('s-menu'); renderMenu();
 };
-$('devUnlockLessons').onclick=()=>{ P.stageProgress=progressFromCount(MATH_STAGES.length); delete P.devMonsterOverride; P.monsterStage=artForPlayer(P); save(); renderDeveloper(); sLvl(); };
-$('devUnlockCollectibles').onclick=()=>{ COLLECTIBLES.forEach(c=>P.collectibles[c.id]=5); P.accessories=COSMETIC_REWARDS.map(a=>a.id); save(); renderDeveloper(); sLvl(); };
+$('devUnlockLessons').onclick=()=>{ P.stageProgress=progressFromCount(MATH_STAGES.length); MATH_STAGES.forEach(stage=>DIFFICULTY_IDS.forEach(difficulty=>badgesFor(P,stage.id)[difficulty]=true)); delete P.devMonsterOverride; P.monsterStage=artForPlayer(P); save(); renderDeveloper(); sLvl(); };
+$('devUnlockCollectibles').onclick=()=>{ COLLECTIBLES.forEach(c=>{ P.collectibles[c.id]=15; P.collectibleSpecimens[c.id]=[5,5,5]; }); P.accessories=COSMETIC_REWARDS.map(a=>a.id); save(); renderDeveloper(); sLvl(); };
 $('devMapArt').onclick=()=>{ DB.mapArtDebug=!DB.mapArtDebug; save(); renderDeveloper(); };
 $('devEvolve').onclick=()=>{
   const art=Number($('devEvolution').value); P.devMonsterOverride=art; P.monsterStage=art; save();

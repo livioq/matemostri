@@ -757,10 +757,14 @@ const currentSave = saveContext.migrate({
 });
 assert.equal('xp' in currentSave, false, 'xp is dropped from a current save');
 assert.equal('level' in currentSave, false);
-assert.equal(currentSave.migrationVersion, 9);
+assert.equal(currentSave.migrationVersion, 10);
 assert.equal(currentSave.momoName, 'Sparkle', 'the chosen name survives');
 assert.equal(currentSave.best, 9, 'play stats survive');
-assert.deepEqual(plain(currentSave.collectibles).stars, 3, 'collectibles survive');
+assert.deepEqual(plain(currentSave.collectibles).constellations, 3,
+  'the old stars counter survives under the approved constellation family');
+assert.deepEqual(plain(currentSave.collectibleSpecimens).constellations, [3, 0, 0],
+  'old copies become Easy specimens without granting unearned Medium or Hard art');
+assert.equal('stars' in currentSave.collectibles, false, 'the retired family key is removed');
 assert.ok(currentSave.accessories.includes('scarf'), 'cosmetics survive');
 assert.deepEqual(plain(currentSave.storyProgress),
   {firstCrackSeen:false, mapSeen:{}, guidesSeen:{}, chaptersRead:{}},
@@ -775,8 +779,27 @@ assert.equal(currentSave.stageProgress.available.sub_2column, true, 'the next le
 vm.runInContext('this.stages=MATH_STAGES;this.denCanvas=DEN_CANVAS;this.denRooms=DEN_ROOMS;this.denRoomOf=denRoomOf;' +
   'this.denLevelOf=denLevelOf;this.nextDenLevel=nextDenLevel;this.badgeTotal=badgeTotal;' +
   'this.badgesPossible=BADGES_POSSIBLE;this.denSlotPoints=denSlotPoints;' +
-  'this.denPctX=denPctX;this.denPctY=denPctY;this.badgesForTest=badgesFor;', saveContext);
+  'this.denPctX=denPctX;this.denPctY=denPctY;this.badgesForTest=badgesFor;' +
+  'this.collectibleFamilies=COLLECTIBLES;this.collectibleTierForTest=collectibleTier;', saveContext);
 const denRooms = plain(saveContext.denRooms), denCanvas = plain(saveContext.denCanvas);
+const collectibleFamilies = plain(saveContext.collectibleFamilies);
+assert.equal(collectibleFamilies.length, 8, 'the cabinet keeps one slot for each approved family');
+assert.equal(collectibleFamilies.flatMap(family => family.specimens).length, 24,
+  'all eight families ship easy, medium and hard artwork');
+collectibleFamilies.forEach(family => {
+  assert.equal(family.specimens.length, 3, `${family.name} has three progression specimens`);
+  family.specimens.forEach(specimen => {
+    assert.match(specimen.asset, new RegExp(`^assets/collectibles/${family.id}-[123]\\.webp$`));
+    assert.equal(fs.existsSync(path.join(__dirname, '..', specimen.asset)), true,
+      `${specimen.asset} exists`);
+  });
+});
+const tierItem = saveContext.collectibleFamilies[0];
+assert.deepEqual([[0,0,0], [3,0,0], [3,1,0], [9,0,2]].map(copies =>
+  saveContext.collectibleTierForTest({collectibleSpecimens:{flowers:copies}}, tierItem)), [0, 1, 2, 3],
+  'the cabinet shows the highest difficulty specimen actually owned');
+assert.match(functionSource('awardCollectible'), /DIFFICULTY_IDS\.indexOf\(S\.difficulty\)/,
+  'the awarded specimen tier comes from the difficulty played, not duplicate count');
 assert.equal(saveContext.badgesPossible(), 45, 'fifteen lessons on three difficulties is 45 badges');
 // the thresholds are exactly what a clean sweep of each difficulty is worth, which is what
 // makes "easy gets you room 2, medium room 3, hard room 4" true without asking for the sweep
@@ -869,6 +892,12 @@ assert.match(functionSource('denProps'), /denSlotPoints\(shelf\)/,
   'placeholder rooms still use their own plank geometry');
 assert.match(functionSource('denProps'), /held\?'found':'empty'/,
   'missing treasure positions stay visible in the room');
+assert.match(functionSource('denProps'), /collectibleArt/,
+  'found cabinet treasures use the approved transparent specimen artwork');
+assert.match(functionSource('collectibleArt'), /onerror=/,
+  'specimen artwork keeps an emoji fallback if an asset cannot load');
+assert.match(functionSource('resetPlayerProgress'), /P\.collectibleSpecimens=\{\}/,
+  'resetting a test player clears specimen ownership as well as family totals');
 assert.match(functionSource('denPetStyle'), /room\.pet\.x/, 'and she is placed from her own anchor');
 assert.match(functionSource('denBackdrop'), /room\.art/,
   'a painted room is served instead of the drawing when there is one');
@@ -1977,18 +2006,18 @@ const legacySave = saveContext.migrate({id:'p2', name:'Bo', age:8, level:12, xp:
 assert.equal('level' in legacySave, false, 'the legacy level is dropped once it has been read');
 assert.equal('xp' in legacySave, false);
 assert.ok(legacySave.stageProgress.completed.add_1digit, 'legacy level still became real progress');
-assert.equal(legacySave.migrationVersion, 9);
+assert.equal(legacySave.migrationVersion, 10);
 
 // a save already on the new version is left alone
 const fresh = saveContext.newPlayer('Cy', 7);
 assert.equal('xp' in fresh, false, 'a new player never has xp');
 assert.equal('level' in fresh, false);
-assert.equal(fresh.migrationVersion, 9);
+assert.equal(fresh.migrationVersion, 10);
 assert.equal(saveContext.artForPlayer(fresh), 1, 'new players begin with the magical egg');
 fresh.storyProgress.firstCrackSeen = true;
 assert.equal(saveContext.artForPlayer(fresh), 2, 'the saved crack milestone shows the cracked egg before hatching');
 const rerun = saveContext.migrate(saveContext.migrate(fresh));
-assert.equal(rerun.migrationVersion, 9, 'migrating twice changes nothing');
+assert.equal(rerun.migrationVersion, 10, 'migrating twice changes nothing');
 assert.equal('xp' in rerun, false);
 
 console.log('Arithmetic model tests passed.');
