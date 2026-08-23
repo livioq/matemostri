@@ -193,6 +193,10 @@ public release.
   child who mixes difficulties still climbs, and — because passing hard
   quietly wins easy and medium too — nobody jumps a room the way a rule
   reading "all of easy" would have let them.
+- Home no longer duplicates the collection or wardrobe reward chips. Its
+  companion card is only Momo and the next-step message; Settings is a
+  small profile control, and the unlocked Story and Den destinations share
+  one compact row. The den is the single place for browsing treasures.
 - The den shows every collectible slot, the unfound ones greyed, the same
   way a map stop shows all three badges. An empty space says there is one
   still out there, which a bare list never did.

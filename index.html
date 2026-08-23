@@ -59,14 +59,14 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
 .reward-line{font-size:13px;font-weight:700;color:var(--ink-soft);text-align:center;margin-top:4px}
 .magic-status{text-align:center;padding:9px 8px 3px;color:var(--ink);font-size:18px;font-weight:900;line-height:1.25}
 .magic-whisper{text-align:center;color:var(--ink-soft);font-size:13px;font-weight:750;line-height:1.35;margin-top:5px}
-.collection-shelf{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-top:12px}
-.collectible{display:inline-flex;align-items:center;gap:5px;background:linear-gradient(145deg,#fff,#fff3c9);border:1.5px solid rgba(122,82,173,.25);border-radius:999px;padding:4px 9px 4px 5px;font-size:12px;font-weight:850;color:#664391;box-shadow:0 2px 6px rgba(80,49,154,.1)}
-.collectible .collectible-art{width:25px;height:25px}
-.wardrobe{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-top:8px}.wardrobe .accessory-chip{font-size:11px;padding:5px 8px}
 .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center;margin-top:8px}
 /* the end of a lesson has three of these; home has four, which sit better two by two than
    three across with one stranded underneath */
 #statBox{grid-template-columns:repeat(2,1fr)}
+.home-header-actions{display:flex;align-items:center;gap:12px}
+.home-destinations{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:10px}
+.home-destinations[hidden]{display:none}
+.home-destinations .btn{padding:11px 8px;font-size:13.5px;line-height:1.2;box-shadow:0 3px 0 rgba(27,58,140,.25)}
 .stats div{background:#fff;border:2px solid var(--grid);border-radius:12px;padding:8px 4px}
 .stats b{display:block;font-size:20px;color:var(--ink)}
 .stats span{font-size:11px;font-weight:700;color:var(--ink-soft)}
@@ -482,14 +482,12 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
   <section id="s-home" class="screen">
     <div class="row" style="justify-content:space-between">
       <button class="eyebrow" id="homeWho" aria-label="player name">-</button>
-      <button class="link" id="switchPlayer">change</button>
+      <div class="home-header-actions"><button class="link" id="setBtn">settings</button><button class="link" id="switchPlayer">change</button></div>
     </div>
     <div class="card" id="companionCard">
       <div class="pet-stage" id="petBox"></div>
       <div class="magic-status" id="journeyMessage">A magical friendship has begun.</div>
       <div class="magic-whisper" id="nextReward"></div>
-      <div class="collection-shelf" id="collectionBox"></div>
-      <div class="wardrobe" id="wardrobeBox"></div>
     </div>
     <div style="height:12px"></div>
     <button class="btn" id="carryBtn" style="display:none">Carry on</button>
@@ -501,12 +499,10 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
       <div class="month-medals" id="monthMedals"></div>
     </div>
     <div class="stats" id="statBox"></div>
-    <div style="height:10px"></div>
-    <button class="btn ghost story-btn" id="taleBtn" style="display:none">The story so far</button>
-    <div style="height:10px" id="taleGap" hidden></div>
-    <button class="btn ghost" id="denBtn" style="display:none">Visit the den</button>
-    <div style="height:10px" id="denGap" hidden></div>
-    <button class="btn ghost" id="setBtn">Settings</button>
+    <div class="home-destinations" id="homeDestinations" hidden>
+      <button class="btn ghost story-btn" id="taleBtn" style="display:none">The story so far</button>
+      <button class="btn ghost" id="denBtn" style="display:none">Visit the den</button>
+    </div>
   </section>
 
   <section id="s-menu" class="screen">
@@ -2188,11 +2184,6 @@ function renderHome(){
   if(nextEvolution&&nextEvolution.completed<1) $('nextReward').textContent='Get 4 of the first 5 answers right to see the first crack.';
   else if(nextEvolution){ const left=nextEvolution.completed-count; $('nextReward').textContent=left===1?'One more lesson until '+nextEvolution.title+'!':left+' more lessons until '+nextEvolution.title+'.'; }
   else $('nextReward').textContent='The whole enchanted path is glowing.';
-  $('collectionBox').innerHTML=COLLECTIBLES.filter(c=>P.collectibles[c.id]>0).map(c=>{
-    const count=P.collectibles[c.id],specimen=collectibleSpecimen(c,P);
-    return '<span class="collectible">'+collectibleArt(c,P,'')+esc(specimen.name)+' ×'+count+'</span>';
-  }).join('')||'<span class="magic-whisper">Replay a glowing lesson to discover magical treasures.</span>';
-  $('wardrobeBox').innerHTML=COSMETIC_REWARDS.filter(a=>P.accessories.includes(a.id)).map(a=>'<span class="accessory-chip">'+a.emoji+' '+a.name+'</span>').join('');
   // plain words and a number that says what it is out of: "path lights" and "kind
   // answers" were the game's own vocabulary, which is no use to the child reading them
   const today=dayKey(),days=daysOf(P),run=liveStreak(days,today);
@@ -2216,13 +2207,12 @@ function renderHome(){
   // something new, rather than nagging about it anywhere else
   const open=chaptersUnlocked(P),unread=chaptersUnread(P),tale=$('taleBtn');
   tale.style.display=open?'block':'none';
-  $('taleGap').hidden=!open;
   tale.innerHTML='The story so far'+(unread?'<span class="new-dot">'+unread+' new</span>':'');
   // and the den, once she has won a badge and so has somewhere to put things
   const den=denLevelOf(P);
   $('denBtn').style.display=den?'block':'none';
-  $('denGap').hidden=!den;
   $('denBtn').textContent=den?'Visit the den \u00B7 '+den.name.toLowerCase():'Visit the den';
+  $('homeDestinations').hidden=!(open||den);
 }
 
 /* ---------------- the story ---------------- */

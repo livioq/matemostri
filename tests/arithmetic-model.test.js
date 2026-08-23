@@ -1715,6 +1715,12 @@ assert.match(functionSource('nextQuestion'), /dropResume\(\);\s*endSession\(\)/,
 assert.match(functionSource('startSession'), /carry&&carry\.stageId===stage\.id/,
   'a carried lesson picks up its own progress and nobody else\'s');
 assert.match(functionSource('renderHome'), /resumeOf\(P\)/, 'the home screen offers it');
+assert.doesNotMatch(source, /id="collectionBox"|id="wardrobeBox"/,
+  'collectibles and reward chips live in the den instead of cluttering Home');
+assert.doesNotMatch(functionSource('renderHome'), /COLLECTIBLES|COSMETIC_REWARDS/,
+  'Home does not rebuild a hidden duplicate of the den collection');
+assert.match(source, /\.home-destinations\{[^}]*grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/,
+  'story and den navigation share one compact, equal-width row');
 
 // one question is the day's maths: ten in a row is a lot to ask, and asking for all ten
 // before the run moves would make the run the thing they cannot reach

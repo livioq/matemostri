@@ -14,6 +14,7 @@ This is the authoritative current-state document for this working tree. It is ba
 - Stable engine preserved: arithmetic generation, column-working UI, long
   multiplication, long division, profiles, saves, custom Momo names,
   collectibles, settings, hints, sounds, and developer tools.
+- Home is deliberately focused on Momo, the next lesson, monthly consistency and four compact progress numbers. Collectible and wardrobe chip lists are not duplicated there; treasures are browsed in the den. Settings sits with the small profile controls, while Story and Den share one compact destination row when unlocked.
 
 ## Difficulties
 
