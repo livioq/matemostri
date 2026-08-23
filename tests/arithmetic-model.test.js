@@ -1530,21 +1530,69 @@ const guideCtx = {};
 vm.createContext(guideCtx);
 vm.runInContext([
   source.match(/const LESSON_GUIDES=\{[\s\S]*?\n\};/)[0],
-  source.match(/const guideFor=.*;\n/)[0],
-  'this.guides=LESSON_GUIDES;this.guideFor=guideFor;'
+  source.match(/function guideFor\(stageId,difficulty\)\{[\s\S]*?\n\}/)[0],
+  source.match(/const guideKey=[\s\S]*?;\n/)[0],
+  'this.guides=LESSON_GUIDES;this.guideFor=guideFor;this.guideKey=guideKey;'
 ].join('\n'), guideCtx);
 const guided = Object.keys(plain(guideCtx.guides));
-assert.deepEqual(guided.sort(), ['add_2column', 'div_long', 'mul_1x2', 'mul_2x2', 'sub_2column'],
-  'every lesson that introduces a new working has a guide, and no other does');
-guided.forEach(id => {
-  const guide = plain(guideCtx.guides[id]);
+assert.deepEqual(guided.sort(),
+  ['add_2column', 'add_2mental', 'div_long', 'mul_1x2', 'mul_2x2', 'sub_2column', 'sub_2mental'],
+  'every lesson that introduces a new working or is done in the head has a guide, and no other does');
+// a lesson done in the head has no working to draw, and there the difficulty is the whole of
+// what changes, so those hold one guide per difficulty
+const worded = ['add_2mental', 'sub_2mental'];
+worded.forEach(id => {
+  assert.equal(plain(guideCtx.guides[id]).byDifficulty, true, `${id} has a guide for each difficulty`);
+  ['easy', 'medium', 'hard'].forEach(d => {
+    const guide = plain(guideCtx.guideFor(id, d));
+    assert.ok(guide && guide.lines && guide.lines.length >= 3,
+      `${id} on ${d} walks through an example in words`);
+    assert.equal(guide.cells, undefined, `${id} on ${d} draws no working, because there is none`);
+  });
+  const hellos = ['easy', 'medium', 'hard'].map(d => plain(guideCtx.guideFor(id, d)).hello);
+  assert.equal(new Set(hellos).size, 3, `${id} says something different on each difficulty`);
+  assert.match(plain(guideCtx.guideFor(id, 'easy')).hello, /small|gentle|enough/i,
+    `${id} on easy reassures rather than warns`);
+  const mid = plain(guideCtx.guideFor(id, 'medium'));
+  assert.match(mid.hello + ' ' + mid.lines.join(' '), /not enough|spill|past ten|left over/i,
+    `${id} on medium works through the carrying or borrowing`);
+  assert.equal(guideCtx.guideKey(id, 'easy'), id + ':easy',
+    `${id} remembers each difficulty's guide separately`);
+});
+const drawn = guided.filter(id => !worded.includes(id));
+drawn.forEach(id => assert.equal(guideCtx.guideKey(id, 'easy'), id,
+  `${id} teaches one working, so it is read once whatever the difficulty`));
+guided.forEach(id => ['easy', 'medium', 'hard'].forEach(difficulty => {
+  const guide = plain(guideCtx.guideFor(id, difficulty));
   assert.ok(guide.title && guide.sum, `${id} names itself and shows a worked sum`);
-  assert.ok(guide.lines.length >= 3 && guide.lines.length <= 5, `${id} explains itself in a few lines`);
-  guide.lines.forEach(line => {
+  // a wall of instructions is a cold jump, so it opens with a hello and then says one
+  // thing per page, with that one thing lit up in the working
+  assert.ok(/[.!?]$/.test(guide.hello) && guide.hello.length > 40,
+    `${id} says hello before it teaches anything`);
+  const spoken = (guide.pages || []).map(page => page.say)
+    .concat(guide.lines || []).concat([guide.hello]);
+  spoken.forEach(line => {
     assert.ok(/[.!?]$/.test(line), `${id} line ends as a sentence: ${line}`);
     assert.equal(/quotient|product|remainder|multiplicand|divisor|minuend|carry the tens digit/i.test(line), false,
       `${id} keeps the jargon out: ${line}`);
   });
+  if (!guide.pages) return;
+  assert.ok(guide.pages.length >= 4 && guide.pages.length <= 5, `${id} takes it a page at a time`);
+  // every page points at something, and points at a cell that is actually on the page by then
+  guide.pages.forEach((page, i) => {
+    assert.ok(page.ring && page.ring.length, `${id} page ${i + 1} lights up what it is talking about`);
+    page.ring.forEach(([r, c]) => {
+      const cell = guide.cells.find(x => x.r === r && x.c === c);
+      assert.ok(cell, `${id} page ${i + 1} rings a cell that exists (${r},${c})`);
+      assert.ok((cell.step || 0) <= i + 1,
+        `${id} page ${i + 1} rings ${r},${c}, which is not written until page ${cell.step}`);
+    });
+  });
+  // the working builds up: something new is written on all but the first page
+  const steps = guide.cells.map(cell => cell.step || 0);
+  assert.ok(Math.max.apply(null, steps) >= guide.pages.length - 1,
+    `${id} keeps adding to the working as the pages go on`);
+  assert.ok(steps.some(step => step === 0), `${id} shows the question from the start`);
   const rows = guide.cells.map(c => c.r).concat(guide.rules.map(r => r.r));
   assert.ok(Math.min.apply(null, rows) >= 1, `${id} places every cell on a real row`);
   guide.cells.forEach(c => assert.ok(c.c >= 1 && c.c <= guide.cols,
@@ -1552,16 +1600,26 @@ guided.forEach(id => {
   // the rule is drawn on the answer's own row, as its top border, the way the real working does
   guide.rules.forEach(rule => assert.ok(guide.cells.some(c => c.r === rule.r),
     `${id} draws its rule on a row that has digits, not on an empty one`));
-});
+}));
 assert.equal(guideCtx.guideFor('add_1digit'), null, 'a lesson with nothing new to explain has no guide');
 
-assert.match(functionSource('beginLesson'), /guideFor\(stageId\)&&!seen\[stageId\]/,
+assert.match(functionSource('beginLesson'), /guideFor\(stageId,difficulty\)&&!seen\[guideKey\(stageId,difficulty\)\]/,
   'the guide is shown before the first sit, and only then');
-assert.match(source, /guidesSeen\[going\.stageId\]=true/, 'and remembered once it has been read');
+assert.match(source, /guidesSeen\[guideKey\(going\.stageId,going\.difficulty\)\]=true/,
+  'and remembered once it has been read');
+assert.match(functionSource('renderGuideLines'), /i===page-1\?'now'/,
+  'a worded guide lights the line it has just reached');
+assert.match(functionSource('renderGuide'), /worded=!!guide\.lines/,
+  'and the drawn working steps aside for it');
 assert.match(functionSource('storyProgressOf'), /guidesSeen/,
   'so an existing save gains the field rather than losing its progress');
 assert.match(functionSource('renderDifficultyChoice'), /openGuide\(stage\.id,null,false\)/,
   'and the map stop can call it back up afterwards');
+assert.match(functionSource('renderGuideGrid'), /\(cell\.step\|\|0\)>page/,
+  'a page only shows the working as far as it has got');
+assert.match(source, /guidePage<guidePages\(/, 'Next walks the pages before it starts the lesson');
+assert.match(functionSource('renderGuide'), /page===0\?guide\.hello/,
+  'and the first page is the hello, not the maths');
 
 // the trail: it wanders between stops, and what has been walked looks different from
 // what is still ahead

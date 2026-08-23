@@ -125,8 +125,17 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
 .guide-grid{--cell:34px;position:relative}
 .guide-sum{text-align:center;font-size:20px;font-weight:800;color:var(--ink-soft);margin:2px 0 0}
 .guide-note{text-align:center;font-size:12px;font-weight:800;color:#9a6400;margin:2px 0 0}
-.guide-lines{margin:10px 0 0;padding:0 0 0 22px;text-align:left}
-.guide-lines li{margin:0 0 7px;font-weight:700;color:var(--ink);font-size:14px;line-height:1.32}
+/* a lesson done in the head has no working, so its example is these lines instead */
+.guide-lines{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-direction:column;gap:7px}
+.guide-lines li{font-size:15px;font-weight:750;line-height:1.34;padding:8px 11px;border-radius:12px;
+  border:2px solid var(--grid);background:#fff;color:var(--ink-soft)}
+.guide-lines li.now{border-color:var(--gold);background:#FFF8E4;color:var(--ink);
+  box-shadow:0 2px 0 rgba(80,49,154,.12)}
+.guide-say{margin:12px 2px 2px;font-weight:700;color:var(--ink);font-size:15px;line-height:1.36;text-align:center}
+.guide-dots{display:flex;justify-content:center;gap:7px;margin:10px 0}
+.guide-dots i{width:8px;height:8px;border-radius:50%;background:var(--grid);display:block}
+.guide-dots i.done{background:rgba(80,49,154,.35)}
+.guide-dots i.on{background:var(--gold);transform:scale(1.3)}
 .wgrid{display:grid;position:relative}
 .dc{width:var(--cell);height:var(--cell);display:flex;align-items:center;justify-content:center;
     font-family:ui-monospace,"Roboto Mono","Courier New",monospace;font-size:calc(var(--cell)*.6);font-weight:700;color:var(--ink)}
@@ -454,13 +463,16 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
       <span class="eyebrow" id="guideEyebrow"></span>
     </div>
     <div class="card">
-      <div class="ask"><h1 style="font-size:26px;margin:2px 0" id="guideTitle">How it works</h1><button class="speak" id="sayGuide" aria-label="Hear this" hidden>▶</button></div>
+      <div class="ask"><h1 style="font-size:24px;margin:2px 0" id="guideTitle">How it works</h1><button class="speak" id="sayGuide" aria-label="Hear this" hidden>▶</button></div>
       <div class="guide-sum mono" id="guideSum"></div>
-      <div class="gridwrap"><div class="wgrid guide-grid" id="guideGrid"></div></div>
+      <div class="pet-stage" id="guidePet" style="display:none"></div>
+      <div class="gridwrap" id="guideWrap"><div class="wgrid guide-grid" id="guideGrid"></div></div>
+      <ol class="guide-lines" id="guideLines" style="display:none"></ol>
       <div class="guide-note" id="guideNote"></div>
-      <ol class="guide-lines" id="guideLines"></ol>
+      <p class="guide-say" id="guideSay"></p>
     </div>
-    <button class="btn" id="guideStart">Start the lesson</button>
+    <div class="guide-dots" id="guideDots"></div>
+    <button class="btn" id="guideStart">Next</button>
   </section>
 
   <section id="s-play" class="screen">
@@ -1023,62 +1035,128 @@ function migrate(p){
    cells the real working uses, and a few lines saying what happened, in the same words the
    lesson will use. Shown once, before the first sit; available again from the map stop.
    Cells are placed by row and column so one renderer draws a column sum and a division. */
+/* A lesson that introduces a new working explains it first, a page at a time. A wall of
+   four instructions is a cold jump; a page that says one thing, with that one thing lit up
+   in the working, is something a seven-year-old can follow. Page 0 is a warm hello, then
+   one page per step. `step` on a cell is the page it first appears on — 0 for the parts of
+   the question that are there from the start — and `ring` is what this page is talking
+   about, so the example builds up as the child pages through it. */
 const LESSON_GUIDES={
   add_2column:{title:'Adding in columns',sum:'27 + 15',cols:3,
-    cells:[{r:1,c:2,t:'1',cls:'small'},
-      {r:2,c:2,t:'2'},{r:2,c:3,t:'7'},
-      {r:3,c:1,t:'+',cls:'op'},{r:3,c:2,t:'1'},{r:3,c:3,t:'5'},
-      {r:4,c:2,t:'4',cls:'typed'},{r:4,c:3,t:'2',cls:'typed'}],
+    hello:'You have been adding brilliantly. Now we write it a new way — down the page, one column at a time, the way it is written on paper.',
+    cells:[{r:1,c:2,t:'1',cls:'small',step:2},
+      {r:2,c:2,t:'2',step:0},{r:2,c:3,t:'7',step:0},
+      {r:3,c:1,t:'+',cls:'op',step:0},{r:3,c:2,t:'1',step:0},{r:3,c:3,t:'5',step:0},
+      {r:4,c:2,t:'4',cls:'typed',step:4},{r:4,c:3,t:'2',cls:'typed',step:2}],
     rules:[{r:4,c:1,span:3}],
-    lines:['Ones under ones, tens under tens.',
-      'Add the ones first: 7 and 5 make 12.',
-      '12 will not fit in one box, so write the 2 and carry the 1 above the tens.',
-      'Now the tens: 2 and 1, and the 1 you carried, make 4.']},
+    pages:[
+      {say:'The numbers line up one above the other. This right-hand column is the ones.',ring:[[2,3],[3,3]]},
+      {say:'Add the ones first. 7 and 5 make 12. Twelve will not fit in one box, so write the 2 here and carry the 1 above the next column.',ring:[[4,3],[1,2]]},
+      {say:'This left-hand column is the tens. 2 tens and 1 ten, and the 1 you carried.',ring:[[2,2],[3,2],[1,2]]},
+      {say:'That makes 4 tens. Write the 4, and the answer is 42.',ring:[[4,2]]}]},
   sub_2column:{title:'Taking away in columns',sum:'84 \u2212 16',cols:3,
-    cells:[{r:1,c:2,t:'7',cls:'small'},{r:1,c:3,t:'14',cls:'small'},
-      {r:2,c:2,t:'8',cls:'struck'},{r:2,c:3,t:'4',cls:'struck'},
-      {r:3,c:1,t:'\u2212',cls:'op'},{r:3,c:2,t:'1'},{r:3,c:3,t:'6'},
-      {r:4,c:2,t:'6',cls:'typed'},{r:4,c:3,t:'8',cls:'typed'}],
+    hello:'Taking away goes down the page too. Sometimes the top number is too small to take from, and there is a neat trick for that. Let us walk through one.',
+    cells:[{r:1,c:2,t:'7',cls:'small',step:3},{r:1,c:3,t:'14',cls:'small',step:3},
+      {r:2,c:2,t:'8',step:0},{r:2,c:3,t:'4',step:0},
+      {r:3,c:1,t:'\u2212',cls:'op',step:0},{r:3,c:2,t:'1',step:0},{r:3,c:3,t:'6',step:0},
+      {r:4,c:2,t:'6',cls:'typed',step:5},{r:4,c:3,t:'8',cls:'typed',step:4}],
     rules:[{r:4,c:1,span:3}],
-    lines:['Ones under ones, tens under tens.',
-      '4 take away 6 will not go.',
-      'So borrow a ten: cross out the 8 and write 7, and the 4 becomes 14.',
-      'Now 14 take away 6 is 8, and 7 take away 1 is 6.']},
+    pages:[
+      {say:'Line them up: ones under ones, tens under tens. Start with this ones column.',ring:[[2,3],[3,3]]},
+      {say:'4 take away 6 will not go. There is not enough there yet.',ring:[[2,3],[3,3]]},
+      {say:'So borrow a ten from next door. Cross out the 8 and write 7, and the 4 becomes 14.',ring:[[1,2],[1,3]]},
+      {say:'Now 14 take away 6 is 8.',ring:[[4,3]]},
+      {say:'And in the tens, 7 take away 1 is 6. The answer is 68.',ring:[[4,2]]}]},
   mul_1x2:{title:'Multiplying in columns',sum:'43 \u00D7 4',cols:4,
-    cells:[{r:1,c:3,t:'4'},{r:1,c:4,t:'3',cls:'ringed'},
-      {r:2,c:1,t:'\u00D7',cls:'op'},{r:2,c:4,t:'4',cls:'ringed'},
-      {r:3,c:2,t:'1',cls:'typed'},{r:3,c:3,t:'7',cls:'typed'},{r:3,c:4,t:'2',cls:'typed'}],
+    hello:'You know your times tables. Now we use them on a bigger number, one digit at a time, and keep anything that spills over.',
+    cells:[{r:1,c:3,t:'4',step:0},{r:1,c:4,t:'3',step:0},
+      {r:2,c:1,t:'\u00D7',cls:'op',step:0},{r:2,c:4,t:'4',step:0},
+      {r:3,c:2,t:'1',cls:'typed',step:4},{r:3,c:3,t:'7',cls:'typed',step:3},{r:3,c:4,t:'2',cls:'typed',step:2}],
     rules:[{r:3,c:1,span:4}],
-    note:'keep 1',
-    lines:['Multiply the ones first: 3 times 4 is 12.',
-      'Only one digit fits in a box, so write the 2 and keep the 1 at the side.',
-      'Now the tens: 4 times 4 is 16, and the 1 you kept makes 17.',
-      'Nothing is left to multiply, so the 17 goes down in front of the 2.']},
+    note:'keep 1',noteStep:2,
+    pages:[
+      {say:'Start at the ones. This 3 and this 4 are the two we multiply first.',ring:[[1,4],[2,4]]},
+      {say:'3 times 4 is 12. Only one digit fits in a box, so write the 2 and keep the 1 at the side.',ring:[[3,4]]},
+      {say:'Now the tens. 4 times 4 is 16, and the 1 you kept makes 17.',ring:[[1,3],[2,4]]},
+      {say:'Nothing is left to multiply, so all of the 17 goes down. The answer is 172.',ring:[[3,2],[3,3]]}]},
   mul_2x2:{title:'Long multiplication',sum:'43 \u00D7 12',cols:4,
-    cells:[{r:1,c:3,t:'4'},{r:1,c:4,t:'3'},
-      {r:2,c:1,t:'\u00D7',cls:'op'},{r:2,c:3,t:'1'},{r:2,c:4,t:'2'},
-      {r:3,c:3,t:'8',cls:'typed'},{r:3,c:4,t:'6',cls:'typed'},
-      {r:4,c:2,t:'4',cls:'typed'},{r:4,c:3,t:'3',cls:'typed'},{r:4,c:4,t:'0',cls:'ringed'},
-      {r:5,c:2,t:'5',cls:'typed'},{r:5,c:3,t:'1',cls:'typed'},{r:5,c:4,t:'6',cls:'typed'}],
+    hello:'This one is two sums stacked on top of each other, then added together. It looks big, but each row is something you can already do.',
+    cells:[{r:1,c:3,t:'4',step:0},{r:1,c:4,t:'3',step:0},
+      {r:2,c:1,t:'\u00D7',cls:'op',step:0},{r:2,c:3,t:'1',step:0},{r:2,c:4,t:'2',step:0},
+      {r:3,c:3,t:'8',cls:'typed',step:1},{r:3,c:4,t:'6',cls:'typed',step:1},
+      {r:4,c:4,t:'0',cls:'ringed',step:2},
+      {r:4,c:2,t:'4',cls:'typed',step:3},{r:4,c:3,t:'3',cls:'typed',step:3},
+      {r:5,c:2,t:'5',cls:'typed',step:4},{r:5,c:3,t:'1',cls:'typed',step:4},{r:5,c:4,t:'6',cls:'typed',step:4}],
     rules:[{r:3,c:1,span:4},{r:5,c:1,span:4}],
-    lines:['Multiply by the ones first, into the first row: 43 times 2 is 86.',
-      'The second row is multiplying by tens, so it starts with a 0 in the ones place.',
-      'Then multiply by the tens: 43 times 1 is 43, written in front of that 0.',
-      'Add the two rows together.']},
+    pages:[
+      {say:'Multiply by the ones first, into the first row. 43 times 2 is 86.',ring:[[2,4],[3,3],[3,4]]},
+      {say:'The second row multiplies by the tens, so it begins with a 0 in the ones place to hold it there.',ring:[[4,4]]},
+      {say:'Now multiply by the tens. 43 times 1 is 43, written in front of that 0.',ring:[[2,3],[4,2],[4,3]]},
+      {say:'Last, add the two rows together. 86 and 430 make 516.',ring:[[5,2],[5,3],[5,4]]}]},
   div_long:{title:'Long division',sum:'84 \u00F7 4',cols:5,bar:3,
-    cells:[{r:1,c:1,t:'8'},{r:1,c:2,t:'4'},{r:1,c:4,t:'4'},
-      {r:2,c:4,t:'2',cls:'typed'},{r:2,c:5,t:'1',cls:'typed'},
-      {r:2,c:1,t:'8',cls:'sub typed'},
-      {r:3,c:1,t:'0',cls:'typed'},{r:3,c:2,t:'4',cls:'brought'},
-      {r:4,c:2,t:'4',cls:'sub typed'},
-      {r:5,c:2,t:'0',cls:'typed'}],
+    hello:'Sharing out a big number happens one digit at a time, and the same four things happen each go. Once you see them once, the rest is the same again.',
+    cells:[{r:1,c:1,t:'8',step:0},{r:1,c:2,t:'4',step:0},{r:1,c:4,t:'4',step:0},
+      {r:2,c:4,t:'2',cls:'typed',step:1},{r:2,c:5,t:'1',cls:'typed',step:4},
+      {r:2,c:1,t:'8',cls:'sub typed',step:2},
+      {r:3,c:1,t:'0',cls:'typed',step:2},{r:3,c:2,t:'4',cls:'brought',step:3},
+      {r:4,c:2,t:'4',cls:'sub typed',step:4},
+      {r:5,c:2,t:'0',cls:'typed',step:4}],
     rules:[{r:2,c:4,span:2}],
-    lines:['How many times does 4 go into 8? Twice. Write the 2 above.',
-      '2 times 4 is 8. Write it underneath and take it away.',
-      'Bring the next digit down: that leaves 4.',
-      'Do the same again: 4 goes into 4 once, and nothing is left.']}
+    pages:[
+      {say:'How many times does 4 go into the first digit, 8? Twice. Write the 2 up here.',ring:[[1,1],[2,4]]},
+      {say:'Now multiply back: 2 times 4 is 8. Write it underneath and take it away, which leaves nothing.',ring:[[2,1],[3,1]]},
+      {say:'Bring the next digit down beside it. That gives you 4 to share out.',ring:[[3,2]]},
+      {say:'And do the same again: 4 goes into 4 once, nothing is left over. The answer is 21.',ring:[[2,5],[4,2],[5,2]]}]},
+  /* A lesson done in the head has no working to draw, so its guide is the same walk-through in
+     words: a line at a time, the one being talked about lit. And there the difficulty is the
+     whole lesson — easy never carries, hard always does — so each gets its own. */
+  add_2mental:{byDifficulty:true,
+    easy:{title:'Adding in your head',sum:'34 + 23',
+      hello:'No paper this time — these you do in your head. Do not worry, we will keep the numbers small, and none of them will spill over ten.',
+      lines:['Take the tens first. 30 and 20 make 50.',
+        'Then the ones. 4 and 3 make 7.',
+        'Put them back together. 50 and 7 is 57.']},
+    medium:{title:'Adding in your head',sum:'27 + 15',
+      hello:'No paper this time — these you do in your head. Tens first, then ones, and sometimes the ones spill past ten. Here is one that does.',
+      lines:['Take the tens first. 20 and 10 make 30.',
+        'Then the ones. 7 and 5 make 12.',
+        '12 is a ten and 2 left over, so give that ten to the others. 30 and 10 is 40.',
+        'And 40 and the 2 is 42.']},
+    hard:{title:'Adding in your head',sum:'47 + 38',
+      hello:'All in your head again, with bigger numbers now, and every single one of them spills past ten. Two steps, same as always.',
+      lines:['Tens first. 40 and 30 make 70.',
+        'Now the ones. 7 and 8 make 15.',
+        'That is a ten and 5 over. 70 and 10 is 80.',
+        'And 80 and the 5 is 85.']}},
+  sub_2mental:{byDifficulty:true,
+    easy:{title:'Taking away in your head',sum:'48 − 13',
+      hello:'Taking away in your head now, with no writing it down. We will keep it gentle: there will always be enough ones to take from.',
+      lines:['Take the tens away first. 48 take away 10 is 38.',
+        'Then the ones. 38 take away 3 is 35.',
+        'That is it — 35.']},
+    medium:{title:'Taking away in your head',sum:'52 − 27',
+      hello:'Taking away in your head now, with no writing it down. Sometimes there are not enough ones to take from, and then you have to borrow a ten first. Let us walk through one.',
+      lines:['Take the tens away first. 52 take away 20 is 32.',
+        'Now take away 7 — but 32 only has 2 ones, so there are not enough.',
+        'So take the 2 off first, which gets you down to 30.',
+        'There are 5 still to go. 30 take away 5 is 25.']},
+    hard:{title:'Taking away in your head',sum:'62 − 38',
+      hello:'In your head again, bigger numbers, and every one of these runs out of ones. Get down to a round ten and the rest is easy.',
+      lines:['Tens first. 62 take away 30 is 32.',
+        'Now 8 to take away, and 32 only has 2 ones.',
+        'Take those 2 off to land on 30.',
+        'That leaves 6 to go. 30 take away 6 is 24.']}}
 };
-const guideFor=stageId=>LESSON_GUIDES[stageId]||null;
+/* Most guides teach a working, which is the same on every difficulty, so one guide serves all
+   three. A mental lesson has no working, and there the difficulty is what changes, so those
+   entries hold one guide per difficulty and are remembered separately. */
+function guideFor(stageId,difficulty){
+  const entry=LESSON_GUIDES[stageId];
+  if(!entry) return null;
+  return entry.byDifficulty?(entry[difficulty||'medium']||entry.medium):entry;
+}
+const guideKey=(stageId,difficulty)=>LESSON_GUIDES[stageId]&&LESSON_GUIDES[stageId].byDifficulty
+  ?stageId+':'+(difficulty||'medium'):stageId;
 
 /* ---------------- pet ---------------- */
 
@@ -1827,32 +1905,65 @@ function openMapNode(nodeId){
 }
 /* The guide page for a lesson that introduces a new working. Cells are placed by row and
    column, so the one renderer draws a column sum, a long multiplication and a division. */
-function renderGuideGrid(guide){
-  const parts=[];
-  if(guide.bar) parts.push('<div class="vbar" style="grid-column:'+guide.bar+';grid-row:1 / -1"></div>');
+function renderGuideGrid(guide,page){
+  const parts=[],ring={};
+  const said=page>0&&guide.pages[page-1]?guide.pages[page-1]:null;
+  ((said&&said.ring)||[]).forEach(at=>{ ring[at[0]+','+at[1]]=1; });
+  if(guide.bar&&page>0) parts.push('<div class="vbar" style="grid-column:'+guide.bar+';grid-row:1 / -1"></div>');
   (guide.rules||[]).forEach(rule=>parts.push('<div class="rule" style="grid-row:'+rule.r+
     ';grid-column:'+rule.c+' / span '+rule.span+'"></div>'));
-  (guide.cells||[]).forEach(cell=>parts.push('<div class="dc '+(cell.cls||'')+'" style="grid-row:'+cell.r+
-    ';grid-column:'+cell.c+'">'+esc(cell.t)+'</div>'));
+  (guide.cells||[]).forEach(cell=>{
+    if((cell.step||0)>page) return;                  // not written yet on this page
+    const lit=ring[cell.r+','+cell.c]?' ringed':'';
+    parts.push('<div class="dc '+(cell.cls||'')+lit+'" style="grid-row:'+cell.r+
+      ';grid-column:'+cell.c+'">'+esc(cell.t)+'</div>');
+  });
   return parts.join('');
 }
-let guidePending=null;
+/* A lesson done in the head has nothing to draw, so its worked example is a few lines of words,
+   arriving one per page with the newest one lit. */
+function renderGuideLines(guide,page){
+  return (guide.lines||[]).map((line,i)=>i<page
+    ?'<li class="'+(i===page-1?'now':'was')+'">'+esc(line)+'</li>':'').join('');
+}
+let guidePending=null,guidePage=0;
+function guidePages(guide){ return guide?(guide.lines||guide.pages).length:0; }
+function renderGuide(){
+  const guide=guideFor(guidePending&&guidePending.stageId,guidePending&&guidePending.difficulty);
+  if(!guide) return;
+  const last=guidePages(guide),page=guidePage,worded=!!guide.lines;
+  const said=page>0&&!worded?guide.pages[page-1]:null;
+  $('guideTitle').textContent=page===0?'Something a little different':guide.title;
+  $('guideSum').textContent=page===0?'':guide.sum;
+  $('guideSum').style.display=page===0?'none':'block';
+  // a worded guide needs no caption: the line it has just lit is the whole of what it is saying
+  $('guideSay').textContent=page===0?guide.hello:said?said.say:'';
+  $('guideSay').style.display=page>0&&worded?'none':'block';
+  $('guideLines').innerHTML=worded&&page>0?renderGuideLines(guide,page):'';
+  $('guideLines').style.display=worded&&page>0?'block':'none';
+  const grid=$('guideGrid'),cells=guide.cells||[],rules=guide.rules||[];
+  const rows=worded?1:Math.max.apply(null,cells.map(c=>c.r).concat(rules.map(r=>r.r)));
+  grid.style.gridTemplateColumns='repeat('+(guide.cols||1)+', var(--cell))';
+  grid.style.gridTemplateRows='repeat('+rows+', var(--cell))';
+  grid.innerHTML=page===0||worded?'':renderGuideGrid(guide,page);
+  $('guideWrap').style.display=page===0||worded?'none':'flex';
+  const noteYet=guide.note&&page>=(guide.noteStep||1);
+  $('guideNote').textContent=noteYet?guide.note:'';
+  $('guideNote').style.display=noteYet?'block':'none';
+  $('guidePet').innerHTML=page===0?monsterMarkup(P.monsterStage,'idle','bob',petName()):'';
+  $('guidePet').style.display=page===0?'block':'none';
+  $('guideDots').innerHTML=Array.from({length:last+1},(_,i)=>
+    '<i class="'+(i===page?'on':i<page?'done':'')+'"></i>').join('');
+  $('guideBack').textContent=page===0?'back':'previous';
+  $('guideStart').textContent=page<last?'Next':(guidePending.difficulty?'Start the lesson':'Back to the stop');
+}
 function openGuide(stageId,difficulty,fromLesson){
-  const guide=guideFor(stageId),stage=STAGE_BY_ID(stageId);
+  const guide=guideFor(stageId,difficulty),stage=STAGE_BY_ID(stageId);
   if(!guide||!stage) return false;
   guidePending={stageId:stageId,difficulty:difficulty};
+  guidePage=0;
   $('guideEyebrow').textContent=stage.magic;
-  $('guideTitle').textContent=guide.title;
-  $('guideSum').textContent=guide.sum;
-  const rows=Math.max.apply(null,(guide.cells||[]).map(c=>c.r).concat((guide.rules||[]).map(r=>r.r)));
-  const grid=$('guideGrid');
-  grid.style.gridTemplateColumns='repeat('+guide.cols+', var(--cell))';
-  grid.style.gridTemplateRows='repeat('+rows+', var(--cell))';
-  grid.innerHTML=renderGuideGrid(guide);
-  $('guideNote').textContent=guide.note||'';
-  $('guideNote').style.display=guide.note?'block':'none';
-  $('guideLines').innerHTML=guide.lines.map(line=>'<li>'+esc(line)+'</li>').join('');
-  $('guideStart').textContent=difficulty?'Start the lesson':'Back to the stop';
+  renderGuide();
   show('s-guide');
   return true;
 }
@@ -1861,7 +1972,7 @@ function openGuide(stageId,difficulty,fromLesson){
    a working the child has not met: that gets its explanation first, once. */
 function beginLesson(stageId,difficulty){
   const seen=storyProgressOf(P).guidesSeen;
-  if(guideFor(stageId)&&!seen[stageId]) { openGuide(stageId,difficulty,true); return; }
+  if(guideFor(stageId,difficulty)&&!seen[guideKey(stageId,difficulty)]) { openGuide(stageId,difficulty,true); return; }
   startSession(stageId,difficulty);
 }
 function renderDifficultyChoice(stage){
@@ -2842,7 +2953,7 @@ const SPEAK_PANELS={
   sayEnd:['endTitle','endStats','endStreak','endReward'],
   sayNode:['nodeLesson','nodeTitle','nodeStory'],
   sayStory:['storyTitle','storyText'],
-  sayGuide:['guideTitle','guideSum','guideLines']
+  sayGuide:['guideTitle','guideLines','guideSay']
 };
 /* A block of stats is several little elements, and textContent runs them together into
    "7answers mastered7answers in a row". Each part is read on its own instead. */
@@ -2873,13 +2984,18 @@ $('dayOk').onclick=()=>{
 $('guideStart').onclick=()=>{
   sTap();
   if(!guidePending) { show('s-menu'); renderMenu(); return; }
+  if(guidePage<guidePages(guideFor(guidePending.stageId,guidePending.difficulty))){ guidePage++; renderGuide(); hushSpeech(); return; }
   const going=guidePending;
   if(going.difficulty){
-    storyProgressOf(P).guidesSeen[going.stageId]=true; save();
+    storyProgressOf(P).guidesSeen[guideKey(going.stageId,going.difficulty)]=true; save();
     startSession(going.stageId,going.difficulty);
   }else if(selectedMapNode) openMapNode(selectedMapNode.id);
 };
-$('guideBack').onclick=()=>{ sTap(); if(selectedMapNode) openMapNode(selectedMapNode.id); else { show('s-menu'); renderMenu(); } };
+$('guideBack').onclick=()=>{
+  sTap(); hushSpeech();
+  if(guidePage>0){ guidePage--; renderGuide(); return; }
+  if(selectedMapNode) openMapNode(selectedMapNode.id); else { show('s-menu'); renderMenu(); }
+};
 Object.keys(SPEAK_PANELS).forEach(id=>{
   const button=$(id); if(!button) return;
   button.onclick=()=>{
