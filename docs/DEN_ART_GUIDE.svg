@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1382 990" width="1382" height="990">
+<rect width="1382" height="990" fill="#FFF9FE"/>
+<style>text{font-family:system-ui,sans-serif}.t{font-size:19px;font-weight:700;fill:#50319A}.l{font-size:12px;font-weight:700;fill:#8069B5}.k{font-size:11px;fill:#D94B92;font-weight:700}</style>
+<text class="t" x="34" y="50">Room 1 — A cosy hollow <tspan class="l">(1 badges)</tspan></text>
+<g transform="translate(34,64)">
+<rect width="640" height="400" fill="#EDE7F7" stroke="#50319A" stroke-width="2" rx="10"/>
+<line x1="0" y1="348" x2="640" y2="348" stroke="#2E9E7A" stroke-width="2"/>
+<text class="k" x="6" y="342" fill="#2E9E7A">floor y=348</text>
+<rect x="232" y="152" width="176" height="196" fill="#D94B92" fill-opacity=".13" stroke="#D94B92" stroke-width="2" stroke-dasharray="7 5"/>
+<text class="k" x="237" y="147">keep clear — the creature</text>
+<circle cx="320" cy="348" r="6" fill="#2E9E7A"/>
+</g>
+<text class="t" x="708" y="50">Room 2 — A den with a shelf <tspan class="l">(15 badges)</tspan></text>
+<g transform="translate(708,64)">
+<rect width="640" height="400" fill="#EDE7F7" stroke="#50319A" stroke-width="2" rx="10"/>
+<line x1="0" y1="348" x2="640" y2="348" stroke="#2E9E7A" stroke-width="2"/>
+<text class="k" x="6" y="342" fill="#2E9E7A">floor y=348</text>
+<rect x="232" y="152" width="176" height="196" fill="#D94B92" fill-opacity=".13" stroke="#D94B92" stroke-width="2" stroke-dasharray="7 5"/>
+<text class="k" x="237" y="147">keep clear — the creature</text>
+<rect x="392" y="162" width="196" height="30" fill="#D94B92" fill-opacity=".13" stroke="#D94B92" stroke-width="2" stroke-dasharray="7 5"/>
+<text class="k" x="397" y="157">keep clear — treasures on the plank</text>
+<line x1="392" y1="192" x2="588" y2="192" stroke="#50319A" stroke-width="4"/>
+<text class="k" x="392" y="209" fill="#50319A">plank top y=192</text>
+<circle cx="417" cy="192" r="4" fill="#F2B93B" stroke="#50319A" stroke-width="1.5"/>
+<circle cx="466" cy="192" r="4" fill="#F2B93B" stroke="#50319A" stroke-width="1.5"/>
+<circle cx="515" cy="192" r="4" fill="#F2B93B" stroke="#50319A" stroke-width="1.5"/>
+<circle cx="564" cy="192" r="4" fill="#F2B93B" stroke="#50319A" stroke-width="1.5"/>
+<circle cx="320" cy="348" r="6" fill="#2E9E7A"/>
+</g>
+<text class="t" x="34" y="528">Room 3 — A warm burrow <tspan class="l">(30 badges)</tspan></text>
+<g transform="translate(34,542)">
+<rect width="640" height="400" fill="#EDE7F7" stroke="#50319A" stroke-width="2" rx="10"/>
+<line x1="0" y1="348" x2="640" y2="348" stroke="#2E9E7A" stroke-width="2"/>
+<text class="k" x="6" y="342" fill="#2E9E7A">floor y=348</text>
+<rect x="232" y="152" width="176" height="196" fill="#D94B92" fill-opacity=".13" stroke="#D94B92" stroke-width="2" stroke-dasharray="7 5"/>
+<text class="k" x="237" y="147">keep clear — the creature</text>
+<rect x="392" y="162" width="196" height="30" fill="#D94B92" fill-opacity=".13" stroke="#D94B92" stroke-width="2" stroke-dasharray="7 5"/>
+<text class="k" x="397" y="157">keep clear — treasures on the plank</text>
+<line x1="392" y1="192" x2="588" y2="192" stroke="#50319A" stroke-width="4"/>
+<text class="k" x="392" y="209" fill="#50319A">plank top y=192</text>
+<circle cx="417" cy="192" r="4" fill="#F2B93B" stroke="#50319A" stroke-width="1.5"/>
+<circle cx="466" cy="192" r="4" fill="#F2B93B" stroke="#50319A" stroke-width="1.5"/>
+<circle cx="515" cy="192" r="4" fill="#F2B93B" stroke="#50319A" stroke-width="1.5"/>
+<circle cx="564" cy="192" r="4" fill="#F2B93B" stroke="#50319A" stroke-width="1.5"/>
+<circle cx="320" cy="348" r="6" fill="#2E9E7A"/>
+</g>
+<text class="t" x="708" y="528">Room 4 — A guardian's hall <tspan class="l">(45 badges)</tspan></text>
+<g transform="translate(708,542)">
+<rect width="640" height="400" fill="#EDE7F7" stroke="#50319A" stroke-width="2" rx="10"/>
+<line x1="0" y1="348" x2="640" y2="348" stroke="#2E9E7A" stroke-width="2"/>
+<text class="k" x="6" y="342" fill="#2E9E7A">floor y=348</text>
+<rect x="232" y="152" width="176" height="196" fill="#D94B92" fill-opacity=".13" stroke="#D94B92" stroke-width="2" stroke-dasharray="7 5"/>
+<text class="k" x="237" y="147">keep clear — the creature</text>
+<rect x="392" y="162" width="196" height="30" fill="#D94B92" fill-opacity=".13" stroke="#D94B92" stroke-width="2" stroke-dasharray="7 5"/>
+<text class="k" x="397" y="157">keep clear — treasures on the plank</text>
+<rect x="392" y="98" width="196" height="30" fill="#D94B92" fill-opacity=".13" stroke="#D94B92" stroke-width="2" stroke-dasharray="7 5"/>
+<text class="k" x="397" y="93">keep clear — treasures on the plank</text>
+<line x1="392" y1="192" x2="588" y2="192" stroke="#50319A" stroke-width="4"/>
+<text class="k" x="392" y="209" fill="#50319A">plank top y=192</text>
+<circle cx="417" cy="192" r="4" fill="#F2B93B" stroke="#50319A" stroke-width="1.5"/>
+<circle cx="466" cy="192" r="4" fill="#F2B93B" stroke="#50319A" stroke-width="1.5"/>
+<circle cx="515" cy="192" r="4" fill="#F2B93B" stroke="#50319A" stroke-width="1.5"/>
+<circle cx="564" cy="192" r="4" fill="#F2B93B" stroke="#50319A" stroke-width="1.5"/>
+<line x1="392" y1="128" x2="588" y2="128" stroke="#50319A" stroke-width="4"/>
+<text class="k" x="392" y="145" fill="#50319A">plank top y=128</text>
+<circle cx="417" cy="128" r="4" fill="#F2B93B" stroke="#50319A" stroke-width="1.5"/>
+<circle cx="466" cy="128" r="4" fill="#F2B93B" stroke="#50319A" stroke-width="1.5"/>
+<circle cx="515" cy="128" r="4" fill="#F2B93B" stroke="#50319A" stroke-width="1.5"/>
+<circle cx="564" cy="128" r="4" fill="#F2B93B" stroke="#50319A" stroke-width="1.5"/>
+<circle cx="320" cy="348" r="6" fill="#2E9E7A"/>
+</g>
+<text class="l" x="34" y="978">Canvas 640x400 (ratio 1.6). Paint the backdrop only — dashed boxes are drawn over by the game.</text>
+</svg>
