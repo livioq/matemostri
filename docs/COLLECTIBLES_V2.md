@@ -10,14 +10,14 @@ There are eight treasure families. Each family has three specimens, one associat
 
 | Family | Easy | Medium | Hard |
 | --- | --- | --- | --- |
-| Stars | Little Star | Moon Star | Guardian Star |
-| Flowers | Bell Flower | Moon Blossom | Aurora Flower |
-| Berries | Glowberries | Moonberries | Starberries |
-| Feathers | Soft Feather | Celestial Feather | Phoenix Feather |
-| Mushrooms | Glowcap | Mooncap | Dreamcap |
-| Crystals | Blue Crystal | Moon Crystal | Heart Crystal |
-| Leaves | Lucky Leaf | Silver Leaf | Golden Leaf |
-| Shells | Spiral Shell | Pearl Shell | Star Shell |
+| Flowers | Daisy Glow | Sunrise Lily | Aurora Orchid |
+| Shells | Pearl Shell | Spiral Conch | Nautilus Pearl |
+| Crystals | Amethyst Chip | Crystal Cluster | Star Crystal |
+| Feathers | Sky Feather | Peacock Feather | Phoenix Feather |
+| Fruits | Berry Bud | Moonfruit | Rainbow Fruit |
+| Insects | Leaf Beetle | Jewel Butterfly | Emerald Dragonfly |
+| Fish | Coral Minnow | Reef Angelfish | Galaxy Whale |
+| Constellations | Twinkle Star | Shooting Star | Celestial Crown |
 
 The eight positions in the den remain treasure families. The best specimen found in each family is what appears on the main shelf. A family can later open a small collection view showing all three specimens and their quantities.
 
@@ -59,7 +59,7 @@ Suggested presentation milestones for each specimen:
 - 5 copies: sparkling display treatment.
 - 10 copies: master display treatment.
 
-These are presentation upgrades, not access to later treasure tiers. Ten Little Stars never become a Moon Star.
+These are presentation upgrades, not access to later treasure tiers. Ten Twinkle Stars never become a Shooting Star.
 
 Future den decorations can also be granted at aggregate duplicate milestones without changing the treasure eligibility rules.
 
@@ -92,9 +92,9 @@ Every family must become available somewhere on the Easy journey before the fina
 
 The current save has counters by family. Preserve those rewards.
 
-For each old family with quantity greater than zero, grant that quantity as the Easy specimen of the same family. Do not infer Medium or Hard specimens from old duplicate counts. Existing Medium/Hard badges remain untouched and will make their tiers available through normal future play.
+For each old family with quantity greater than zero, grant that quantity as the Easy specimen of the same family. The retired families map without loss: Berries to Fruits, Mushrooms to Insects, Lucky Leaves to Fish, and Magic Stars to Constellations. Do not infer Medium or Hard specimens from old duplicate counts. Existing Medium/Hard badges remain untouched and will make their tiers available through normal future play.
 
-Add a collectible schema/version marker so migration is idempotent.
+`collectibleSpecimens` stores three quantities per family in Easy, Medium, Hard order while the existing `collectibles` family total remains available for aggregate rewards. Migration version 10 performs this conversion idempotently.
 
 Also add per lesson/difficulty best mastery scores for the replay-improvement bonus. Existing saves begin with no recorded best; the first session after migration establishes the baseline rather than receiving an improvement bonus.
 
@@ -103,6 +103,8 @@ Also add per lesson/difficulty best mastery scores for the replay-improvement bo
 The den continues to grow from badge totals at 1, 15, 30 and 45 badges. Badge progression and treasure progression remain separate.
 
 The main den shows one representative per family, using the highest-tier specimen owned. Quantities and the other specimens belong in the family detail view. Empty families remain visible as silhouettes/question marks so there is always something left to seek.
+
+The 24 production files are transparent 256×256 WebP assets named `assets/collectibles/{family}-{tier}.webp`, where tiers 1, 2 and 3 mean Easy, Medium and Hard. They are rendered above the separate cabinet overlay and below Momo.
 
 ## Design principle
 

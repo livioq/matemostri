@@ -196,6 +196,12 @@ public release.
 - The den shows every collectible slot, the unfound ones greyed, the same
   way a map stop shows all three badges. An empty space says there is one
   still out there, which a bare list never did.
+- The eight collectible families now have three production specimens each,
+  stored as transparent `assets/collectibles/{family}-{tier}.webp` files.
+  Easy, Medium and Hard awards increment their matching entry in
+  `collectibleSpecimens`; the den displays the highest tier actually owned,
+  never a duplicate-count upgrade. Legacy family totals migrate into the
+  new family's Easy specimen without losing copies.
 - All four den phases are production art. Each `den-N.webp` is an approved
   background-only painting and each `display-N.webp` is an independent
   transparent eight-bay cabinet. `DEN_ROOMS` places them on the fixed `DEN_CANVAS`, followed by

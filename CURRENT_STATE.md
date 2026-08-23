@@ -225,8 +225,10 @@ withheld for not having read one.
 
 - Save key remains `matemostri:v2`.
 - Legacy key read fallback remains `matemostri:v4`.
-- Migration version is now `9`.
+- Migration version is now `10`.
 - Existing completed lessons, availability, profile names, custom monster names, stats, collectibles, accessories, sound settings, and storySeen values are preserved.
+- Collectibles now have 24 production specimens: eight families with Easy, Medium and Hard transparent WebP artwork. `collectibleSpecimens` stores the three quantities per family, while `collectibles` keeps the aggregate family total used by existing cosmetic milestones.
+- Old Magic Stars, Magic Berries, Mushrooms and Lucky Leaves migrate without loss to Constellations, Fruits, Insects and Fish. Every old copy becomes an Easy specimen; duplicate count never grants Medium or Hard artwork.
 - Map status is derived from `stageProgress`; old players do not need to replay story beats.
 - New `storyProgress` defaults are added safely:
   - `firstCrackSeen:false`
