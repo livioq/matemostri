@@ -854,6 +854,16 @@ const denSpec = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'docs', 'D
 assert.equal(denSpec.coordinateSystem.canvasWidth, denCanvas.width, 'the spec states the real canvas');
 assert.equal(denSpec.coordinateSystem.canvasHeight, denCanvas.height);
 assert.equal(denSpec.rooms.length, denRooms.length, 'and covers every room');
+// geometry alone cannot brief an image model — a JSON file has no pixels in it, so a style
+// section and a pointer to real reference images are what makes the handoff actually usable
+['medium', 'palette', 'mood', 'continuity', 'framing', 'referenceNote'].forEach(key =>
+  assert.ok(denSpec.style && denSpec.style[key] && denSpec.style[key].length > 20,
+    `the spec says something real about ${key}, not just the geometry`));
+assert.ok(denSpec.style.doNotInclude.length >= 2,
+  'the spec says what NOT to paint: the creature and the treasures are overlaid by the app');
+assert.match(denSpec.style.referenceNote, /assets\/monsters/,
+  'and points at a real asset to attach, since text cannot carry a painted style on its own');
+assert.match(denSpec.style.referenceNote, /assets\/map/);
 denSpec.rooms.forEach((specRoom, i) => {
   const room = denRooms[i];
   assert.equal(specRoom.level, room.level, 'spec and code agree on the room');

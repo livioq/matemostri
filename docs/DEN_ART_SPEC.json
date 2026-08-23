@@ -1,6 +1,19 @@
 {
   "generatedFrom": "index.html DEN_CANVAS / DEN_ROOMS — regenerate with tools/den-art-spec.js",
   "purpose": "Brief for painting the den rooms. Each room is one image on the canvas below. Paint the backdrop only: the creature and the treasures are drawn over it by the game, at the anchors given here. Keep those areas clear.",
+  "style": {
+    "medium": "Painted digital illustration, the same hand as the rest of the game: soft airbrushed rendering with real light and shadow, not flat vector art and not a photo.",
+    "palette": "Warm gold (#F2B93B) light against deep plum-purple walls (#50319A family), with sage green, dusty pink and cream accents. Matches the game's own colour tokens so the room does not clash with the card it sits inside.",
+    "mood": "Cosy and a little magical, never dark or spooky despite \"den\": firefly-soft glow, gentle sparkle particles, the same wonder as a bedtime story rather than an adventure peril.",
+    "continuity": "All four rooms are the SAME physical space, shown as it is furnished over time — the same walls, floor and cave shape in every image, with furniture added at each level. They should read as one den growing, not four different rooms. Room 4 keeps everything room 3 had, plus more.",
+    "framing": "A clean rectangular scene, full-bleed to the canvas edge. NOT a parchment scroll or vignette border like the map art — this sits inside the app's own rounded card, which supplies its own frame.",
+    "doNotInclude": [
+      "The creature herself — the app draws her over the scene at the pet anchor below.",
+      "Any of the treasures/collectibles — the app overlays those as small emoji on the shelves.",
+      "Text, UI, logos, or a signature anywhere in the image."
+    ],
+    "referenceNote": "This document has no pixels in it and cannot carry style on its own. When briefing an image model, attach one of the existing assets/monsters WebP files (for the painted-fur, sparkle, warm-light treatment) and one assets/map panel (for how an environment in this world is painted) alongside this spec."
+  },
   "coordinateSystem": {
     "canvasWidth": 640,
     "canvasHeight": 400,
