@@ -196,6 +196,31 @@ Map behaviour:
 - Completing a lesson shows the result/evolution, then `Continue Adventure` returns to the map.
 - `Practise Again` replays the same lesson and does not advance story.
 
+## The Story to Read
+
+`STORY_CHAPTERS` holds one short chapter per map stop, in map order. Lighting a stop's path
+opens its chapter; `chaptersUnlocked` is simply `completedCount`, so nothing extra is saved to
+know which are open.
+
+Each chapter says what the last lesson changed about her, walks the road to the next stop, and
+stops on whatever is in the way. The next chapter opens by getting past that. `solves` names
+what the one before ended on, and a test pins the whole chain, so a chapter cannot be reworded
+into a cliffhanger nobody answers. Only the last chapter, at the Heart of Matemostri, has no
+`obstacle`.
+
+Where it appears:
+
+- `s-tale`, the shelf, reached from a home-screen button that is hidden until at least one
+  chapter is open and carries a count when any are unread.
+- `s-chapter`, the reader: the creature as she was at that stop, the prose, a speaker button,
+  and a button through to the next chapter if one is open.
+- The end of a lesson offers the chapter it just wrote, as a ghost button under
+  `Continue Adventure`, and only when the lesson was lit for the first time. A replay does not
+  offer it again.
+
+`storyProgress.chaptersRead` is only ever used to say a chapter is new. Nothing in the game is
+withheld for not having read one.
+
 ## Save and Migration Behaviour
 
 - Save key remains `matemostri:v2`.
@@ -206,6 +231,9 @@ Map behaviour:
 - New `storyProgress` defaults are added safely:
   - `firstCrackSeen:false`
   - `mapSeen:{}`
+  - `guidesSeen:{}`
+  - `chaptersRead:{}`
+- `storyProgressOf` fills these in on read, so an existing save gains them without a version bump.
 - Monster art is derived from completed lessons, except that stage 2 can display before the first lesson is complete if `firstCrackSeen` is true.
 - `stageProgress.badges` is added by `normalizeStageProgress`. A lesson completed before difficulties existed counts as medium, which now wins easy with it, and `cascadeBadges` fills in everything below whatever was won.
 - `xp`, `level`, `ease` and `age` are retired fields, listed in `RETIRED_PLAYER_FIELDS` and deleted from any save that still carries them. `ease` held an adaptive-difficulty map that was written on every answer and read by nothing. `age` was asked for at setup and read by nothing; it is replaced by `look`, either `girl` or `boy`, which is stored and will one day choose the artwork.

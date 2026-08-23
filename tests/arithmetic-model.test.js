@@ -762,13 +762,76 @@ assert.equal(currentSave.momoName, 'Sparkle', 'the chosen name survives');
 assert.equal(currentSave.best, 9, 'play stats survive');
 assert.deepEqual(plain(currentSave.collectibles).stars, 3, 'collectibles survive');
 assert.ok(currentSave.accessories.includes('scarf'), 'cosmetics survive');
-assert.deepEqual(plain(currentSave.storyProgress), {firstCrackSeen:false, mapSeen:{}, guidesSeen:{}},
+assert.deepEqual(plain(currentSave.storyProgress),
+  {firstCrackSeen:false, mapSeen:{}, guidesSeen:{}, chaptersRead:{}},
   'map/story migration adds safe defaults without resetting progress');
 ['add_1digit', 'add_2column', 'add_2mental', 'sub_1digit'].forEach(id => {
   assert.equal(currentSave.stageProgress.completed[id], true, `${id} stays completed`);
 });
 assert.equal(currentSave.stageProgress.completed.sub_2column, false, 'no lesson is handed out free');
 assert.equal(currentSave.stageProgress.available.sub_2column, true, 'the next lesson is still open');
+
+// the story: a chapter per lesson, each one picking up whatever the last one left in the way
+vm.runInContext('this.nodes=PROGRESSION_NODES;this.chapters=STORY_CHAPTERS;this.chapterByNode=CHAPTER_BY_NODE;' +
+  'this.chaptersUnlocked=chaptersUnlocked;this.chaptersUnread=chaptersUnread;' +
+  'this.storyProgressOf=storyProgressOf;this.blankStageProgress=blankStageProgress;' +
+  'this.progressFromCount=progressFromCount;', saveContext);
+const chapters = plain(saveContext.chapters);
+assert.equal(chapters.length, saveContext.nodes.length,
+  'every stop on the map has a chapter, so finishing a lesson always writes one');
+assert.deepEqual(chapters.map(c => c.node), plain(saveContext.nodes.map(n => n.id)),
+  'and the chapters run in the order the journey does');
+chapters.forEach((chapter, i) => {
+  assert.ok(chapter.title && chapter.title.length < 40, `chapter ${i + 1} has a short title`);
+  assert.ok(chapter.text.length >= 3, `chapter ${i + 1} is a few paragraphs, not a caption`);
+  // long enough to be a read, short enough to finish in one sitting
+  const words = chapter.text.join(' ').split(/\s+/).length;
+  assert.ok(words > 90 && words < 260, `chapter ${i + 1} is a short chapter, not a page or a novel (${words} words)`);
+  chapter.text.forEach(para => {
+    assert.ok(/[.!?]$/.test(para), `chapter ${i + 1} paragraph ends as prose: ${para.slice(0, 40)}`);
+    assert.equal(/\bMomo\b/.test(para), false,
+      `chapter ${i + 1} uses {name}, because the child names the creature`);
+    assert.equal(/quotient|product|remainder|multiplicand|divisor|minuend/i.test(para), false,
+      `chapter ${i + 1} keeps the jargon out`);
+  });
+  // the cliffhanger chain: each chapter stops on something, and the next one gets past it
+  if (i + 1 < chapters.length) {
+    assert.ok(chapter.obstacle, `chapter ${i + 1} ends on something in the way`);
+    assert.equal(chapters[i + 1].solves, chapter.obstacle,
+      `chapter ${i + 2} opens by getting past what chapter ${i + 1} ended on`);
+  } else {
+    assert.equal(chapter.obstacle, undefined, 'the last chapter has nothing left in the way');
+  }
+});
+assert.equal(chapters[0].solves, undefined, 'the first chapter has nothing to pick up from');
+assert.ok(chapters.some(c => c.text.some(p => p.includes('{name}'))),
+  'the creature is named in the story by the name the child chose');
+assert.equal(saveContext.chapterByNode('rune-ruins'), 7, 'a chapter can be found from its map stop');
+assert.equal(saveContext.chapterByNode('nowhere'), -1, 'and an unknown stop finds nothing');
+
+// a chapter is earned by lighting its lesson, so nothing extra has to be saved to know which
+const reader = {stageProgress: saveContext.progressFromCount(4), storyProgress: {}};
+assert.equal(saveContext.chaptersUnlocked(reader), 4, 'four lessons lit opens four chapters');
+assert.equal(saveContext.chaptersUnread(reader), 4, 'and all four are waiting to be read');
+saveContext.storyProgressOf(reader).chaptersRead[chapters[0].node] = true;
+assert.equal(saveContext.chaptersUnread(reader), 3, 'reading one leaves three');
+const beginner = {stageProgress: saveContext.blankStageProgress(), storyProgress: {}};
+assert.equal(saveContext.chaptersUnlocked(beginner), 0, 'and a fresh player has no story yet');
+const wholeJourney = {stageProgress: saveContext.progressFromCount(99), storyProgress: {}};
+assert.equal(saveContext.chaptersUnlocked(wholeJourney), chapters.length,
+  'while a finished journey opens all of them and no more');
+
+assert.match(functionSource('openChapter'), /index<0\|\|index>=chaptersUnlocked\(P\)/,
+  'a chapter that has not been earned cannot be opened');
+assert.match(functionSource('openChapter'), /chaptersRead\[STORY_CHAPTERS\[index\]\.node\]=true/,
+  'and opening one marks it read');
+assert.match(functionSource('renderTale'), /shut\?'\\uD83D\\uDD12'/,
+  'the shelf shows what is still to come rather than hiding it');
+assert.match(functionSource('endSession'), /result==='completed'\?CHAPTER_BY_NODE/,
+  'the chapter is offered only when a lesson is lit for the first time');
+assert.match(functionSource('renderHome'), /chaptersUnread\(P\)/,
+  'and the home screen says when there is a new one');
+assert.match(source, /sayChapter:\['chapterTitle','chapterText'\]/, 'a chapter can be read aloud');
 
 // the last evolution waits for the last lesson, however many lessons there are
 vm.runInContext('this.stages=MATH_STAGES;this.nodes=PROGRESSION_NODES;this.evolutions=EVOLUTIONS;this.stageData=MONSTER_STAGE_DATA;this.artFor=artForCount;this.artForPlayer=artForPlayer;this.evolutionFor=evolutionForCount;', saveContext);

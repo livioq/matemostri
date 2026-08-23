@@ -132,12 +132,52 @@ Major moments use the larger transition presentation with previous and new Momo 
    badge slots and the three difficulties.
 5. Tapping a difficulty opens the maths interface on it. Choosing is the same
    act as starting, so there is nothing to confirm and no second button.
-6. Completing a new lesson unlocks the next node and may evolve Momo.
-7. The end screen shows the three badge slots and offers the next difficulty up.
+6. Completing a new lesson unlocks the next node, may evolve Momo, and writes
+   the next chapter of the story.
+7. The end screen shows the three badge slots, offers the next difficulty up,
+   and offers the new chapter as an aside under the main button.
 8. Continue Adventure returns to the map.
 9. Practise Again replays the same lesson without advancing story.
 
 Completed map nodes stay replayable for collectibles.
+
+## The Story to Read
+
+Not every child comes to this for the maths, so the journey is also a story
+that can be read on its own. `STORY_CHAPTERS` holds one chapter per map stop,
+in map order, and lighting a stop's path opens its chapter.
+
+A chapter does three things: it says what the last lesson changed about her,
+it walks the road to the next stop, and it stops on whatever is in the way.
+The chapter after it opens by getting past that. So chapter 4 leaves her on a
+cliff top with wings too small for the chasm, and chapter 5 is the jump. Each
+chapter's `solves` names what the one before ended on, which is what keeps the
+chain honest; only the last chapter, at the Heart of Matemostri, has nothing
+left in the way.
+
+| Chapter | Title | Ends on | Answered by |
+|---:|---|---|---|
+| 1 | The Egg Opens | the woods have no path | chapter 2 |
+| 2 | What the Trees Were Saying | the trail goes dark | chapter 3 |
+| 3 | The Tail That Lit the Way | the wind on the cliffs | chapter 4 |
+| 4 | Learning the Wind | the Great Chasm | chapter 5 |
+| 5 | The Jump | a valley of tracks, and nothing packed | chapter 6 |
+| 6 | Packing for the Valley | the caves are all reflections | chapter 7 |
+| 7 | Seeing Through the Sparkle | runes with nothing to write on | chapter 8 |
+| 8 | The Marks That Chose Her | a garden with its numbers missing | chapter 9 |
+| 9 | Putting the Numbers Back | a gate older than the garden | chapter 10 |
+| 10 | The Light in Her Chest | fields of stars, too many to count | chapter 11 |
+| 11 | Counting in Groups | numbers too big for one leap | chapter 12 |
+| 12 | One Digit at a Time | a tower of two-by-two locks | chapter 13 |
+| 13 | Two Rows of Magic | a book asking how to share fairly | chapter 14 |
+| 14 | Sharing Out Fairly | the last road, and the long question | chapter 15 |
+| 15 | The Guardian of Maths | — | — |
+
+Reading is never required and never in the road. The chapters sit on a shelf
+reached from the home screen, which does not appear until there is something
+on it, and the end of a lesson offers the chapter it just wrote as an aside
+under the main button. `storyProgress.chaptersRead` is only ever used to say
+that a chapter is new; nothing is withheld for not having read one.
 
 ## Production Artwork Geometry
 

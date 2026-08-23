@@ -172,6 +172,20 @@ public release.
   thing on all three difficulties, and `stage:difficulty` for a mental
   one, which does not. `storyProgressOf` adds the field, so an existing
   save gains it without a version bump.
+- Not every child comes to this for the maths. There is a story to read as
+  well: one chapter per lesson in `STORY_CHAPTERS`, opened by lighting
+  that lesson's path. A chapter says what the last lesson changed about
+  her, walks the road to the next stop, and stops on whatever is in the
+  way; the chapter after it opens by getting past that. `solves` names
+  what the one before ended on, so the chain cannot quietly come apart,
+  and only the last chapter has nothing left in the way.
+- Reading is never required and never in the road. The chapters wait on a
+  shelf reached from the home screen, which is not there at all until
+  there is something on it and says how many are new; the end of a lesson
+  offers the one it just wrote, as an aside under the main button, so a
+  child who would rather do maths taps straight past it. What has been
+  read is kept in `storyProgress.chaptersRead`, which is only ever used to
+  say a chapter is new — nothing is withheld for not having read one.
 - The column working must fit the screen without scrolling. `fitCell`
   sizes the grid from the room left once the keypad is built, which is
   why the working is rendered again after `buildPad`.
@@ -292,6 +306,8 @@ Nothing outstanding.
 
 Recently done, newest first, in case something looks unfamiliar:
 
+- There is a story to read now: fifteen chapters, one opened by each
+  lesson, each picking up the cliffhanger the last one left.
 - The guides are paged now, opening on a hello rather than a wall of
   instructions, and the two mental lessons have one too — a walk-through
   in words, different on each difficulty.
@@ -349,12 +365,12 @@ Worth watching when the children next play:
 
 ## Code map
 
-`index.html` is ~3060 lines: one `<style>` block, the screen markup, then
+`index.html` is ~3260 lines: one `<style>` block, the screen markup, then
 three `<script>` blocks. Line numbers drift as the file is edited — the
 `/* ---- name ---- */` banner comments are the durable anchors, so grep for
 those rather than trusting the numbers.
 
-### Styles (17-371)
+### Styles (17-393)
 
 | Lines | Contents |
 | --- | --- |
@@ -365,29 +381,32 @@ those rather than trusting the numbers.
 | 116-121 | `/* keypad */` |
 | 122-167 | `/* column working */` — the paper-style grid: carry row, crossed-out regrouping, `.ringed`, long-multiplication and division layout, `.guide-grid` for a guide's worked example and `.guide-lines` for a worded one |
 | 168-224 | `/* settings */` and the level-up overlay |
-| 225-371 | `/* opening story + maths journey */` — story panels, the day-won overlay, then the adventure map: `.adventure-map`, `.map-art`, `.adventure-path`, `.map-scene`, `.scene-title`, `.map-location` and its badge row, `.silhouette`, `.map-momo`, and the major-transition overlay |
+| 225-247 | `/* opening story + maths journey */` — story panels, badge rows, the month card |
+| 248-269 | the story shelf: `.story-btn` and its "new" dot, `.tale-item`, and `.chapter-pet`/`.chapter-text` for the reader |
+| 270-393 | the day-won overlay, then the adventure map: `.adventure-map`, `.map-art`, `.adventure-path`, `.map-scene`, `.scene-title`, `.map-location` and its badge row, `.silhouette`, `.map-momo`, and the major-transition overlay |
 
-### Markup (375-612)
+### Markup (397-663)
 
 Every screen is a `<section class="screen">`; `show(id)` toggles the `on`
-class. In DOM order: `s-story` (376), `s-players` (392), `s-home` (409),
-`s-menu` (435, the adventure map), `s-node` (444, one map stop),
-`s-guide` (460, how a lesson works), `s-play` (478, whose `#progress`
-is the star row), `s-crack` (503), `s-end` (514), `s-set` (529), the `lvUp`
-overlay (555), the `dayBox` overlay (565), the `unlockBox` overlay (578)
-and the hidden `s-dev` spellbook (597).
+class. In DOM order: `s-story` (398), `s-players` (414), `s-home` (431),
+`s-menu` (459, the adventure map), `s-node` (468, one map stop),
+`s-guide` (484, how a lesson works), `s-play` (502, whose `#progress`
+is the star row), `s-crack` (527), `s-end` (538), `s-tale` (556, the story
+shelf), `s-chapter` (565, one chapter), `s-set` (580), the `lvUp` overlay
+(606), the `dayBox` overlay (616), the `unlockBox` overlay (629) and the
+hidden `s-dev` spellbook (648).
 
-### Script 1 — data and maths (614-1740)
+### Script 1 — data and maths (665-1868)
 
 | Lines | Section | Notes |
 | --- | --- | --- |
-| 615-638 | `storage` | `KEY='matemostri:v2'`, `LEGACY_KEYS`, `store` get/set |
-| 639-1160 | `model` | `MATH_STAGES` (640, the 15 lessons), `DIFFICULTIES` (663) with `cascadeBadges` (681) and `awardBadges` (686), `MONSTER_STAGE_DATA` (692), `PROGRESSION_NODES` (711), `MAP_ART_PANELS` (731), `EVOLUTIONS` (748); the day count — `dayKey` (793), `MONTH_GOAL` (806), `daysOf` (809), `liveStreak` (821), `markLessonDay` (825) — `resumeOf` (843), `storyProgressOf` (853), `mapSceneLayout` (856) and `mapPathD` (893), save-shape helpers `blankStageProgress` (913), `normalizeStageProgress` (923), `migrateV4StageProgress` (968), `completeMathStage` (984), `migrate` (998), then `LESSON_GUIDES` (1044) with `guideFor` (1153) and `guideKey` (1158) |
-| 1161-1266 | `pet` | `petSVG` (1163) fallback art and `monsterMarkup` (1256) |
-| 1267-1285 | `sound` | WebAudio beeps |
-| 1286-1327 | `speech` | `SPEAK_WORDS` (1291), `speakableText` (1295), `speechReady` (1300), `englishVoice` (1305), `speak` (1313) — all feature-detected, all no-ops without `speechSynthesis` |
-| 1328-1459 | `column working model` | `buildColumn` (1331), `buildLongMultiplication` (1393), `twoDigitColumnAddition` (1432), `twoDigitColumnSubtraction` (1445) — pure step generators |
-| 1460-1739 | `question generation` | `longDivisionPhase` (1464), `genDivision` (1469), the easy picture rules — `DOT_LIMIT` (1516), `easyNumber` (1524), `dotShareGroups` (1531), `dotLayouts` (1560), `fitDot` (1583), `stepDots` (1593), `longMulStepDots` (1603), `divStepDots` (1613) — then `pickPair` (1629), `generateLessonQuestion` (1633) and `divSteps` (1728) |
+| 666-689 | `storage` | `KEY='matemostri:v2'`, `LEGACY_KEYS`, `store` get/set |
+| 690-1288 | `model` | `MATH_STAGES` (691, the 15 lessons), `DIFFICULTIES` (714) with `cascadeBadges` (732) and `awardBadges` (737), `MONSTER_STAGE_DATA` (743), `PROGRESSION_NODES` (762), `MAP_ART_PANELS` (782), `EVOLUTIONS` (800); the day count — `dayKey` (845), `MONTH_GOAL` (858), `daysOf` (861), `liveStreak` (873), `markLessonDay` (877) — `resumeOf` (895), `storyProgressOf` (905), `mapSceneLayout` (908) and `mapPathD` (945), save-shape helpers `blankStageProgress` (965), `normalizeStageProgress` (975), `migrateV4StageProgress` (1020), `completeMathStage` (1036), `migrate` (1050), then `STORY_CHAPTERS` (1095) with `chaptersUnlocked` (1161) and `chaptersUnread` (1162), and `LESSON_GUIDES` (1096+) with `guideFor` (1281) and `guideKey` (1286) |
+| 1289-1394 | `pet` | `petSVG` (1291) fallback art and `monsterMarkup` (1384) |
+| 1395-1413 | `sound` | WebAudio beeps |
+| 1414-1455 | `speech` | `SPEAK_WORDS` (1419), `speakableText` (1423), `speechReady` (1428), `englishVoice` (1433), `speak` (1441) — all feature-detected, all no-ops without `speechSynthesis` |
+| 1456-1587 | `column working model` | `buildColumn` (1459), `buildLongMultiplication` (1521), `twoDigitColumnAddition` (1560), `twoDigitColumnSubtraction` (1573) — pure step generators |
+| 1588-1867 | `question generation` | `longDivisionPhase` (1592), `genDivision` (1597), the easy picture rules — `DOT_LIMIT` (1644), `easyNumber` (1652), `dotShareGroups` (1659), `dotLayouts` (1688), `fitDot` (1711), `stepDots` (1721), `longMulStepDots` (1731), `divStepDots` (1741) — then `pickPair` (1757), `generateLessonQuestion` (1761) and `divSteps` (1856) |
 
 The test suite text-extracts these by name, so keep them as top-level
 `function name(...)  {...}` declarations: `buildColumn`,
@@ -409,30 +428,31 @@ The test suite text-extracts these by name, so keep them as top-level
 `migrateV4StageProgress`, `mapTrailPoints`, `mapPathD`,
 `scrollMapToCurrent`, `dayBefore`, `daysOf`, `liveStreak`,
 `markLessonDay`, `resumeOf`, `guideFor`, `renderGuideGrid`,
-`renderGuideLines` and `renderGuide`. It also
-matches the `MATH_STAGES`, `DIFFICULTIES` and `LESSON_GUIDES` tables and
-the `SESSION`, `DOT_SIZES`, `DOT_SEPARATOR`, `DOT_ROWS_IN_WORKING`,
-`MONTH_GOAL`, `RETIRED_STAGE_IDS` and `RETIRED_PLAYER_FIELDS` constants by
-source text, and runs the whole `model` section in a sandbox to exercise
-`migrate` end to end.
+`renderGuideLines`, `renderGuide`, `chaptersUnread`, `renderTale`,
+`renderChapter`, `openChapter`, `renderHome` and `endSession`. It also
+matches the `MATH_STAGES`, `DIFFICULTIES`, `LESSON_GUIDES` and
+`STORY_CHAPTERS` tables and the `SESSION`, `DOT_SIZES`, `DOT_SEPARATOR`,
+`DOT_ROWS_IN_WORKING`, `MONTH_GOAL`, `RETIRED_STAGE_IDS` and
+`RETIRED_PLAYER_FIELDS` constants by source text, and runs the whole
+`model` section in a sandbox to exercise `migrate` end to end.
 
-### Script 2 — screens and session flow (1741-2444)
-
-| Lines | Section | Notes |
-| --- | --- | --- |
-| 1742-1996 | `screens` | `$`, `esc`, `hushSpeech` (1747) and `show` (1748); `STORY_SCENES` (1750), `renderPlayers` (1769), `renderHome` (1781), `renderMenu` (1813) building the map, `scrollMapToCurrent` (1886), `openMapNode` (1893), then the guide pages: `renderGuideGrid` (1908), `renderGuideLines` (1925), `guidePages` (1930), `renderGuide` (1931), `openGuide` (1960), `beginLesson` (1973) and `renderDifficultyChoice` (1978) |
-| 1997-2024 | `settings` | `captureSettingsName`, `renderSettings` |
-| 2025-2443 | `gameplay` | `SESSION` and `sessionPlan` (2029), `renderStars` (2048), `markQuestion` (2060), `startSession` (2061), `resumeLesson` (2074) with `keepResume` (2082) and `dropResume` (2087), `passOutOfReach` (2090), `nextQuestion` (2091), the easy pictures — `easyDotsMarkup` (2159), `settleDots` (2198), `paintDots` (2211), `wireDots` (2229) — `checkNormal` (2268), `shouldShowCrackPause` (2298), `showDayWon` (2309), `countToday` (2347), `award` (2352), `maybeCompleteStage` (2372), `endSession` (2399) |
-
-### Script 3 — column UIs and wiring (2445-3062)
+### Script 2 — screens and session flow (1869-2624)
 
 | Lines | Section | Notes |
 | --- | --- | --- |
-| 2446-2635 | `columns: addition, subtraction, multiplication` | `colPrompt` (2447), `dotBudget` (2477) and `fitCell` (2481), `renderCol` (2490), `nextOpenColumnStep` (2584), `commitColumnStep` (2589), `selectColumnStep` (2599), `pressCol` (2604), `finishCol` (2626) |
-| 2636-2743 | `two-digit long multiplication` | `longMulPrompt` (2637), `longMulSlot` (2651), `renderLongMul` (2657), `commitLongMultiplicationStep` (2703), `selectLongMulStep` (2713), `pressLongMul` (2718), `finishLongMul` (2737) |
-| 2744-2886 | `division in columns` | `divPlan` (2747), `divPromptText` (2757), `renderDiv` (2767), `selectDivStep` (2836), `pressDiv` (2841), `finishDiv` (2876) |
-| 2887-2901 | `hidden developer spellbook` | `renderDeveloper` (2888), `resetPlayerProgress` (2896) |
-| 2902-3062 | `wiring` | every event listener, `SPEAK_PANELS` (2947) and `offerSpeech` (2974), the map resize re-layout, dev-tap unlock, boot |
+| 1870-2169 | `screens` | `$`, `esc`, `hushSpeech` (1875) and `show` (1876); `STORY_SCENES` (1878), `renderPlayers` (1897), `renderHome` (1909); the story — `renderTale` (1949), `openTale` (1964), `renderChapter` (1966), `openChapter` (1977); `renderMenu` (1986) building the map, `scrollMapToCurrent` (2059), `openMapNode` (2066), then the guide pages: `renderGuideGrid` (2081), `renderGuideLines` (2098), `guidePages` (2103), `renderGuide` (2104), `openGuide` (2133), `beginLesson` (2146) and `renderDifficultyChoice` (2151) |
+| 2170-2197 | `settings` | `captureSettingsName`, `renderSettings` |
+| 2198-2623 | `gameplay` | `SESSION` and `sessionPlan` (2202), `renderStars` (2221), `markQuestion` (2233), `startSession` (2234), `resumeLesson` (2247) with `keepResume` (2255) and `dropResume` (2260), `passOutOfReach` (2263), `nextQuestion` (2264), the easy pictures — `easyDotsMarkup` (2332), `settleDots` (2371), `paintDots` (2384), `wireDots` (2402) — `checkNormal` (2441), `shouldShowCrackPause` (2471), `showDayWon` (2482), `countToday` (2520), `award` (2525), `maybeCompleteStage` (2545), `endSession` (2572) |
+
+### Script 3 — column UIs and wiring (2625-3255)
+
+| Lines | Section | Notes |
+| --- | --- | --- |
+| 2626-2815 | `columns: addition, subtraction, multiplication` | `colPrompt` (2627), `dotBudget` (2657) and `fitCell` (2661), `renderCol` (2670), `nextOpenColumnStep` (2764), `commitColumnStep` (2769), `selectColumnStep` (2779), `pressCol` (2784), `finishCol` (2806) |
+| 2816-2923 | `two-digit long multiplication` | `longMulPrompt` (2817), `longMulSlot` (2831), `renderLongMul` (2837), `commitLongMultiplicationStep` (2883), `selectLongMulStep` (2893), `pressLongMul` (2898), `finishLongMul` (2917) |
+| 2924-3066 | `division in columns` | `divPlan` (2927), `divPromptText` (2937), `renderDiv` (2947), `selectDivStep` (3016), `pressDiv` (3021), `finishDiv` (3056) |
+| 3067-3081 | `hidden developer spellbook` | `renderDeveloper` (3068), `resetPlayerProgress` (3076) |
+| 3082-3255 | `wiring` | every event listener, `SPEAK_PANELS` (3127) and `offerSpeech` (3155), the story shelf's buttons (3194), the map resize re-layout, dev-tap unlock, boot |
 
 Note on long division: question generation lives in `longDivisionPhase`
 and `genDivision` plus `generateLessonQuestion` in script 1, while the

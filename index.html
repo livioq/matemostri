@@ -245,6 +245,28 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
 .month-bar i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#ffd977,var(--gold));width:0;transition:width .5s ease-out}
 .month-medals{margin-top:6px;font-size:15px;line-height:1;letter-spacing:2px}
 .day-streak{margin-top:9px;text-align:center;font-size:14px;font-weight:900;color:var(--gold);text-shadow:0 1px 0 rgba(122,84,0,.25)}
+/* the story shelf: a chapter per lesson, and the reader it opens into */
+.story-btn{position:relative}
+.story-btn .new-dot{position:absolute;top:-5px;right:-5px;background:var(--gold);color:var(--ink);
+  border:2px solid var(--ink);border-radius:999px;font-size:10px;font-weight:900;padding:1px 7px;letter-spacing:.02em}
+.tale-shelf{display:grid;gap:9px}
+.tale-item{display:flex;gap:11px;align-items:center;text-align:left;width:100%;padding:11px 13px;
+  background:#fff;border:2px solid var(--ink);border-radius:16px;box-shadow:3px 3px 0 rgba(27,58,140,.14);
+  font-family:inherit;color:var(--ink);cursor:pointer}
+.tale-item .tale-no{flex:0 0 30px;height:30px;border-radius:50%;display:grid;place-items:center;
+  background:var(--grid);font-weight:900;font-size:13px;color:var(--ink-soft)}
+.tale-item .tale-body{flex:1;min-width:0}
+.tale-item b{display:block;font-size:15px;line-height:1.2}
+.tale-item .tale-where{display:block;font-size:11px;font-weight:800;color:var(--ink-soft);margin-top:3px;letter-spacing:.05em;text-transform:uppercase}
+.tale-item.unread .tale-no{background:var(--gold);color:var(--ink)}
+.tale-item.shut{border-color:var(--grid);box-shadow:none;background:rgba(255,255,255,.55);cursor:default}
+.tale-item.shut b,.tale-item.shut .tale-where{color:rgba(80,49,154,.42)}
+/* a reader wants words on the screen, so the picture is a header rather than a stage */
+.chapter-pet{min-height:0;height:158px;margin:2px 0 4px}
+.chapter-pet::before{width:112px}
+.chapter-pet .monster-asset>img{max-height:158px}
+.chapter-text p{margin:11px 2px 0;font-size:15px;font-weight:650;line-height:1.5;color:var(--ink)}
+.chapter-text p:first-child{margin-top:6px}
 /* the run moving is the reward, so it is the whole screen for a moment */
 .daywon{position:fixed;inset:0;z-index:60;display:none;align-items:center;justify-content:center;padding:18px;
   background:linear-gradient(rgba(49,28,112,.86),rgba(89,37,136,.93))}
@@ -429,6 +451,8 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
     </div>
     <div class="stats" id="statBox"></div>
     <div style="height:10px"></div>
+    <button class="btn ghost story-btn" id="taleBtn" style="display:none">The story so far</button>
+    <div style="height:10px" id="taleGap" hidden></div>
     <button class="btn ghost" id="setBtn">Settings</button>
   </section>
 
@@ -521,9 +545,36 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
       <div class="day-streak" id="endStreak" style="display:none"></div>
       <div class="reward-line" id="endReward" style="margin-top:12px"></div>
     </div>
+    <button class="btn ghost story-btn" id="endChapter" style="display:none">Read what happened next</button>
+    <div style="height:10px" id="endChapterGap" hidden></div>
     <button class="btn" id="againBtn">Continue Adventure</button>
     <div style="height:10px"></div>
     <button class="btn ghost" id="endHome">Practise Again</button>
+  </section>
+
+  <!-- the story shelf: a chapter per lesson, opened by finishing it, read whenever it is wanted -->
+  <section id="s-tale" class="screen">
+    <div class="row" style="justify-content:space-between">
+      <button class="link" id="taleBack">back</button>
+      <span class="eyebrow" id="taleCount"></span>
+    </div>
+    <div class="journey-hero"><h1 style="font-size:25px">The story so far</h1><p id="taleIntro"></p></div>
+    <div class="tale-shelf" id="taleShelf"></div>
+  </section>
+
+  <section id="s-chapter" class="screen">
+    <div class="row" style="justify-content:space-between">
+      <button class="link" id="chapterBack">back</button>
+      <span class="eyebrow" id="chapterWhere"></span>
+    </div>
+    <div class="card">
+      <div class="ask"><h1 style="font-size:24px;margin:2px 0" id="chapterTitle">Chapter</h1><button class="speak" id="sayChapter" aria-label="Hear this" hidden>▶</button></div>
+      <div class="pet-stage chapter-pet" id="chapterPet"></div>
+      <div class="chapter-text" id="chapterText"></div>
+    </div>
+    <button class="btn" id="chapterNext">The next chapter</button>
+    <div style="height:10px"></div>
+    <button class="btn ghost" id="chapterDone">Back to the story</button>
   </section>
 
   <section id="s-set" class="screen">
@@ -745,6 +796,7 @@ const MAP_ART_PANELS=[
 const MAP_ART_CSS_WIDTH=428;
 const mapArtScale=width=>(width>0?width:MAP_ART_CSS_WIDTH)/MAP_ART_CSS_WIDTH;
 const NODE_BY_LESSON=id=>PROGRESSION_NODES.find(n=>n.lessonId===id);
+const NODE_BY_ID=id=>PROGRESSION_NODES.find(n=>n.id===id);
 const EVOLUTIONS=[
   {completed:0,art:1,title:'Magical Egg',message:'A warm golden heart glows inside the egg.'},
   {completed:0.5,art:2,title:'First Crack',message:'A crack has started to appear. Keep going and see if it hatches.',intermediate:true},
@@ -850,7 +902,7 @@ function resumeOf(p){
     mastered:Math.max(0,Number(r.mastered)||0),right:Math.max(0,Number(r.right)||0),
     best:Math.max(0,Number(r.best)||0),crackSeen:!!r.crackSeen};
 }
-function storyProgressOf(p){ if(!p.storyProgress||typeof p.storyProgress!=='object') p.storyProgress={}; if(p.storyProgress.firstCrackSeen===undefined) p.storyProgress.firstCrackSeen=false; if(!p.storyProgress.mapSeen||typeof p.storyProgress.mapSeen!=='object') p.storyProgress.mapSeen={}; if(!p.storyProgress.guidesSeen||typeof p.storyProgress.guidesSeen!=='object') p.storyProgress.guidesSeen={}; return p.storyProgress; }
+function storyProgressOf(p){ if(!p.storyProgress||typeof p.storyProgress!=='object') p.storyProgress={}; if(p.storyProgress.firstCrackSeen===undefined) p.storyProgress.firstCrackSeen=false; if(!p.storyProgress.mapSeen||typeof p.storyProgress.mapSeen!=='object') p.storyProgress.mapSeen={}; if(!p.storyProgress.guidesSeen||typeof p.storyProgress.guidesSeen!=='object') p.storyProgress.guidesSeen={}; if(!p.storyProgress.chaptersRead||typeof p.storyProgress.chaptersRead!=='object') p.storyProgress.chaptersRead={}; return p.storyProgress; }
 function artForPlayer(p){ const count=completedCount(p); return count===0&&storyProgressOf(p).firstCrackSeen?2:artForCount(count); }
 function mapSideX(side){ return side==='left'?29:side==='right'?71:50; }
 function mapSceneLayout(mapWidth){
@@ -993,7 +1045,7 @@ function newPlayer(name,look){
   return {id:'p'+Date.now(),name:name,look:look==='boy'?'boy':'girl',total:0,right:0,best:0,
           groups:{add:true,sub:true,mul:true,div:true},
           unlocked:{add2:false,sub2:false,mul2:false,div2:false},
-          stageProgress:blankStageProgress(),monsterStage:1,momoName:'Momo',collectibles:{},accessories:[],storySeen:false,storyProgress:{firstCrackSeen:false,mapSeen:{},guidesSeen:{}},days:blankDays(),resume:null,migrationVersion:9};
+          stageProgress:blankStageProgress(),monsterStage:1,momoName:'Momo',collectibles:{},accessories:[],storySeen:false,storyProgress:{firstCrackSeen:false,mapSeen:{},guidesSeen:{},chaptersRead:{}},days:blankDays(),resume:null,migrationVersion:9};
 }
 function migrate(p){
   const version=Number(p.migrationVersion)||0,wasLegacy=version<3;
@@ -1035,6 +1087,82 @@ function migrate(p){
    cells the real working uses, and a few lines saying what happened, in the same words the
    lesson will use. Shown once, before the first sit; available again from the map stop.
    Cells are placed by row and column so one renderer draws a column sum and a division. */
+/* The story, one chapter per lesson, unlocked by finishing it. A chapter says what the last
+   lesson changed about her, walks the road to the next stop, and stops on whatever is in the
+   way; the chapter after it opens by getting past that. `solves` names the thing the one
+   before ended on, so the chain cannot quietly come apart. Reading is never required: the
+   chapters wait in the story shelf until they are wanted. */
+const STORY_CHAPTERS=[
+  {node:'mysterious-egg',title:'The Egg Opens',obstacle:'woods',text:[
+    'The shell came apart in your hands, and there she was: small, warm, and blinking at the light for the very first time. {name}, you called her, and she squeaked as though she had always known the word.',
+    'She could count almost at once. Two pebbles and three pebbles, and she would tap her paw five times and look up at you, extremely pleased with herself.',
+    'That evening you carried her to the edge of the woods. The trees leaned in close and murmured to one another, and where a path should have been there were only leaves. {name} looked up at the whispering. She could tell it meant something. She just could not hear it well enough yet.']},
+  {node:'whispering-woods',title:'What the Trees Were Saying',solves:'woods',obstacle:'dark',text:[
+    "All night the whispering worked away at her, and by morning {name}'s ears had grown: huge, soft, and turned towards every sound. The trees were not murmuring nonsense after all. They were saying sums, one column at a time, and now she could follow them.",
+    'She walked ahead of you with her ears swivelling, taking each turning the woods offered, until the leaves thinned and let the sky back in.',
+    'Beyond the woods the ground fell away into a long trail, and the moment the sun went down, the trail went with it. There were lights out there somewhere, faint ones, low under the leaves. But there was nothing to carry, and no way to see the next step.']},
+  {node:'starlight-trail',title:'The Tail That Lit the Way',solves:'dark',obstacle:'wind',text:[
+    'So {name} sat down in the dark and did the sums in her head instead, one after another, with nothing at all to write on. Something was listening. Her tail brightened, then blazed, and behind her the path came up in a thin line of starlight.',
+    'She led you the whole length of the trail that night, leaving light wherever she went, so that you could always find the way back.',
+    'By morning the trail ran out at the top of a cliff. Wind came up the rock hard enough to make her stagger. There was more world across there, she was certain of it. But she had only the smallest wings, and the wind was a great deal bigger than she was.']},
+  {node:'windy-cliffs',title:'Learning the Wind',solves:'wind',obstacle:'chasm',text:[
+    'She practised on the cliff edge for days. Every long sum the two of you worked through, hundreds and tens and ones all lined up together, seemed to pull her wings a little wider, until at last they caught the wind instead of fighting it.',
+    '{name} could not fly, not properly. But she could glide the gaps, and she took you along the cliffs ledge by ledge, laughing every time she landed badly.',
+    'Then the ledges stopped. In front of you the world simply ended: an enormous chasm, clouds turning over slowly a long way down, and the far side no more than a grey line. No amount of gliding was going to cross that.']},
+  {node:'great-chasm',title:'The Jump',solves:'chasm',obstacle:'valley',text:[
+    'You did the biggest sums either of you had ever tried, right there on the edge: four whole columns, carrying all the way across. {name} watched every one. And when the last answer came out right, she stood up, and her wings were not the same wings anymore.',
+    'She took one tiny step. Then she jumped. The clouds came up to meet her and she went straight through them and out the other side, and you held on, and the two of you crossed the Great Chasm in the morning light.',
+    'She set down in a green valley, breathing hard and thoroughly delighted with herself. Tracks ran off between the hills in every direction, dozens of them, crossing and doubling back. You had no idea which one was yours, and nothing to carry the rope and lanterns you would need to find out.']},
+  {node:'explorers-valley',title:'Packing for the Valley',solves:'valley',obstacle:'caves',text:[
+    'Taking away turned out to be the trick of it. Nine berries, take away four eaten, leaves five for later. {name} worked out what to keep and what to leave behind, and by the end of the week a small brave pack had appeared on her back, stuffed with rope and lanterns and rather too many snacks.',
+    'Properly kitted out, the two of you picked a track and followed it, ruling out the wrong turnings one at a time until only the right one was left.',
+    'It ran into a cave mouth in the hillside. Inside, crystals threw the light in every direction at once: a hundred paths, and every one of them a reflection of another. There was no telling which was real.']},
+  {node:'crystal-caves',title:'Seeing Through the Sparkle',solves:'caves',obstacle:'runes',text:[
+    '{name} went through the caves the careful way. Line it up, and where there is not enough to take from, borrow from next door and cross the old number out. Slowly the reflections stopped fooling her, and a pair of round explorer goggles settled over her eyes, cutting the glare down to one honest path.',
+    'She brought you out the far side into cold air and old stones.',
+    'The ruins there were covered in marks. Some faded while you watched. Others held. {name} could feel them wanting to be read, and she had no paper, no chalk, and nowhere to write anything down.']},
+  {node:'rune-ruins',title:'The Marks That Chose Her',solves:'runes',obstacle:'garden',text:[
+    'So she did all of it in her head. Tens off first, then the ones, and when there were not enough ones she stepped down to the round number and took the rest from there. The runes noticed. One by one they lifted off the stones and settled into her fur, glowing softly.',
+    'Marked like that, {name} could read the ruins the way you read a signpost, and the ruins let the two of you through.',
+    'Past the last arch was a garden, and every single thing in it was blooming out of season. Each flower had a number missing from the middle of it, and until the missing numbers were found, the gate at the far end would not so much as rattle.']},
+  {node:'enchanted-garden',title:'Putting the Numbers Back',solves:'garden',obstacle:'gate',text:[
+    'Three columns at a time, borrowing the whole way across, you and {name} put the missing numbers back into the flowers. The garden liked being tidy. It thanked her with a crown of blossom around her ears, and it told her, in the way that gardens do, that she was its guardian now.',
+    'The gate at the far end opened as far as the garden could manage: a hand span, and not a finger more.',
+    'It was sealed with something older than the garden. Explorer tools would not shift it, and neither would flowers. Whatever was going to open that gate was going to have to come from inside her.']},
+  {node:'guardian-gate',title:'The Light in Her Chest',solves:'gate',obstacle:'stars',text:[
+    'The last sums were the hardest yet: four columns, borrowing at every one, and nothing to be rushed. {name} took them slowly and got them all. And as the final answer landed, light came out of her. Not from the crown, or the goggles, or the pack. From the middle of her chest.',
+    'The Guardian Gate opened the whole way, because care was what it had been waiting for all along.',
+    'On the other side there was no ground for a while, and then there were fields. Fields of stars, lying about in tidy little groups, three here, three there, six of them, then six more. Counting them one at a time would have taken the rest of your lives.']},
+  {node:'star-fields',title:'Counting in Groups',solves:'stars',obstacle:'heights',text:[
+    'So you did not count them one at a time. You counted the groups. Six lots of four is twenty-four, and there it was, finished, in the time it takes to say it. {name} caught on quickly, and a cape of starlight gathered across her shoulders as the patterns came clear.',
+    'After that she saw them everywhere. Groups inside groups, all the way up the sky.',
+    'And the sky went up. The path climbed into gold cloud and kept climbing, past where the air goes thin, and the numbers up there were not tidy little groups anymore. They were big ones. Too big to take in a single leap.']},
+  {node:'celestial-heights',title:'One Digit at a Time',solves:'heights',obstacle:'tower',text:[
+    'The way up was one digit at a time, keeping hold of whatever spilled over. Ones first, then the tens, then add on the bit you kept. {name} climbed the entire gold staircase like that, and celestial armour grew along her wings as she went, bright and light and strong.',
+    'At the top the cloud opened out flat, and a tower was standing on it.',
+    'Every door in that tower was locked with a number made of two numbers multiplied together, and not a small one against a big one either, but two big ones at once. One row of working was never going to be enough.']},
+  {node:'magicians-tower',title:'Two Rows of Magic',solves:'tower',obstacle:'library',text:[
+    'Two rows, then. Multiply by the ones, then put a nought down and multiply by the tens, then add the two rows together. Door after door gave way to it, all the way up the tower.',
+    '{name} came out at the top in a hat and a cloak that would not stop shimmering. Multiplication was not something she did anymore. It was something she wore.',
+    'The last room had no door at all, only a library, floating, and one book hanging open in the middle of the air. Its page asked a question nobody had asked her before. Not how many altogether. How do you share them out fairly?']},
+  {node:'arcane-library',title:'Sharing Out Fairly',solves:'library',obstacle:'heart',text:[
+    'Fair shares turned out to be their own kind of magic. Twenty-four stars between four friends is six each, and nobody goes short. {name} answered page after page, and the spellbook stopped hanging in the air and came to float at her shoulder instead, the way a friend does.',
+    'The library let her take it along when you left.',
+    'One road was left, and every path in Matemostri was joining it. At the end of it the book would open on the last question of all: the long kind, worked one digit at a time, where sometimes things do not come out even and you have to be willing to say so.']},
+  {node:'heart-of-matemostri',title:'The Guardian of Maths',solves:'heart',text:[
+    'You did it the long way, one digit at a time. How many times does it go, write it up above, take it away, bring the next one down. Sometimes it came out even. Sometimes there was a little left over, and that was fine, because a leftover is not a mistake.',
+    'At the last answer the whole world lit up at once. Every path the two of you had walked, all the way back to the woods, shining at the same moment.',
+    '{name} rose into the middle of it as the Guardian of Maths. And if you look closely at the light coming off her, you can see that it is not really hers at all. It is every lesson the two of you did together, one at a time, on all the days you kept turning up.']}
+];
+const CHAPTER_BY_NODE=id=>STORY_CHAPTERS.findIndex(c=>c.node===id);
+/* A chapter is earned by finishing its lesson, so nothing extra has to be saved to know which
+   are open: the count of lit paths is the count of chapters. Which have been read is kept, so
+   the home screen can say there is a new one without nagging about it. */
+const chaptersUnlocked=p=>Math.min(STORY_CHAPTERS.length,completedCount(p));
+function chaptersUnread(p){
+  const read=storyProgressOf(p).chaptersRead;
+  return STORY_CHAPTERS.slice(0,chaptersUnlocked(p)).filter(c=>!read[c.node]).length;
+}
 /* A lesson that introduces a new working explains it first, a page at a time. A wall of
    four instructions is a cold jump; a page that says one thing, with that one thing lit up
    in the working, is something a seven-year-old can follow. Page 0 is a warm hello, then
@@ -1808,6 +1936,51 @@ function renderHome(){
     '<div><b class="mono">'+P.best+'</b><span>answers in a row</span></div>'+
     '<div><b class="mono">'+run+'</b><span>'+(run===1?'day in a row':'days in a row')+'</span></div>';
   $('playBtn').textContent=count===0?'Help the egg awaken':count===MATH_STAGES.length?'Revisit the enchanted lessons':'Continue '+petName()+"'s adventure";
+  // the story shelf only appears once there is something on it, and says so when there is
+  // something new, rather than nagging about it anywhere else
+  const open=chaptersUnlocked(P),unread=chaptersUnread(P),tale=$('taleBtn');
+  tale.style.display=open?'block':'none';
+  $('taleGap').hidden=!open;
+  tale.innerHTML='The story so far'+(unread?'<span class="new-dot">'+unread+' new</span>':'');
+}
+
+/* ---------------- the story ---------------- */
+
+function renderTale(){
+  const open=chaptersUnlocked(P),read=storyProgressOf(P).chaptersRead;
+  $('taleCount').textContent=open+' of '+STORY_CHAPTERS.length+' chapters';
+  $('taleIntro').textContent=open===STORY_CHAPTERS.length
+    ?'The whole tale, from the egg to the Heart of Matemostri.'
+    :'Every lesson you light adds the next chapter. Read them whenever you like.';
+  $('taleShelf').innerHTML=STORY_CHAPTERS.map((chapter,i)=>{
+    const node=NODE_BY_ID(chapter.node),shut=i>=open;
+    const state=shut?' shut':read[chapter.node]?'':' unread';
+    return '<button class="tale-item'+state+'" data-chapter="'+i+'"'+(shut?' disabled':'')+'>'+
+      '<span class="tale-no">'+(shut?'\uD83D\uDD12':i+1)+'</span><span class="tale-body">'+
+      '<b>'+esc(shut?'Still to come':chapter.title)+'</b>'+
+      '<span class="tale-where">'+esc(shut?'light '+node.title+' to open it':node.title)+'</span></span></button>';
+  }).join('');
+}
+function openTale(){ renderTale(); show('s-tale'); }
+let chapterAt=0;
+function renderChapter(){
+  const chapter=STORY_CHAPTERS[chapterAt],node=NODE_BY_ID(chapter.node);
+  const name=petName(),open=chaptersUnlocked(P);
+  $('chapterWhere').textContent=node.title;
+  $('chapterTitle').textContent='Chapter '+(chapterAt+1)+' · '+chapter.title;
+  $('chapterPet').innerHTML=monsterMarkup(node.stage,'idle','bob',name);
+  $('chapterText').innerHTML=chapter.text.map(p=>'<p>'+esc(p.replaceAll('{name}',name))+'</p>').join('');
+  const more=chapterAt+1<open;
+  $('chapterNext').style.display=more?'block':'none';
+  $('chapterNext').textContent='Chapter '+(chapterAt+2)+' · '+STORY_CHAPTERS[chapterAt+1].title;
+}
+function openChapter(index){
+  if(index<0||index>=chaptersUnlocked(P)) return false;
+  chapterAt=index;
+  storyProgressOf(P).chaptersRead[STORY_CHAPTERS[index].node]=true; save();
+  renderChapter();
+  show('s-chapter');
+  return true;
 }
 
 function renderMenu(){
@@ -2395,7 +2568,7 @@ function maybeCompleteStage(){
   sLvl(); return 'completed';
 }
 
-let endRetryDifficulty='medium';
+let endRetryDifficulty='medium',endChapterAt=-1;
 function endSession(){
   lastSessionStageId=S.stageId;
   const result=maybeCompleteStage(); save();
@@ -2438,6 +2611,13 @@ function endSession(){
   const won=badgeCount(P,S.stageId);
   $('endBadges').innerHTML=DIFFICULTIES.map(d=>'<span class="badge'+(badgesFor(P,S.stageId)[d.id]?' won':'')+'">'+d.badge+'</span>').join('')+
     '<span class="badge-caption">'+(won===3?'All three badges won!':won+' of 3 badges'+(S.newBadge?' \u00B7 new badge!':''))+'</span>';
+  // finishing a lesson for the first time writes the next chapter. It is offered here and
+  // nowhere else insistent: a child who would rather do maths than read just walks past it.
+  const chapter=result==='completed'?CHAPTER_BY_NODE((NODE_BY_LESSON(S.stageId)||{}).id):-1;
+  endChapterAt=chapter>=0&&chapter<chaptersUnlocked(P)?chapter:-1;
+  $('endChapter').style.display=endChapterAt>=0?'block':'none';
+  $('endChapterGap').hidden=endChapterAt<0;
+  if(endChapterAt>=0) $('endChapter').textContent='\uD83D\uDCD6 Read what happened next';
   $('againBtn').textContent='Continue Adventure';
   show('s-end');
 }
@@ -2896,7 +3076,7 @@ function openDeveloper(){ renderDeveloper(); show('s-dev'); }
 function resetPlayerProgress(){
   P.stageProgress=blankStageProgress(); P.monsterStage=1; delete P.devMonsterOverride;
   P.collectibles={}; COLLECTIBLES.forEach(c=>P.collectibles[c.id]=0); P.accessories=[];
-  P.right=0; P.best=0; P.total=0; P.storySeen=false; P.storyProgress={firstCrackSeen:false,mapSeen:{},guidesSeen:{}}; P.days=blankDays(); P.resume=null; P.migrationVersion=9; save();
+  P.right=0; P.best=0; P.total=0; P.storySeen=false; P.storyProgress={firstCrackSeen:false,mapSeen:{},guidesSeen:{},chaptersRead:{}}; P.days=blankDays(); P.resume=null; P.migrationVersion=9; save();
 }
 
 /* ---------------- wiring ---------------- */
@@ -2953,7 +3133,8 @@ const SPEAK_PANELS={
   sayEnd:['endTitle','endStats','endStreak','endReward'],
   sayNode:['nodeLesson','nodeTitle','nodeStory'],
   sayStory:['storyTitle','storyText'],
-  sayGuide:['guideTitle','guideLines','guideSay']
+  sayGuide:['guideTitle','guideLines','guideSay'],
+  sayChapter:['chapterTitle','chapterText']
 };
 /* A block of stats is several little elements, and textContent runs them together into
    "7answers mastered7answers in a row". Each part is read on its own instead. */
@@ -3010,6 +3191,18 @@ if(speechReady()&&window.speechSynthesis.addEventListener)
 offerSpeech();
 $('crackContinue').onclick=()=>{ sTap(); show('s-play'); nextQuestion(); };
 $('againBtn').onclick=()=>{ show('s-menu'); renderMenu(); };
+/* the story shelf and its reader. Nothing here is on the way to anything: every button
+   into it is one the child chooses, and every button out of it goes back where they were. */
+$('taleBtn').onclick=()=>{ sTap(); openTale(); };
+$('taleBack').onclick=()=>{ sTap(); renderHome(); show('s-home'); };
+$('taleShelf').onclick=e=>{
+  const item=e.target.closest('[data-chapter]'); if(!item) return;
+  sTap(); openChapter(Number(item.dataset.chapter));
+};
+$('chapterNext').onclick=()=>{ sTap(); openChapter(chapterAt+1); };
+$('chapterDone').onclick=()=>{ sTap(); openTale(); };
+$('chapterBack').onclick=()=>{ sTap(); openTale(); };
+$('endChapter').onclick=()=>{ if(endChapterAt>=0){ sTap(); openChapter(endChapterAt); } };
 $('endHome').onclick=()=>{ if(lastSessionStageId) startSession(lastSessionStageId,endRetryDifficulty); };
 $('luOk').onclick=()=>{ $('lvUp').classList.remove('on'); };
 $('unlockOk').onclick=()=>{
