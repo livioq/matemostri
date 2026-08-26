@@ -132,6 +132,14 @@ public release.
   badges at once and passing medium wins easy with it. `cascadeBadges`
   applies the same rule to saved games on load, so nothing has to be
   re-sat to catch up.
+- Three badges a lesson and a shelf of collectibles look alike enough
+  that a child can mistake one for the other, so both are said in plain
+  words rather than left to the icons: the map stop that offers a
+  difficulty says there are three badges and that a harder pass wins the
+  easier ones, and the den says its treasures are a different thing,
+  found by replaying a lesson already lit. Both are permanent captions,
+  not a one-time tutorial — a child who missed it once sees it every
+  time, which suits a fact more than a mechanic does.
 - Finishing a difficulty offers the next one up on the end screen.
 - Choosing a difficulty on a map stop is the same act as starting the
   lesson. There is nothing to confirm after it, so there is no second
@@ -232,9 +240,14 @@ public release.
   end of a lesson. One button reads its whole panel in the order it is
   written, and `SPEAK_PANELS` says which parts belong to which button. A
   block of little stats is read as separate parts — `textContent` alone
-  runs them together into "7answers mastered7answers in a row". Leaving
-  a screen stops whatever it was reading, so a panel never talks over
-  the next one.
+  runs them together into "7answers mastered7answers in a row". A line
+  that puts one word in a tag for emphasis, like the den's "15 more
+  badges until…" with the 15 in a `<b>`, is not a block of stats and
+  reads as the one sentence it looks like; `hasBareText` is what tells
+  the two shapes apart, and before it existed the words beside the tag
+  were silently dropped, which is what happened to that very line.
+  Leaving a screen stops whatever it was reading, so a panel never talks
+  over the next one.
 - Speech is feature-detected at every step, and the buttons carry
   `hidden` in the markup: a browser without `speechSynthesis` shows no
   button, changes no layout, and runs no speech code. `speechReady`
@@ -332,6 +345,14 @@ Nothing outstanding.
 
 Recently done, newest first, in case something looks unfamiliar:
 
+- Badges and collectibles are explained in plain words where they are
+  seen, rather than left to be inferred from icons: a map stop says
+  there are three badges and that a harder pass wins the easier ones,
+  and the den says its treasures are found by replaying a lit lesson,
+  not by winning a badge. Fixing this also found and fixed a real bug in
+  the speech helpers — a `<b>` tag with words beside it, like the den's
+  own new "15 more badges until…", was read as just the number, the
+  surrounding words silently dropped.
 - The collectibles have a den to live in, which grows over four rooms as
   the badges come in. The rooms are drawn placeholders built to be
   replaced by paintings without moving what sits in them.
@@ -394,7 +415,7 @@ Worth watching when the children next play:
 
 ## Code map
 
-`index.html` is ~3490 lines: one `<style>` block, the screen markup, then
+`index.html` is ~3500 lines: one `<style>` block, the screen markup, then
 three `<script>` blocks. Line numbers drift as the file is edited — the
 `/* ---- name ---- */` banner comments are the durable anchors, so grep for
 those rather than trusting the numbers.
@@ -415,28 +436,30 @@ those rather than trusting the numbers.
 | 270-297 | the den: `.den-room` and its layers — `.den-art`, `.den-props`, `.den-pet` (placed from the room's own anchors) — and the `.den-trophy` slots |
 | 298-421 | the day-won overlay, then the adventure map: `.adventure-map`, `.map-art`, `.adventure-path`, `.map-scene`, `.scene-title`, `.map-location` and its badge row, `.silhouette`, `.map-momo`, and the major-transition overlay |
 
-### Markup (425-711)
+### Markup (425-712)
 
 Every screen is a `<section class="screen">`; `show(id)` toggles the `on`
 class. In DOM order: `s-story` (426), `s-players` (442), `s-home` (459),
-`s-menu` (489, the adventure map), `s-node` (498, one map stop),
-`s-guide` (514, how a lesson works), `s-play` (532, whose `#progress`
-is the star row), `s-crack` (557), `s-end` (568), `s-tale` (586, the story
-shelf), `s-chapter` (595, one chapter), `s-den` (611, the den), `s-set`
-(628), the `lvUp` overlay (654), the `dayBox` overlay (664), the
-`unlockBox` overlay (677) and the hidden `s-dev` spellbook (696).
+`s-menu` (489, the adventure map), `s-node` (498, one map stop —
+`#nodeBadgeNote` is the standing "3 badges" caption), `s-guide` (515, how a
+lesson works), `s-play` (533, whose `#progress` is the star row), `s-crack`
+(558), `s-end` (569), `s-tale` (587, the story shelf), `s-chapter` (596, one
+chapter), `s-den` (612, the den — `#denCollectNote` is the standing
+"different from badges" caption), `s-set` (630), the `lvUp` overlay (656),
+the `dayBox` overlay (666), the `unlockBox` overlay (679) and the hidden
+`s-dev` spellbook (698).
 
-### Script 1 — data and maths (713-2035)
+### Script 1 — data and maths (715-2037)
 
 | Lines | Section | Notes |
 | --- | --- | --- |
-| 714-737 | `storage` | `KEY='matemostri:v2'`, `LEGACY_KEYS`, `store` get/set |
-| 738-1394 | `model` | `MATH_STAGES` (739, the 15 lessons), `DIFFICULTIES` (762) with `badgeCount` (777), `cascadeBadges` (780) and `awardBadges` (785), `MONSTER_STAGE_DATA` (791), `PROGRESSION_NODES` (810), `MAP_ART_PANELS` (830), `EVOLUTIONS` (848), `COLLECTIBLES` (854); the den — `DEN_CANVAS` (885), `DEN_ROOMS` (886), `denSlotPoints` (911), `badgeTotal` (916), `denLevelOf` (918); the day count — `dayKey` (951), `MONTH_GOAL` (964), `daysOf` (967), `liveStreak` (979), `markLessonDay` (983) — `resumeOf` (1001), `storyProgressOf` (1011), `mapSceneLayout` (1014) and `mapPathD` (1051), the save-shape helpers, `migrate`, then `STORY_CHAPTERS` with `chaptersUnread`, and `LESSON_GUIDES` with `guideFor` and `guideKey` |
-| 1395-1561 | `pet` | `petSVG` (1397) fallback art, `monsterMarkup` (1490), then the den's placeholder rooms: `denSVG` (1507), drawn from `DEN_ROOMS`' anchors, and `denBackdrop` (1554), which serves a painting instead when a room has one |
-| 1562-1580 | `sound` | WebAudio beeps |
-| 1581-1622 | `speech` | `speakableText` (1590), `speechReady` (1595), `englishVoice` (1600), `speak` (1608) — all feature-detected, all no-ops without `speechSynthesis` |
-| 1623-1754 | `column working model` | `buildColumn`, `buildLongMultiplication`, `twoDigitColumnAddition`, `twoDigitColumnSubtraction` — pure step generators |
-| 1755-2034 | `question generation` | `longDivisionPhase`, `genDivision`, the easy picture rules — `DOT_LIMIT`, `easyNumber`, `dotShareGroups`, `dotLayouts`, `fitDot`, `stepDots`, `longMulStepDots`, `divStepDots` — then `pickPair`, `generateLessonQuestion` and `divSteps` |
+| 716-739 | `storage` | `KEY='matemostri:v2'`, `LEGACY_KEYS`, `store` get/set |
+| 740-1396 | `model` | `MATH_STAGES` (741, the 15 lessons), `DIFFICULTIES` (764) with `badgeCount` (779), `cascadeBadges` (782) and `awardBadges` (787), `MONSTER_STAGE_DATA` (793), `PROGRESSION_NODES` (812), `MAP_ART_PANELS` (832), `EVOLUTIONS` (850), `COLLECTIBLES` (856); the den — `DEN_CANVAS` (887), `DEN_ROOMS` (888), `denSlotPoints` (913), `badgeTotal` (918), `denLevelOf` (920); the day count — `dayKey` (953), `MONTH_GOAL` (966), `daysOf` (969), `liveStreak` (981), `markLessonDay` (985) — `resumeOf` (1003), `storyProgressOf` (1013), `mapSceneLayout` (1016) and `mapPathD` (1053), the save-shape helpers, `migrate`, then `STORY_CHAPTERS` (1203) with `chaptersUnread` (1270), and `LESSON_GUIDES` (1280) with `guideFor` (1389) and `guideKey` (1394) |
+| 1397-1563 | `pet` | `petSVG` (1399) fallback art, `monsterMarkup` (1492), then the den's placeholder rooms: `denSVG` (1509), drawn from `DEN_ROOMS`' anchors, and `denBackdrop` (1556), which serves a painting instead when a room has one |
+| 1564-1582 | `sound` | WebAudio beeps |
+| 1583-1624 | `speech` | `speakableText` (1592), `speechReady` (1597), `englishVoice` (1602), `speak` (1610) — all feature-detected, all no-ops without `speechSynthesis` |
+| 1625-1756 | `column working model` | `buildColumn` (1628), `buildLongMultiplication` (1690), `twoDigitColumnAddition` (1729), `twoDigitColumnSubtraction` (1742) — pure step generators |
+| 1757-2036 | `question generation` | `longDivisionPhase` (1761), `genDivision` (1766), the easy picture rules — `DOT_LIMIT` (1813), `easyNumber` (1821), `dotShareGroups` (1828), `dotLayouts` (1857), `fitDot` (1880), `stepDots` (1890), `longMulStepDots` (1900), `divStepDots` (1910) — then `pickPair` (1926), `generateLessonQuestion` (1930) and `divSteps` (2025) |
 
 The test suite text-extracts these by name, so keep them as top-level
 `function name(...)  {...}` declarations: `buildColumn`,
@@ -451,12 +474,12 @@ The test suite text-extracts these by name, so keep them as top-level
 `cascadeBadges`, `badgesFor`, `awardBadges`, `dropRetiredPlayerFields`,
 `dotRows`, `dotShareGroups`, `dotLayouts`, `dotLayoutFits`, `fitDot`,
 `easyDotsMarkup`, `paintDots`, `advanceDots`, `toggleStruck`, `stepDots`,
-`longMulStepDots`, `divStepDots`, `dotBudget`, `elementWords`,
-`speakableText`, `speechReady`, `speak`, `englishVoice`, `offerSpeech`,
-`show`, `hushSpeech`, `storyProgressOf`, `nextOpenColumnStep`,
-`selectColumnStep`, `pressDiv`, `blankBadges`, `migrateV3StageProgress`,
-`migrateV4StageProgress`, `mapTrailPoints`, `mapPathD`,
-`scrollMapToCurrent`, `dayBefore`, `daysOf`, `liveStreak`,
+`longMulStepDots`, `divStepDots`, `dotBudget`, `hasBareText`, `partWords`,
+`elementWords`, `speakableText`, `speechReady`, `speak`, `englishVoice`,
+`offerSpeech`, `show`, `hushSpeech`, `storyProgressOf`,
+`nextOpenColumnStep`, `selectColumnStep`, `pressDiv`, `blankBadges`,
+`migrateV3StageProgress`, `migrateV4StageProgress`, `mapTrailPoints`,
+`mapPathD`, `scrollMapToCurrent`, `dayBefore`, `daysOf`, `liveStreak`,
 `markLessonDay`, `resumeOf`, `guideFor`, `renderGuideGrid`,
 `renderGuideLines`, `renderGuide`, `chaptersUnread`, `renderTale`,
 `renderChapter`, `openChapter`, `renderHome`, `endSession`,
@@ -470,25 +493,25 @@ section in a sandbox to exercise `migrate` end to end, and checks
 `docs/DEN_ART_SPEC.json` against `DEN_ROOMS` so the artwork brief cannot
 go stale.
 
-### Script 2 — screens and session flow (2036-2850)
+### Script 2 — screens and session flow (2038-2852)
 
 | Lines | Section | Notes |
 | --- | --- | --- |
-| 2037-2118 | `screens` | `$`, `esc` (2039), `hushSpeech` (2042) and `show` (2043); `STORY_SCENES` (2045), `renderPlayers` (2064), `renderHome` (2076) |
-| 2119-2148 | `the story` | `renderTale` (2121), `openTale` (2136), `renderChapter` (2138), `openChapter` (2203) |
-| 2149-2395 | `the den` | `denProps` (2153) and `denPetStyle` (2168), both reading `DEN_ROOMS`' anchors, `renderDen` (2173), `openDen` (2201); then `renderMenu` (2212) building the map, `scrollMapToCurrent` (2285), `openMapNode` (2292), and the guide pages: `renderGuideGrid` (2307), `renderGuideLines` (2324), `renderGuide` (2330), `openGuide` (2359), `beginLesson` (2372), `renderDifficultyChoice` (2377) |
-| 2396-2423 | `settings` | `captureSettingsName`, `renderSettings` |
-| 2424-2849 | `gameplay` | `SESSION` and `sessionPlan` (2428), `renderStars` (2447), `startSession` (2460), `resumeLesson` (2473), `passOutOfReach` (2489), `nextQuestion` (2490), the easy pictures — `easyDotsMarkup` (2558), `settleDots` (2597), `paintDots` (2610), `wireDots` (2628) — `checkNormal` (2667), `showDayWon` (2708), `countToday` (2746), `award` (2751), `awardCollectible` (2763), `maybeCompleteStage` (2771), `endSession` (2798) |
+| 2039-2120 | `screens` | `$`, `esc` (2041), `hushSpeech` (2044) and `show` (2045); `STORY_SCENES` (2047), `renderPlayers` (2066), `renderHome` (2078) |
+| 2121-2150 | `the story` | `renderTale` (2123), `openTale` (2138), `renderChapter` (2140), `openChapter` (2205) |
+| 2151-2397 | `the den` | `denProps` (2155) and `denPetStyle` (2170), both reading `DEN_ROOMS`' anchors, `renderDen` (2175), `openDen` (2203); then `renderMenu` (2214) building the map, `scrollMapToCurrent` (2287), `openMapNode` (2294), and the guide pages: `renderGuideGrid` (2309), `renderGuideLines` (2326), `renderGuide` (2332), `openGuide` (2361), `beginLesson` (2374), `renderDifficultyChoice` (2379) |
+| 2398-2425 | `settings` | `captureSettingsName`, `renderSettings` |
+| 2426-2851 | `gameplay` | `SESSION` and `sessionPlan`, `renderStars` (2449), `startSession` (2462), `resumeLesson` (2475), `passOutOfReach` (2491), `nextQuestion` (2492), the easy pictures — `easyDotsMarkup` (2560), `settleDots` (2599), `paintDots` (2612), `wireDots` (2630) — `checkNormal` (2669), `showDayWon` (2710), `countToday` (2748), `award` (2753), `awardCollectible` (2765), `maybeCompleteStage` (2773), `endSession` (2800) |
 
-### Script 3 — column UIs and wiring (2851-3485)
+### Script 3 — column UIs and wiring (2853-3498)
 
 | Lines | Section | Notes |
 | --- | --- | --- |
-| 2852-3041 | `columns: addition, subtraction, multiplication` | `colPrompt`, `dotBudget` and `fitCell`, `renderCol`, `nextOpenColumnStep`, `commitColumnStep`, `selectColumnStep`, `pressCol`, `finishCol` |
-| 3042-3149 | `two-digit long multiplication` | `longMulPrompt`, `longMulSlot`, `renderLongMul`, `commitLongMultiplicationStep`, `selectLongMulStep`, `pressLongMul`, `finishLongMul` |
-| 3150-3292 | `division in columns` | `divPlan`, `divPromptText`, `renderDiv`, `selectDivStep`, `pressDiv`, `finishDiv` |
-| 3293-3307 | `hidden developer spellbook` | `renderDeveloper`, `resetPlayerProgress` |
-| 3308-3485 | `wiring` | every event listener, `SPEAK_PANELS` (3353) and `offerSpeech` (3382), the story shelf and den buttons, the map resize re-layout, dev-tap unlock, boot |
+| 2854-3043 | `columns: addition, subtraction, multiplication` | `colPrompt` (2855), `dotBudget` (2885) and `fitCell` (2889), `renderCol` (2898), `nextOpenColumnStep` (2992), `commitColumnStep` (2997), `selectColumnStep` (3007), `pressCol` (3012), `finishCol` (3034) |
+| 3044-3151 | `two-digit long multiplication` | `longMulPrompt` (3045), `longMulSlot` (3059), `renderLongMul` (3065), `commitLongMultiplicationStep` (3111), `selectLongMulStep` (3121), `pressLongMul` (3126), `finishLongMul` (3145) |
+| 3152-3294 | `division in columns` | `divPlan` (3155), `divPromptText` (3165), `renderDiv` (3175), `selectDivStep` (3244), `pressDiv` (3249), `finishDiv` (3284) |
+| 3295-3309 | `hidden developer spellbook` | `renderDeveloper` (3296), `resetPlayerProgress` (3304) |
+| 3310-3497 | `wiring` | every event listener, `SPEAK_PANELS` (3355) and `offerSpeech` (3395), `hasBareText`/`partWords`/`elementWords` (3375-3394), the story shelf and den buttons, the map resize re-layout, dev-tap unlock, boot |
 
 Note on long division: question generation lives in `longDivisionPhase`
 and `genDivision` plus `generateLessonQuestion` in script 1, while the

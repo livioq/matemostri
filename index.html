@@ -284,7 +284,7 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
 .den-blurb{margin:9px 2px 0;font-size:14px;font-weight:700;line-height:1.4;color:var(--ink);text-align:center}
 .den-next{margin-top:9px;font-size:12px;font-weight:800;color:var(--ink-soft);text-align:center}
 .den-next b{color:var(--gold)}
-.den-shelf-label{margin:11px 0 6px}
+.den-shelf-label{margin:9px 0 6px}
 .den-shelf{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
 .den-trophy{display:flex;flex-direction:column;align-items:center;gap:2px;padding:7px 4px;
   background:#fff;border:2px solid var(--ink);border-radius:14px;box-shadow:2px 2px 0 rgba(27,58,140,.14)}
@@ -508,6 +508,7 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
     </div>
     <button class="link" id="nodeGuide" style="display:none;margin:10px auto 0">how it works</button>
     <div class="eyebrow" style="margin:14px 0 6px" id="nodeChoose">tap one to begin</div>
+    <div class="magic-whisper" id="nodeBadgeNote" style="margin:0 0 10px">This lesson has 3 badges: Easy, Medium and Hard. Pass a harder one and you win the easier badges too.</div>
     <div class="difficulty-row" id="nodeDifficulty"></div>
   </section>
 
@@ -619,9 +620,10 @@ input[type=text]{width:100%;padding:12px;border:2px solid var(--ink);border-radi
       <p class="den-blurb" id="denBlurb"></p>
       <div class="den-next" id="denNext"></div>
     </div>
+    <div class="magic-whisper" id="denCollectNote">Found by playing a lesson again once it is lit — different from badges.</div>
     <div class="den-shelf-label eyebrow" id="denShelfLabel">On the shelf</div>
     <div class="den-shelf" id="denShelf"></div>
-    <div style="height:10px"></div>
+    <div style="height:8px"></div>
     <button class="btn ghost" id="denDone">Back home</button>
   </section>
 
@@ -3357,25 +3359,36 @@ const SPEAK_PANELS={
   sayGrown:['luTitle','luMsg'],
   sayCrack:['crackTitle','crackStats','crackReward'],
   sayEnd:['endTitle','endStats','endStreak','endReward'],
-  sayNode:['nodeLesson','nodeTitle','nodeStory'],
+  sayNode:['nodeLesson','nodeTitle','nodeStory','nodeBadgeNote'],
   sayStory:['storyTitle','storyText'],
   sayGuide:['guideTitle','guideLines','guideSay'],
   sayChapter:['chapterTitle','chapterText'],
-  sayDen:['denTitle','denBlurb','denNext']
+  sayDen:['denTitle','denBlurb','denNext','denCollectNote']
 };
 /* A block of stats is several little elements, and textContent runs them together into
    "7answers mastered7answers in a row". Each part is read on its own instead. */
+/* A child element beside plain words, like "<b>15</b> more badges until...", is one sentence
+   wearing emphasis, not a list of separate parts — reading only the element and dropping the
+   words around it said "15" and stopped. `hasBareText` tells the two shapes apart: a container
+   built purely of child elements (a row of stat tiles) still reads each as its own part, but
+   any element carrying words of its own reads everything, in order, as a single phrase. */
+const hasBareText=el=>Array.prototype.some.call(el.childNodes,n=>n.nodeType===3&&n.textContent.trim());
 function partWords(el){
-  const kids=el&&el.children;
-  if(!kids||!kids.length) return String((el&&el.textContent)||'').replace(/\s+/g,' ').trim();
+  if(!el) return '';
+  const kids=el.children;
+  if(!kids||!kids.length||hasBareText(el))
+    return Array.prototype.map.call(el.childNodes,n=>
+      n.nodeType===3?String(n.textContent||'').replace(/\s+/g,' ').trim():partWords(n)
+    ).filter(Boolean).join(' ');
   return Array.prototype.map.call(kids,partWords).filter(Boolean).join(' ');
 }
 /* Each part is a sentence. One that already ends in a full stop does not want another. */
 const joinSpoken=parts=>parts.filter(Boolean)
   .map(t=>/[.!?]$/.test(t)?t:t+'.').join(' ');
 function elementWords(el){
-  const kids=el&&el.children;
-  if(!kids||!kids.length) return String((el&&el.textContent)||'').replace(/\s+/g,' ').trim();
+  if(!el) return '';
+  const kids=el.children;
+  if(!kids||!kids.length||hasBareText(el)) return partWords(el);
   return joinSpoken(Array.prototype.map.call(kids,partWords));
 }
 function panelWords(ids){ return joinSpoken(ids.map(id=>elementWords($(id)))); }

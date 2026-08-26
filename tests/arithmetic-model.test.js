@@ -1683,6 +1683,33 @@ assert.match(source, /sayUnlock:\['unlockTitle','unlockText'\]/,
   'the evolution overlay reads what the creature has grown into');
 assert.match(functionSource('elementWords'), /joinSpoken\(/,
   'a block of little stats is read as separate parts, not run together');
+// a real DOM tree, not a source-text regex: a <b> beside plain words is one sentence wearing
+// emphasis (denNext: "<b>15</b> more badges until..."), not a list of stat tiles, and reading
+// only the element used to drop every word around it
+class FakeText { constructor(text){ this.nodeType=3; this.textContent=text; } }
+class FakeEl {
+  constructor(){ this.nodeType=1; this.childNodes=[]; }
+  get children(){ return this.childNodes.filter(n => n.nodeType === 1); }
+  get textContent(){ return this.childNodes.map(n => n.textContent).join(''); }
+  add(...nodes){ nodes.forEach(n => this.childNodes.push(n)); return this; }
+}
+const wordsCtx = {};
+vm.createContext(wordsCtx);
+vm.runInContext([
+  source.match(/const hasBareText=.*;\n/)[0],
+  functionSource('partWords'),
+  source.match(/const joinSpoken=[\s\S]*?;\n/)[0],
+  functionSource('elementWords'),
+  'this.elementWords=elementWords;'
+].join('\n'), wordsCtx);
+const statTile = () => new FakeEl().add(new FakeEl().add(new FakeText('7')), new FakeEl().add(new FakeText('answers mastered')));
+const statBlock = new FakeEl().add(statTile(), new FakeEl().add(new FakeEl().add(new FakeText('5')), new FakeEl().add(new FakeText('in a row'))));
+assert.equal(wordsCtx.elementWords(statBlock), '7 answers mastered. 5 in a row.',
+  'a block of pure stat tiles still reads each one as its own part, unaffected by the fix');
+const denNextLike = new FakeEl().add(new FakeEl().add(new FakeText('15')), new FakeText(' more badges until a warm burrow'));
+assert.equal(wordsCtx.elementWords(denNextLike), '15 more badges until a warm burrow',
+  'the words beside the <b> are read too, not silently dropped');
+assert.equal(wordsCtx.elementWords(new FakeEl()), '', 'an empty element has nothing to say');
 assert.deepEqual(speechCtx.join(['Ones under ones.', 'Add the ones first: 7 and 5 make 12.']),
   'Ones under ones. Add the ones first: 7 and 5 make 12.',
   'a part that already ends in a full stop does not get another');
